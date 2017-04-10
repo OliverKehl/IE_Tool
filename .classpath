@@ -16,7 +16,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/args4j-2.0.21.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-codec-1.7.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-httpclient-3.1.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-io-2.1.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/Configuration.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/httpclient-4.2.1.jar"/>
@@ -36,7 +35,9 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/slf4j-jdk14-1.6.1.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/solr-solrj-4.2.0.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/zookeeper-3.4.5.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gson-2.8.0.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/fastjson-1.2.31.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-io-2.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-pool2-2.4.2.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jedis-2.5.2.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

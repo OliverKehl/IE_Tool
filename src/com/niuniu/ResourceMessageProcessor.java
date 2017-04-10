@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.util.ArrayList;
 
 import com.alibaba.fastjson.JSON;
+import com.niuniu.cache.CacheManager;
 
 public class ResourceMessageProcessor {
 	
@@ -194,15 +195,24 @@ public class ResourceMessageProcessor {
 	}
 	
 	public boolean process(){
+		long t1 = System.currentTimeMillis();
 		for(String s : message_arr){
 			if(s.trim().isEmpty()){
 				continue;
 			}
 			
+			String hit = CacheManager.get(user_id + "_" + s);
+			if(hit!=null){
+				CarResource cr = JSON.parseObject(hit, CarResource.class);
+				carResourceGroup.getResult().add(cr);
+				last_brand_name = cr.getBrand_name();
+				last_model_name = cr.getCar_model_name();
+				continue;
+			}
+			
+			String reserve_s = s;
+			
 			s = Utils.normalizePrice(Utils.cleanDate(Utils.clean(Utils.normalize(s), solr_client)));
-			
-			//TODO 缓存
-			
 			
 			/*
 			 * 验证该行文本的有效性，如果有多个指导价就放弃一蛤
@@ -212,6 +222,7 @@ public class ResourceMessageProcessor {
 			if(mode==1){
 				continue;//该行文本包含多个指导价
 				// 后续需要把该行文本的可靠信息，例如品牌，车型等，加入到Header中
+				//TODO 
 			}
 			
 			BaseCarFinder baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
@@ -269,10 +280,12 @@ public class ResourceMessageProcessor {
 			}
 			baseCarFinder.generateColors();
 			baseCarFinder.generateRealPrice();
-			baseCarFinder.addToResponseWithCache(user_id, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup);
+			baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup);
 			baseCarFinder.printParsingResult(writer);
 			fillHeaderRecord(baseCarFinder);
 		}
+		long t2 = System.currentTimeMillis();
+		carResourceGroup.setQTime(Long.toString(t2-t1));
 		return true;
 	}
 	

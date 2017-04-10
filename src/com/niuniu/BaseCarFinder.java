@@ -18,6 +18,9 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.ModifiableSolrParams;
 
+import com.alibaba.fastjson.JSON;
+import com.niuniu.cache.CacheManager;
+
 public class BaseCarFinder {
 
 	ArrayList<String> models;
@@ -35,23 +38,23 @@ public class BaseCarFinder {
 	String[] base_colors = { "黑", "白", "红", "灰", "棕", "银", "金", "蓝", "紫", "米" };
 	ArrayList<String> result_colors;
 	String pre_brand_name;
-	
+
 	String cur_brand;
 	String cur_model;
-	
+
 	String original_message;
-	
+
 	USolr solr;
-	
+
 	int backup_index = 0;
-	
-	String[] suffix_quants = {"台", "轮", "度", "速", "天", "分钟", "小时", "秒", "辆", "年", "月"};
-	String[] prefix_behave = {"送"};
-	
+
+	String[] suffix_quants = { "台", "轮", "度", "速", "天", "分钟", "小时", "秒", "辆", "年", "月" };
+	String[] prefix_behave = { "送" };
+
 	Set<String> suffix_quants_set;
 	Set<String> prefix_behave_set;
-	
-	// 指导价 
+
+	// 指导价
 	// 考虑色全的情况
 
 	public BaseCarFinder() {
@@ -68,17 +71,17 @@ public class BaseCarFinder {
 		}
 		result_colors = new ArrayList<String>();
 		solr = new USolr("http://121.40.204.159:8080/solr/");
-		
+
 		suffix_quants_set = new HashSet<String>();
 		prefix_behave_set = new HashSet<String>();
-		
-		for(String s:suffix_quants)
+
+		for (String s : suffix_quants)
 			suffix_quants_set.add(s);
-		
-		for(String s:prefix_behave)
+
+		for (String s : prefix_behave)
 			prefix_behave_set.add(s);
 	}
-	
+
 	public BaseCarFinder(USolr solr) {
 		models = new ArrayList<String>();
 		prices = new ArrayList<String>();
@@ -93,17 +96,17 @@ public class BaseCarFinder {
 		}
 		result_colors = new ArrayList<String>();
 		this.solr = solr;
-		
+
 		suffix_quants_set = new HashSet<String>();
 		prefix_behave_set = new HashSet<String>();
-		
-		for(String s:suffix_quants)
+
+		for (String s : suffix_quants)
 			suffix_quants_set.add(s);
-		
-		for(String s:prefix_behave)
+
+		for (String s : prefix_behave)
 			prefix_behave_set.add(s);
 	}
-	
+
 	public BaseCarFinder(USolr solr, String pre_brand_name) {
 		models = new ArrayList<String>();
 		prices = new ArrayList<String>();
@@ -119,18 +122,16 @@ public class BaseCarFinder {
 		result_colors = new ArrayList<String>();
 		this.solr = solr;
 		this.pre_brand_name = pre_brand_name;
-		
+
 		suffix_quants_set = new HashSet<String>();
 		prefix_behave_set = new HashSet<String>();
-		
-		for(String s:suffix_quants)
+
+		for (String s : suffix_quants)
 			suffix_quants_set.add(s);
-		
-		for(String s:prefix_behave)
+
+		for (String s : prefix_behave)
 			prefix_behave_set.add(s);
 	}
-
-	
 
 	/*
 	 * 从search库里获取多个候选base_car_id
@@ -151,7 +152,7 @@ public class BaseCarFinder {
 		float max_score = 0;
 		while (entries.hasNext()) {
 			Entry<Integer, Float> entry = (Entry<Integer, Float>) entries.next();
-			//int key = entry.getKey();
+			// int key = entry.getKey();
 			float value = entry.getValue();
 			if ((1.2 * value) < max_score) {
 				break;
@@ -160,80 +161,80 @@ public class BaseCarFinder {
 		return true;
 	}
 
-	public boolean isStandardPrice(String str){
+	public boolean isStandardPrice(String str) {
 		String tmp = str.substring(str.lastIndexOf("|") + 1, str.indexOf("#"));
 		float f = NumberUtils.toFloat(tmp, 0);
-		if(f<100 && f>10)
+		if (f < 100 && f > 10)
 			return true;
-		if(f>10000)
+		if (f > 10000)
 			return true;
-		if(f>1000){
-			if(f==2008 ||f==3008 || f==4008 )
+		if (f > 1000) {
+			if (f == 2008 || f == 3008 || f == 4008)
 				return false;
 			return true;
 		}
 		return false;
 	}
-	
+
 	/*
-	 * -1 means price
-	 *  1 means model
+	 * -1 means price 1 means model
 	 */
-	private String judgeRealTag(String token){
+	private String judgeRealTag(String token) {
 		String real_tag = null;
-		
-		if(!brands.isEmpty()){
+
+		if (!brands.isEmpty()) {
 			real_tag = TokenTagClassifier.predict(token, brands.get(0));
-		}else{
+		} else {
 			real_tag = TokenTagClassifier.predict(token, pre_brand_name);
 		}
 		return real_tag;
 	}
-	
+
 	private int parse(ArrayList<String> tokens) {
 		boolean price_status = false;
 		for (int i = 0; i < tokens.size(); i++) {
 			String s = tokens.get(i);
 			if (s.endsWith("#OTHERS") || s.endsWith("#COLOR")) {
-				if(s.contains("指导价")){
+				if (s.contains("指导价")) {
 					tokens.remove(i);
 					continue;
 				}
 				return i;
 				// stop = NumberUtils.createInteger(s.substring(0,
 				// s.indexOf("-")));
-			}else if(s.endsWith("#BRAND")){
+			} else if (s.endsWith("#BRAND")) {
 				brands.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
-			}else if (s.endsWith("#MODEL")) {
+			} else if (s.endsWith("#MODEL")) {
 				models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 			} else if (s.endsWith("#STYLE")) {
 				styles.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
-			} else if (s.endsWith("MODEL_STYLE")){
+			} else if (s.endsWith("MODEL_STYLE")) {
 				String real_tag = judgeRealTag(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
-				if(real_tag!=null){
-					if(real_tag.equals("MODEL")){
+				if (real_tag != null) {
+					if (real_tag.equals("MODEL")) {
 						models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 						continue;
-					}else if(real_tag.equals("STYLE")){
+					} else if (real_tag.equals("STYLE")) {
 						styles.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 						continue;
 					}
 				}
-			} else if (s.endsWith("#STYLE_PRICE") || s.endsWith("#FPRICE") || s.endsWith("MODEL_PRICE") || s.endsWith("MODEL_STYLE_PRICE")) {
-				if(price_status)
+			} else if (s.endsWith("#STYLE_PRICE") || s.endsWith("#FPRICE") || s.endsWith("MODEL_PRICE")
+					|| s.endsWith("MODEL_STYLE_PRICE")) {
+				if (price_status)
 					return Math.min(i + 1, tokens.size());
 				String real_tag = judgeRealTag(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
-				if(real_tag!=null){
-					if(real_tag.equals("MODEL")){
+				if (real_tag != null) {
+					if (real_tag.equals("MODEL")) {
 						models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 						continue;
-					}else if(real_tag.equals("STYLE")){
+					} else if (real_tag.equals("STYLE")) {
 						styles.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 						continue;
 					}
-				}else{
+				} else {
 					prices.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
-					price_status = price_status|isStandardPrice(s);
+					price_status = price_status | isStandardPrice(s);
 				}
 			}
 		}
@@ -241,18 +242,18 @@ public class BaseCarFinder {
 	}
 
 	private String parseMessage(USolr solr, String message) {
-		ele_arr = Utils.tokenize(message, solr,"filter_word");
-		if(ele_arr==null)
+		ele_arr = Utils.tokenize(message, solr, "filter_word");
+		if (ele_arr == null)
 			return null;
 		vital_info_index = parse(ele_arr);
-		int stop=0;
-		if(vital_info_index==ele_arr.size()){
+		int stop = 0;
+		if (vital_info_index == ele_arr.size()) {
 			stop = message.length();
-		}else{
+		} else {
 			String tmp = ele_arr.get(vital_info_index);
 			stop = NumberUtils.createInteger(tmp.substring(0, tmp.indexOf("-")));
 		}
-		
+
 		String sub_query = message.substring(0, stop).trim();
 		return sub_query;
 	}
@@ -263,22 +264,22 @@ public class BaseCarFinder {
 		this.original_message = message;
 		message = Utils.preProcess(message);
 		Map<Integer, Float> base_car_info = new HashMap<Integer, Float>();
-		if(solr==null)
+		if (solr == null)
 			return false;
 		String sub_query = parseMessage(solr, message);
-		if(pre_info!=null)
+		if (pre_info != null)
 			sub_query = pre_info + " " + sub_query;
 		query_results = Utils.select(sub_query, solr);
-		if(query_results==null){
+		if (query_results == null) {
 			// 1. 空行
 			// 2. 把颜色放指导价前面了
-			//TODO
+			// TODO
 			return false;
 		}
 		fillBaseCarIds(base_car_info, this.query_results);
 		System.out.println(base_car_info.size());
 		solr.clear();
-		return base_car_info.size()>0;
+		return base_car_info.size() > 0;
 	}
 
 	/*
@@ -325,29 +326,30 @@ public class BaseCarFinder {
 	}
 
 	/*
-	 * 从简处理，如果colors.size()=2就是外+内，如果=1，细分一下看看是不是能区分成 后续还可以这么做： 一行里面可能会写 黑黑 棕黑 如果拆分成两个词后两个词相同，那么就是外+内
-	 * 金黑 黑黑 => 黑#COLOR 黑#COLOR 棕黑 => 棕黑#COLOR 金黑 => 金黑#COLOR
-	 * 那么就可以结合上下文的颜色情况来确定这里的棕黑和金黑是不是也要拆分
+	 * 从简处理，如果colors.size()=2就是外+内，如果=1，细分一下看看是不是能区分成 后续还可以这么做： 一行里面可能会写 黑黑 棕黑
+	 * 如果拆分成两个词后两个词相同，那么就是外+内 金黑 黑黑 => 黑#COLOR 黑#COLOR 棕黑 => 棕黑#COLOR 金黑 =>
+	 * 金黑#COLOR 那么就可以结合上下文的颜色情况来确定这里的棕黑和金黑是不是也要拆分
 	 * 
 	 */
 	public void generateColors() {
-		int idx=0;
+		int idx = 0;
 		for (idx = vital_info_index; idx < ele_arr.size(); idx++) {
 			String s = ele_arr.get(idx);
 			if (s.endsWith("#COLOR")) {
 				indexes.add(idx);
 				colors.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
-			}else if(s.endsWith("STYLE") || s.endsWith("PRICE")){
-				if(s.endsWith("PRICE") && isQuantOrBehave(idx)){
+			} else if (s.endsWith("STYLE") || s.endsWith("PRICE")) {
+				if (s.endsWith("PRICE") && isQuantOrBehave(idx)) {
 					idx--;
 				}
 				break;
 			}
 		}
-		if(idx<ele_arr.size()){
+		if (idx < ele_arr.size()) {
 			String temp = ele_arr.get(idx);
-			backup_index = Math.max(NumberUtils.createInteger(temp.substring(temp.indexOf("-")+1, temp.indexOf("|"))), backup_index);
-		}else{
+			backup_index = Math.max(NumberUtils.createInteger(temp.substring(temp.indexOf("-") + 1, temp.indexOf("|"))),
+					backup_index);
+		} else {
 			backup_index = Math.max(original_message.length(), backup_index);
 		}
 		int mod = 0;// 默认是外和内分开
@@ -359,8 +361,8 @@ public class BaseCarFinder {
 			} else {
 				// 只有外饰
 				int status = validDualColors(color);
-				if (status>-1) {
-					if(status==0){
+				if (status > -1) {
+					if (status == 0) {
 						String interpolation = unExpectedOuterColor(color);
 						if (interpolation != null) {
 							result_colors.add(interpolation + "#");
@@ -374,7 +376,7 @@ public class BaseCarFinder {
 					result_colors.add(buildColorString(outer, inner, outer_standard, inner_standard));
 				} else {
 					String final_color = matchStandardColor(color, 0);
-					if(final_color==null)
+					if (final_color == null)
 						result_colors.add(color + "#");
 					else
 						result_colors.add(final_color + "#");
@@ -383,7 +385,7 @@ public class BaseCarFinder {
 		} else if (colors.size() == 2) {
 			String outer = colors.get(0);
 			String inner = colors.get(1);
-			if(isAdjacentColor(indexes.get(0), indexes.get(1)) && isValidInnerColor(inner)){
+			if (isAdjacentColor(indexes.get(0), indexes.get(1)) && isValidInnerColor(inner)) {
 				String outer_standard = matchStandardColor(outer, 0);
 				String inner_standard = matchStandardColor(inner, 1);
 				result_colors.add(buildColorString(outer, inner, outer_standard, inner_standard));
@@ -393,44 +395,44 @@ public class BaseCarFinder {
 				result_colors.add(fetchValidColor(outer_standard, outer) + "#");
 				outer_standard = matchStandardColor(inner, 0);
 				result_colors.add(fetchValidColor(outer_standard, inner) + "#");
-			} 
+			}
 		} else {
 			mod = calcColorMode();
-			//TODO 这里定好一个基调，要不就是全都是外观，要不就是全都是外观+内饰
+			// TODO 这里定好一个基调，要不就是全都是外观，要不就是全都是外观+内饰
 			if (mod == 0) {// 全是外色
 				for (String outer : colors) {
 					String outer_standard = matchStandardColor(outer, 0);
 					result_colors.add(fetchValidColor(outer_standard, outer) + "#");
 				}
 			} else {
-				for(int i=0;i<colors.size();){
-					if(validDualColors(colors.get(i))==1){
+				for (int i = 0; i < colors.size();) {
+					if (validDualColors(colors.get(i)) == 1) {
 						String color = colors.get(i);
 						String outer = color.substring(0, 1);
 						String inner = color.substring(1, 2);
 						String outer_standard = matchStandardColor(outer, 0);
 						String inner_standard = matchStandardColor(inner, 1);
 						result_colors.add(buildColorString(outer, inner, outer_standard, inner_standard));
-						i+=1;
-					}else{
-						if(i+1==colors.size()){
+						i += 1;
+					} else {
+						if (i + 1 == colors.size()) {
 							String color = colors.get(i);
 							String outer = color.substring(0, 1);
 							String outer_standard = matchStandardColor(outer, 0);
 							result_colors.add(fetchValidColor(outer_standard, outer) + "#");
 							i++;
-						}else{
+						} else {
 							String outer = colors.get(i);
-							String inner = colors.get(i+1);
-							if(isAdjacentColor(indexes.get(i), indexes.get(i+1)) && isValidInnerColor(inner)){
+							String inner = colors.get(i + 1);
+							if (isAdjacentColor(indexes.get(i), indexes.get(i + 1)) && isValidInnerColor(inner)) {
 								String outer_standard = matchStandardColor(outer, 0);
 								String inner_standard = matchStandardColor(inner, 1);
 								result_colors.add(buildColorString(outer, inner, outer_standard, inner_standard));
-								i+=2;
-							}else{
+								i += 2;
+							} else {
 								String outer_standard = matchStandardColor(outer, 0);
 								result_colors.add(fetchValidColor(outer_standard, outer) + "#");
-								i+=1;
+								i += 1;
 							}
 						}
 					}
@@ -444,90 +446,91 @@ public class BaseCarFinder {
 	 * 如果是0则全是外色 如果是1则都是外+内
 	 */
 	public int calcColorMode() {
-		if(colors.size()!=indexes.size())
+		if (colors.size() != indexes.size())
 			return -1;
-		
-		//内外都有
-		for(int i=0;i<indexes.size();i++){
+
+		// 内外都有
+		for (int i = 0; i < indexes.size(); i++) {
 			String c = colors.get(i);
-			if(validDualColors(c)==1){
+			if (validDualColors(c) == 1) {
 				return 1;
 			}
 		}
-		
-		for(int i=0;i<indexes.size()-1;i+=2){
+
+		for (int i = 0; i < indexes.size() - 1; i += 2) {
 			String outer = colors.get(i);
-			String inner = colors.get(i+1);
-			if(outer.length()>2 && inner.length()>2)
+			String inner = colors.get(i + 1);
+			if (outer.length() > 2 && inner.length() > 2)
 				return 0;
-			if( outer.length()==1 && inner.length()==1 && isAdjacentColor(indexes.get(i), indexes.get(i+1)) && isValidInnerColor(inner)){
-				return 1;//内外都有
+			if (outer.length() == 1 && inner.length() == 1 && isAdjacentColor(indexes.get(i), indexes.get(i + 1))
+					&& isValidInnerColor(inner)) {
+				return 1;// 内外都有
 			}
 		}
-		
-		return 0;//都是外色
+
+		return 0;// 都是外色
 	}
 
-	public boolean isExplicitOuterColor(int idx){
-		if(idx==0)
+	public boolean isExplicitOuterColor(int idx) {
+		if (idx == 0)
 			return false;
-		String c = ele_arr.get(idx-1);
+		String c = ele_arr.get(idx - 1);
 		String content = c.substring(c.lastIndexOf("|") + 1, c.lastIndexOf("#"));
-		if(content.equals("外") || content.equals("外色") ||content.equals("外饰")){
+		if (content.equals("外") || content.equals("外色") || content.equals("外饰")) {
 			return true;
 		}
-		
-		if(idx+1==ele_arr.size()){
+
+		if (idx + 1 == ele_arr.size()) {
 			return false;
 		}
-		c = ele_arr.get(idx+1);
+		c = ele_arr.get(idx + 1);
 		content = c.substring(c.lastIndexOf("|") + 1, c.lastIndexOf("#"));
-		if(content.equals("外") || content.equals("外色") ||content.equals("外饰")){
+		if (content.equals("外") || content.equals("外色") || content.equals("外饰")) {
 			return true;
 		}
 		return false;
 	}
-	
-	public boolean isExplicitInnerColor(int idx){
-		if(idx+1==ele_arr.size()){
+
+	public boolean isExplicitInnerColor(int idx) {
+		if (idx + 1 == ele_arr.size()) {
 			return false;
 		}
-		String c = ele_arr.get(idx+1);
+		String c = ele_arr.get(idx + 1);
 		String content = c.substring(c.lastIndexOf("|") + 1, c.lastIndexOf("#"));
-		if(content.equals("内") || content.equals("内色") ||content.equals("内饰")){
+		if (content.equals("内") || content.equals("内色") || content.equals("内饰")) {
 			return true;
 		}
-		
-		if(idx==0)
+
+		if (idx == 0)
 			return false;
-		c = ele_arr.get(idx-1);
+		c = ele_arr.get(idx - 1);
 		content = c.substring(c.lastIndexOf("|") + 1, c.lastIndexOf("#"));
-		if(content.equals("内") || content.equals("内色") ||content.equals("内饰")){
+		if (content.equals("内") || content.equals("内色") || content.equals("内饰")) {
 			return true;
 		}
 		return false;
 	}
-	
-	public boolean isAdjacentColor(int idx1, int idx2){
+
+	public boolean isAdjacentColor(int idx1, int idx2) {
 		String t1 = ele_arr.get(idx1);
 		String t2 = ele_arr.get(idx2);
-		
-		t1 = t1.substring(t1.indexOf("-")+1, t1.indexOf("|"));
+
+		t1 = t1.substring(t1.indexOf("-") + 1, t1.indexOf("|"));
 		t2 = t2.substring(0, t2.indexOf("-"));
-		if(t1.equals(t2))
+		if (t1.equals(t2))
 			return true;
-		
+
 		int it1 = NumberUtils.toInt(t1);
 		int it2 = NumberUtils.toInt(t2);
-		if(it1+1==it2){
+		if (it1 + 1 == it2) {
 			char c = this.original_message.charAt(it1);
-			if(c=='/'){
+			if (c == '/') {
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
 	public String buildColorString(String outer, String inner, String outer_standard, String inner_standard) {
 		return fetchValidColor(outer_standard, outer) + "#" + fetchValidColor(inner_standard, inner);
 	}
@@ -539,7 +542,7 @@ public class BaseCarFinder {
 	// TODO
 	// 判断单个颜色的token是不是包含外观和内饰
 	private int validDualColors(String s) {
-		if(s.length()!=2)
+		if (s.length() != 2)
 			return -1;
 		String c1 = s.substring(0, 1);
 		String c2 = s.substring(1, 2);
@@ -547,9 +550,9 @@ public class BaseCarFinder {
 			// 后面的颜色并不是
 			return -1;
 		}
-		if(c1.equals(c2))
+		if (c1.equals(c2))
 			return 1;
-		return base_colors_set.contains(c1) && base_colors_set.contains(c2)?1:0;
+		return base_colors_set.contains(c1) && base_colors_set.contains(c2) ? 1 : 0;
 	}
 
 	private boolean isValidInnerColor(String inner_color) {
@@ -629,7 +632,7 @@ public class BaseCarFinder {
 			discount_content = coupon;
 		}
 	}
-	
+
 	private void judgeMarketingPrice(float coupon) {
 		Object guiding_price = query_results.get(0).get("guiding_price_s");
 		if (guiding_price == null) {
@@ -639,7 +642,7 @@ public class BaseCarFinder {
 		}
 		int id = NumberUtils.createInteger(query_results.get(0).get("id").toString());
 		float price = NumberUtils.createFloat(guiding_price.toString());
-		float price1 = round(price * (100 - coupon)/100f, 2);
+		float price1 = round(price * (100 - coupon) / 100f, 2);
 		float bias1 = calcPriceBias(id, price1);
 		float price2 = price - coupon;
 		float bias2 = calcPriceBias(id, price2);
@@ -661,33 +664,33 @@ public class BaseCarFinder {
 			discount_content = coupon;
 		}
 	}
-	
-	private boolean isQuantOrBehave(int cur){
-		if(cur>0){
-			String content = ele_arr.get(cur-1);
+
+	private boolean isQuantOrBehave(int cur) {
+		if (cur > 0) {
+			String content = ele_arr.get(cur - 1);
 			content = content.substring(content.lastIndexOf("|") + 1, content.indexOf("#"));
-			if(prefix_behave_set.contains(content))
+			if (prefix_behave_set.contains(content))
 				return true;
 		}
-		
-		if(cur+1<ele_arr.size()){
-			String content = ele_arr.get(cur+1);
+
+		if (cur + 1 < ele_arr.size()) {
+			String content = ele_arr.get(cur + 1);
 			content = content.substring(content.lastIndexOf("|") + 1, content.indexOf("#"));
-			if(suffix_quants_set.contains(content))
+			if (suffix_quants_set.contains(content))
 				return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	public boolean generateRealPrice() {
 		try {
 			for (int i = vital_info_index; i < ele_arr.size(); i++) {
 				String element = ele_arr.get(i);
 				String fc = element.substring(element.lastIndexOf("|") + 1, element.indexOf("#"));
 				float cf = NumberUtils.toFloat(fc, 0.0f);
-				if (element.endsWith("PRICE") || (cf!=0.0f && cf<10000000)) {
-					if(isQuantOrBehave(i))
+				if (element.endsWith("PRICE") || (cf != 0.0f && cf < 10000000)) {
+					if (isQuantOrBehave(i))
 						break;
 					float f = NumberUtils
 							.createFloat(element.substring(element.lastIndexOf("|") + 1, element.indexOf("#")));
@@ -697,9 +700,9 @@ public class BaseCarFinder {
 					}
 					// 找到实际价格
 					if (way != 0) {
-						
+
 						if (f > 500) {// 例如下25000
-							discount_way = way <=0 ? 2 : 3;
+							discount_way = way <= 0 ? 2 : 3;
 							discount_content = f / 10000f;
 							return true;
 						} else {// 万、点
@@ -721,11 +724,11 @@ public class BaseCarFinder {
 								judgeMarketingPrice(f);
 							}
 						}
-					}else{
-						if(f>500){
-							f = f/10000;
+					} else {
+						if (f > 500) {
+							f = f / 10000;
 							judgeMarketingPriceByW(f);
-						}else{
+						} else {
 							if (ele_arr.size() - 1 > i) {
 								String content = ele_arr.get(i + 1);
 								if (content.equals("点")) {
@@ -743,8 +746,9 @@ public class BaseCarFinder {
 						}
 					}
 				}
-				if(discount_way!=0 || discount_content!=0){
-					backup_index = Math.max(NumberUtils.createInteger(element.substring(element.indexOf("-")+1, element.indexOf("|"))), backup_index);
+				if (discount_way != 0 || discount_content != 0) {
+					backup_index = Math.max(NumberUtils.createInteger(
+							element.substring(element.indexOf("-") + 1, element.indexOf("|"))), backup_index);
 					break;
 				}
 			}
@@ -754,23 +758,24 @@ public class BaseCarFinder {
 		}
 		return false;
 	}
-	
-	public String concatWithSpace(String s){
-		for(int i=s.length();i<50;i++){
+
+	public String concatWithSpace(String s) {
+		for (int i = s.length(); i < 50; i++) {
 			s = s + " ";
 		}
 		return s;
 	}
-	
-	public void addToResponse(ArrayList<String> res_base_car_ids, ArrayList<String> res_colors, ArrayList<String> res_discount_way, ArrayList<String> res_discount_content, ArrayList<String> res_remark){
-		if (query_results.size() == 0){
-			try{
+
+	public void addToResponse(ArrayList<String> res_base_car_ids, ArrayList<String> res_colors,
+			ArrayList<String> res_discount_way, ArrayList<String> res_discount_content, ArrayList<String> res_remark) {
+		if (query_results.size() == 0) {
+			try {
 				res_base_car_ids.add("");
 				res_colors.add("");
 				res_discount_way.add("");
 				res_discount_content.add("");
 				res_remark.add("");
-			}catch(Exception e){
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			return;
@@ -780,39 +785,33 @@ public class BaseCarFinder {
 		String car_model_name = query_results.get(0).get("car_model_name").toString();
 		this.cur_model = car_model_name;
 		String base_car_id = query_results.get(0).get("id").toString();
-		
-		try{
+
+		try {
 			res_base_car_ids.add(base_car_id);
 			res_colors.add(result_colors.toString());
 			res_discount_way.add(Integer.toString(discount_way));
 			res_discount_content.add(Float.toString(discount_content));
 			res_remark.add(postProcessRemark(this.original_message.substring(backup_index)));
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	private String generateKey(String user_id, String mes){
+
+	private String generateKey(String user_id, String mes) {
 		return user_id + "_" + mes;
 	}
-	
-	public void addToResponseCacheHit(CarResource carResource, String brand_name, String car_model_name, CarResourceGroup carResourceGroup){
-		this.cur_brand = brand_name;
-		this.cur_model = car_model_name;
-		if(carResourceGroup==null)
-			carResourceGroup = new CarResourceGroup();
-		carResourceGroup.getResult().add(carResource);
-	}
-	
-	public void addToResponseWithCache(String user_id, ArrayList<String> res_base_car_ids, ArrayList<String> res_colors, ArrayList<String> res_discount_way, ArrayList<String> res_discount_content, ArrayList<String> res_remark, CarResourceGroup carResourceGroup){
-		if (query_results.size() == 0){
-			try{
+
+	public void addToResponseWithCache(String user_id, String reserve_s, ArrayList<String> res_base_car_ids, ArrayList<String> res_colors,
+			ArrayList<String> res_discount_way, ArrayList<String> res_discount_content, ArrayList<String> res_remark,
+			CarResourceGroup carResourceGroup) {
+		if (query_results.size() == 0) {
+			try {
 				res_base_car_ids.add("");
 				res_colors.add("");
 				res_discount_way.add("");
 				res_discount_content.add("");
 				res_remark.add("");
-			}catch(Exception e){
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			return;
@@ -822,53 +821,54 @@ public class BaseCarFinder {
 		String car_model_name = query_results.get(0).get("car_model_name").toString();
 		this.cur_model = car_model_name;
 		String base_car_id = query_results.get(0).get("id").toString();
-		
-		try{
-			CarResource cr = new CarResource(base_car_id, result_colors.toString(),  Integer.toString(discount_way), Float.toString(discount_content), postProcessRemark(this.original_message.substring(backup_index)));
-			if(carResourceGroup==null)
+
+		try {
+			CarResource cr = new CarResource(base_car_id, result_colors.toString(), Integer.toString(discount_way),
+					Float.toString(discount_content), postProcessRemark(this.original_message.substring(backup_index)),
+					brand_name, car_model_name);
+			if (carResourceGroup == null)
 				carResourceGroup = new CarResourceGroup();
 			carResourceGroup.getResult().add(cr);
-			//MessageCache.updateCache(generateKey(user_id, this.original_message), cr, brand_name, car_model_name);
-		}catch(Exception e){
+			CacheManager.set(generateKey(user_id, reserve_s), JSON.toJSONString(cr).toString());
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	private String postProcessRemark(String remark){
-		if(remark==null)
+
+	private String postProcessRemark(String remark) {
+		if (remark == null)
 			return "";
 		remark = remark.trim();
-		if(remark.length()==0)
+		if (remark.length() == 0)
 			return "";
-		
+
 		char c = remark.charAt(0);
-		if(c==',' || c==')' || c==']' || c=='}')
+		if (c == ',' || c == ')' || c == ']' || c == '}')
 			return remark.substring(1).trim();
-		
-		if(remark.startsWith("万") || remark.startsWith("点") || remark.startsWith("元")){
-			if(remark.length()==1){
+
+		if (remark.startsWith("万") || remark.startsWith("点") || remark.startsWith("元")) {
+			if (remark.length() == 1) {
 				return "";
-			}else{
-				if(remark.charAt(1)==' '){
+			} else {
+				if (remark.charAt(1) == ' ') {
 					return remark.substring(2);
 				}
 			}
 		}
 		return remark;
 	}
-	
+
 	public void printParsingResult(BufferedWriter writer) {
-		if (query_results.size() == 0){
-			try{
-				if(writer!=null){
+		if (query_results.size() == 0) {
+			try {
+				if (writer != null) {
 					writer.newLine();
 					writer.write(concatWithSpace(original_message));
 					writer.flush();
-				}
-				else{
+				} else {
 					System.out.println(concatWithSpace(original_message));
 				}
-			}catch(Exception e){
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			return;
@@ -881,50 +881,52 @@ public class BaseCarFinder {
 		String guiding_price = query_results.get(0).get("guiding_price_s").toString();
 		String base_car_id = query_results.get(0).get("id").toString();
 		String result = base_car_id + "\t" + brand_name + "\t" + car_model_name + "\t" + base_car_style + "\t"
-				+ guiding_price + "\t" + result_colors.toString() + "\t" + discount_way + "\t" + discount_content + "\t" + postProcessRemark(this.original_message.substring(backup_index));
-		try{
-			if(writer!=null){
+				+ guiding_price + "\t" + result_colors.toString() + "\t" + discount_way + "\t" + discount_content + "\t"
+				+ postProcessRemark(this.original_message.substring(backup_index));
+		try {
+			if (writer != null) {
 				writer.newLine();
 				writer.write(concatWithSpace(original_message) + "\t\t\t" + result);
 				writer.flush();
-			}
-			else{
+			} else {
 				System.out.println(concatWithSpace(original_message) + "\t\t\t" + result);
 			}
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		/*
-		for (int i = 0; i < result_colors.size(); i++) {
-			System.out.println(base_car_id + "\t" + brand_name + "\t" + car_model_name + "\t" + base_car_style + "\t"
-					+ guiding_price + "\t" + result_colors.get(i) + "\t" + discount_way + "\t" + discount_content);
-		}
-		*/
+		 * for (int i = 0; i < result_colors.size(); i++) {
+		 * System.out.println(base_car_id + "\t" + brand_name + "\t" +
+		 * car_model_name + "\t" + base_car_style + "\t" + guiding_price + "\t"
+		 * + result_colors.get(i) + "\t" + discount_way + "\t" +
+		 * discount_content); }
+		 */
 	}
-	
+
 	/*
 	 * 是头上的[新朗逸] 还是正儿八经的征文
 	 */
-	public boolean isHeader(){
-		return prices.size()==0 && original_message.trim().length()<8 ? true:false;
+	public boolean isHeader() {
+		return prices.size() == 0 && original_message.trim().length() < 8 ? true : false;
 	}
-	
+
 	/*
-	 * 更多汽车资源请咨询长沙易驰
-	 * 只要你户价格能解决的问题不是问题✔省内接车
+	 * 更多汽车资源请咨询长沙易驰 只要你户价格能解决的问题不是问题✔省内接车
 	 * 铃木大放价，不放过一个客户，拿下为主、来车放。留钱就出了，看着留看着给，不在挣钱，在出车啊！[胜利][胜利][胜利][胜利][胜利]
 	 */
-	public boolean isInvalidMessage(){
+	public boolean isInvalidMessage() {
 		// model, brand, price有2个以上是空的
-		if( (models.isEmpty() && brands.isEmpty()) || (models.isEmpty() && prices.isEmpty()) || (prices.isEmpty() && brands.isEmpty()))
+		if ((models.isEmpty() && brands.isEmpty()) || (models.isEmpty() && prices.isEmpty())
+				|| (prices.isEmpty() && brands.isEmpty()))
 			return true;
 		return false;
 	}
-	
+
 	public static void main(String[] args) {
 		BaseCarFinder baseCarFinder = new BaseCarFinder();
 		boolean status = baseCarFinder.generateBaseCarId("大切诺基2017款 6899 黑黑 黑白 白白 棕色", null);
-		if((baseCarFinder.query_results.size()==0 || baseCarFinder.query_results.size()>2) && baseCarFinder.models.isEmpty()){
+		if ((baseCarFinder.query_results.size() == 0 || baseCarFinder.query_results.size() > 2)
+				&& baseCarFinder.models.isEmpty()) {
 			baseCarFinder = new BaseCarFinder();
 			status = baseCarFinder.generateBaseCarId("博瑞\n129800 黑黑 下8000", "");
 		}
