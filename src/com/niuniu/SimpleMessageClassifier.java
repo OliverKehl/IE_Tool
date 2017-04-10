@@ -200,7 +200,7 @@ public class SimpleMessageClassifier {
 	public void prepare(){
 		if(solr==null)
 			return;
-		message = Utils.normalizePrice(Utils.cleanDate(Utils.clean(Utils.normalize(message), solr)));
+		//message = Utils.normalizePrice(Utils.cleanDate(Utils.clean(Utils.normalize(message), solr)));
 		tokens = Utils.tokenize(message, solr, "message");
 		parse();
 	}

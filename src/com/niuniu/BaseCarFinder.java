@@ -792,6 +792,48 @@ public class BaseCarFinder {
 		}
 	}
 	
+	private String generateKey(String user_id, String mes){
+		return user_id + "_" + mes;
+	}
+	
+	public void addToResponseCacheHit(CarResource carResource, String brand_name, String car_model_name, CarResourceGroup carResourceGroup){
+		this.cur_brand = brand_name;
+		this.cur_model = car_model_name;
+		if(carResourceGroup==null)
+			carResourceGroup = new CarResourceGroup();
+		carResourceGroup.getResult().add(carResource);
+	}
+	
+	public void addToResponseWithCache(String user_id, ArrayList<String> res_base_car_ids, ArrayList<String> res_colors, ArrayList<String> res_discount_way, ArrayList<String> res_discount_content, ArrayList<String> res_remark, CarResourceGroup carResourceGroup){
+		if (query_results.size() == 0){
+			try{
+				res_base_car_ids.add("");
+				res_colors.add("");
+				res_discount_way.add("");
+				res_discount_content.add("");
+				res_remark.add("");
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			return;
+		}
+		String brand_name = query_results.get(0).get("brand_name").toString();
+		this.cur_brand = brand_name;
+		String car_model_name = query_results.get(0).get("car_model_name").toString();
+		this.cur_model = car_model_name;
+		String base_car_id = query_results.get(0).get("id").toString();
+		
+		try{
+			CarResource cr = new CarResource(base_car_id, result_colors.toString(),  Integer.toString(discount_way), Float.toString(discount_content), postProcessRemark(this.original_message.substring(backup_index)));
+			if(carResourceGroup==null)
+				carResourceGroup = new CarResourceGroup();
+			carResourceGroup.getResult().add(cr);
+			//MessageCache.updateCache(generateKey(user_id, this.original_message), cr, brand_name, car_model_name);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
 	private String postProcessRemark(String remark){
 		if(remark==null)
 			return "";

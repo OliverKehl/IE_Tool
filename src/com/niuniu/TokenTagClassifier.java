@@ -3,6 +3,8 @@ package com.niuniu;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,6 +16,7 @@ public class TokenTagClassifier {
 	
 	private Map<String, String> taggingMap = null;
 	
+	//需要换成其他方式的路径
 	public static final String PATH = "/Users/kehl/Documents/workspace/MessageProcessor/src/com/niuniu/resource/indicator/tags.m";
 	
 	private static final TokenTagClassifier singleton;
@@ -28,11 +31,16 @@ public class TokenTagClassifier {
 		 */
 		
 		taggingMap = new HashMap<String, String>();
-		
+		InputStream is = null;
 		File file = new File(PATH);
         BufferedReader reader = null; 
 		try{
-			reader = new BufferedReader(new FileReader(file));
+			is = TokenTagClassifier.class.getClassLoader().getResourceAsStream("com/niuniu/tags.m");
+			if(is == null){
+	        	throw new RuntimeException("标签模型不存在");
+	        }
+			reader = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+			//reader = new BufferedReader(new FileReader(file));
 			String line = null;
 			while ((line = reader.readLine()) != null) {
 				line = line.trim();

@@ -3,6 +3,8 @@ package com.niuniu;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -24,11 +26,6 @@ public class Utils {
 	
 	private static final String regEx;
 	private static Pattern specialCharPattern;
-	
-	static{
-		regEx = "[-`·~!@#$%^&*()+=|{}':;',//[//]<>/?~！@#￥%……&*（）—+|{}【】‘；：”“’。，、？_]";
-		specialCharPattern = Pattern.compile(regEx);
-	}
 	
 	private static String replace(String line) {
 		char[] c = line.toCharArray();
@@ -79,10 +76,14 @@ public class Utils {
 	}
 	
 	static{
-		File file = new File("/Users/kehl/Documents/workspace/MessageProcessor/src/com/niuniu/resource/indicator/base_car_price_reference");
+		regEx = "[-`·~!@#$%^&*()+=|{}':;',//[//]<>/?~！@#￥%……&*（）—+|{}【】‘；：”“’。，、？_]";
+		specialCharPattern = Pattern.compile(regEx);
+		
+		InputStream is = null;
         BufferedReader reader = null; 
 		try{
-			reader = new BufferedReader(new FileReader(file));
+			is = TokenTagClassifier.class.getClassLoader().getResourceAsStream("com/niuniu/base_car_price_reference");
+			reader = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
 			String line = null;
 			while ((line = reader.readLine()) != null) {
 				line = line.replaceAll(",", "\t");

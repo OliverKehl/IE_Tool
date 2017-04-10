@@ -3,6 +3,8 @@ package com.niuniu;
 import java.io.BufferedWriter;
 import java.util.ArrayList;
 
+import com.alibaba.fastjson.JSON;
+
 public class ResourceMessageProcessor {
 	
 	String last_brand_name;
@@ -15,12 +17,15 @@ public class ResourceMessageProcessor {
 	BufferedWriter writer;
 	
 	USolr solr_client;
+	String user_id;
 	
 	ArrayList<String> res_base_car_ids;
 	ArrayList<String> res_colors;
 	ArrayList<String> res_discount_way;
 	ArrayList<String> res_discount_content;
 	ArrayList<String> res_remark;
+	
+	CarResourceGroup carResourceGroup = new CarResourceGroup();
 	
 	public ResourceMessageProcessor(){
 		last_model_name="";
@@ -71,6 +76,17 @@ public class ResourceMessageProcessor {
 		res_remark = new ArrayList<String>();
 	}
 	
+	public String resultToJson(){
+		if(carResourceGroup==null)
+			carResourceGroup = new CarResourceGroup();
+		return JSON.toJSON(carResourceGroup).toString();
+	}
+	
+	public boolean setUserId(String user_id){
+		this.user_id = user_id;
+		return true;
+	}
+	
 	public boolean setMessages(String messages){
 		this.messages = messages;
 		parse();
@@ -78,7 +94,7 @@ public class ResourceMessageProcessor {
 	}
 	
 	private void parse(){
-		String[] tmp = messages.split("\n");
+		String[] tmp = messages.split("\\\\n");
 		if(tmp.length<2)
 			message_arr = tmp;
 		else{
@@ -97,7 +113,6 @@ public class ResourceMessageProcessor {
 			}
 		}
 	}
-	
 	
 	private void fillHeaderRecord(BaseCarFinder baseCarFinder){
 		if(baseCarFinder.brands.size()>0)
@@ -186,6 +201,19 @@ public class ResourceMessageProcessor {
 			
 			s = Utils.normalizePrice(Utils.cleanDate(Utils.clean(Utils.normalize(s), solr_client)));
 			
+			//TODO 缓存
+			
+			
+			/*
+			 * 验证该行文本的有效性，如果有多个指导价就放弃一蛤
+			 */
+			SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(s, solr_client);
+			int mode = simpleMessageClassifier.predict();
+			if(mode==1){
+				continue;//该行文本包含多个指导价
+				// 后续需要把该行文本的可靠信息，例如品牌，车型等，加入到Header中
+			}
+			
 			BaseCarFinder baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
 			boolean status = baseCarFinder.generateBaseCarId(s, null);
 			
@@ -241,7 +269,7 @@ public class ResourceMessageProcessor {
 			}
 			baseCarFinder.generateColors();
 			baseCarFinder.generateRealPrice();
-			baseCarFinder.addToResponse(res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark);
+			baseCarFinder.addToResponseWithCache(user_id, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup);
 			baseCarFinder.printParsingResult(writer);
 			fillHeaderRecord(baseCarFinder);
 		}
@@ -250,11 +278,13 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("捷豹XE \n 398白黑红9.6");
+		resourceMessageProcessor.setMessages("一汽大众，店车店票。。 ------------------------------- 奥迪A6L 4188黑/棕 下 17个点 奥迪A4 3023白/黑 下 12个点 -------------------------------- 新捷达 799白优惠14500 856白 黑优惠15000 919黑 白 金优惠15000 956白优惠15000 976银优惠15000 1076白优惠15500 老捷达 856白优惠18500 856金优惠19000 956白优惠18500（手） 新宝来 1278白优惠20000 1418白优惠20000 1078白 金优惠20000 1198白 黑 金优惠20000（手动） 1198白 金 优惠20000（自动） 1318银 白 金 黑优惠20000 新速腾： 1628白 黑优惠20500 1588白优惠21000 1318白优惠20500 1438白优惠21000 迈腾 2199黑 凯撒优惠20500 2599白优惠23000 灰优惠24500 2499灰优惠23000 2589灰优惠24000 2599银优惠24000 CC 2688金优惠50000 奥迪 A4 3023白优惠12个点 其他全系优惠13个点 A6 4188黑优惠17个点 5305 优惠17.5个点 其他全系优惠18个点 Q3 全系优惠13.5个点 Q5 全系优惠15.5个点 以上车型，定金留车。。 咨询电话 15643321881 咨询电话 13331640179 [微笑]");
+		/*
 		if(!resourceMessageProcessor.checkValidation()){
 			System.out.println("不符合规范");
 			return;
 		}
+		*/
 		resourceMessageProcessor.process();
 	}
 }
