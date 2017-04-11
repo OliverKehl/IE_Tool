@@ -27,7 +27,7 @@ public class USolr {
 	private HttpSolrServer server = null;
 	private String server_url = "http://121.40.204.159:8080/solr/";
 	private String local_url = "http://localhost:8084/solr/";
-	private String url = local_url;
+	private String url = server_url;
 	public SolrQuery solrquery = null;
 	private SolrDocumentList queryresult = null;
 	private Map<String, Map<String, List<String>>> highlightresult = null;
@@ -635,21 +635,28 @@ public class USolr {
 	public static void main(String[] args) throws Exception {
 		USolr solr = new USolr();
 		
-		solr.selectIndex("prefix");
+		solr.selectIndex("niuniu_basecars");
 		solr.setFields("*", "score");
 		solr.setStart(0);
 		solr.setRows(15);
-		solr.setDismax(true);
+		//solr.setDismax(true);
 		//solr.addFilter("area1","上海市");
 		//solr.addFilter("{!geofilt}&sfield=position&pt=31.298528645833333,121.50142795138889&d=5&sort=geodist() asc");
 		//solr.setDismaxField("BigTag");
-		String query = "ba*";
-		solr.setQuery("query:"+query + " OR query_str:" + query + " OR query_pinyin:" + query + " OR query_pinyin_abbrev:" + query);
+		String query = "*:*";
+		solr.clear();
+		solr.selectIndex("niuniu_basecars");
+		solr.setFields("*", "score");
+		solr.setStart(0);
+		solr.setRows(10);
+		solr.setDefType("niuniuparser");
+		solr.setQuery(query);
+		solr.addFilter("standard:\\" + Integer.toString(2));//国产、中规
 		//solr.setNiuniuParser(true);
 		
 		// solr.setDebugQuery(true);
 		System.out.println(solr.solrquery);
-		solr.addSortField("frequency", false);
+		//solr.addSortField("frequency", false);
 		long t1 = System.currentTimeMillis();
 		try {
 			solr.ExecuteQuery();

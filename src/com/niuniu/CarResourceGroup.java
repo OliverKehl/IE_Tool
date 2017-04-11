@@ -38,12 +38,4 @@ public class CarResourceGroup {
 	public void setResult(ArrayList<CarResource> result) {
 		this.result = result;
 	}
-	
-	public static void main(String[] args){
-		CarResource cr = new CarResource("1234","['珍珠白#黑色', '炫晶黑#黑色']", "2","3.5","欢迎来电","奥迪","A4");
-		CarResourceGroup carResourceGroup = new CarResourceGroup();
-		carResourceGroup.result.add(cr);
-		carResourceGroup.result.add(new CarResource("5678","", "2","3.5","欢迎来电","奔驰","E级"));
-		System.out.println(JSON.toJSON(carResourceGroup));
-	}
 }

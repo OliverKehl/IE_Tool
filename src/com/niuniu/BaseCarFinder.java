@@ -32,7 +32,7 @@ public class BaseCarFinder {
 	ArrayList<String> ele_arr;
 	SolrDocumentList query_results;
 	int vital_info_index;
-	int discount_way = 0;
+	int discount_way = 5;
 	float discount_content = 0f;
 	Set<String> base_colors_set;
 	String[] base_colors = { "黑", "白", "红", "灰", "棕", "银", "金", "蓝", "紫", "米" };
@@ -270,6 +270,30 @@ public class BaseCarFinder {
 		if (pre_info != null)
 			sub_query = pre_info + " " + sub_query;
 		query_results = Utils.select(sub_query, solr);
+		if (query_results == null) {
+			// 1. 空行
+			// 2. 把颜色放指导价前面了
+			// TODO
+			return false;
+		}
+		fillBaseCarIds(base_car_info, this.query_results);
+		System.out.println(base_car_info.size());
+		solr.clear();
+		return base_car_info.size() > 0;
+	}
+	
+	public boolean generateBaseCarId(String message, String pre_info, int standard) {
+		if (message.isEmpty())
+			return false;
+		this.original_message = message;
+		message = Utils.preProcess(message);
+		Map<Integer, Float> base_car_info = new HashMap<Integer, Float>();
+		if (solr == null)
+			return false;
+		String sub_query = parseMessage(solr, message);
+		if (pre_info != null)
+			sub_query = pre_info + " " + sub_query;
+		query_results = Utils.select(sub_query, solr, standard);
 		if (query_results == null) {
 			// 1. 空行
 			// 2. 把颜色放指导价前面了
@@ -572,7 +596,7 @@ public class BaseCarFinder {
 	private int getDiscountWay(int index) {
 		String way = ele_arr.get(index);
 		String content = way.substring(way.lastIndexOf("|") + 1, way.lastIndexOf("#"));
-		if (content.equals("优惠") || content.equals("下")) {
+		if (content.equals("优惠") || content.equals("下") || content.equals("降")) {
 			return -1;
 		} else if (content.equals("加")) {
 			return 1;
@@ -683,6 +707,43 @@ public class BaseCarFinder {
 		return false;
 	}
 
+	/*
+	 * 提取平行进口车的成交价 
+	 */
+	public boolean generarteParellelPrice(){
+		discount_way = 5;
+		discount_content = "";
+		return true;
+	}
+	
+	/*
+	 * 提取车架号
+	 */
+	public String extractVIN(){
+		for(int i=0;i<ele_arr.size();i++){
+			ele_arr = 
+			if(ele.endsWith("PRICE")){
+				String head_str = ele.substring(0, ele.indexOf("-"));
+				String tail_str = ele.substring(ele.indexOf("-") + 1, ele.indexOf("|"));
+				String content = ele.substring(ele.lastIndexOf("|") + 1, ele.indexOf("#"));
+				int head = NumberUtils.toInt(head_str);
+				int tail = NumberUtils.toInt(tail_str);
+				int latent_vin = NumberUtils.toInt(content, -1);
+				if(latent_vin==-1 || latent_vin<1000 || latent_vin>1000000)
+					continue;
+				if(content.length()>=4){
+					if(content.startsWith("0"))//0开头肯定是车架号
+						return content;
+					if((head>=1 && this.original_message.charAt(head-1)=='#') || (tail<this.original_message.length() && this.original_message.charAt(tail)=='#')){
+						return content;
+					}
+					
+				}
+				
+			}
+		}
+	}
+	
 	public boolean generateRealPrice() {
 		try {
 			for (int i = vital_info_index; i < ele_arr.size(); i++) {
@@ -803,7 +864,7 @@ public class BaseCarFinder {
 
 	public void addToResponseWithCache(String user_id, String reserve_s, ArrayList<String> res_base_car_ids, ArrayList<String> res_colors,
 			ArrayList<String> res_discount_way, ArrayList<String> res_discount_content, ArrayList<String> res_remark,
-			CarResourceGroup carResourceGroup) {
+			CarResourceGroup carResourceGroup, int mode) {
 		if (query_results.size() == 0) {
 			try {
 				res_base_car_ids.add("");
@@ -825,7 +886,7 @@ public class BaseCarFinder {
 		try {
 			CarResource cr = new CarResource(base_car_id, result_colors.toString(), Integer.toString(discount_way),
 					Float.toString(discount_content), postProcessRemark(this.original_message.substring(backup_index)),
-					brand_name, car_model_name);
+					brand_name, car_model_name, mode);
 			if (carResourceGroup == null)
 				carResourceGroup = new CarResourceGroup();
 			carResourceGroup.getResult().add(cr);

@@ -175,6 +175,31 @@ public class Utils {
 		return query_results;
 	}
 	
+	public static SolrDocumentList select(String query, USolr solr, int standard){
+		if(solr==null || query==null || query.isEmpty())
+			return null;
+		SolrDocumentList query_results = null;
+		solr.clear();
+		solr.selectIndex("niuniu_basecars");
+		solr.setFields("*", "score");
+		solr.setStart(0);
+		solr.setRows(100);
+		solr.setDefType("niuniuparser");
+		solr.setQuery(query);
+		solr.addFilter("standard:" + Integer.toString(standard));//国产、中规
+		//TODO
+		//需要把后续的所有tag是STYLE的内容加入到搜索条件中
+		solr.addSortField("score", false);// 按年份降序排列
+		solr.addSortField("year", false);// 按年份降序排列
+		try {
+			solr.ExecuteQuery();
+			query_results = solr.getQueryResult();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return query_results;
+	}
+	
 	public static ArrayList<String> tokenize(String s, USolr solr, String mode){
 		if(solr==null){
 			return null;
