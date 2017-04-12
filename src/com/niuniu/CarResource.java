@@ -11,7 +11,16 @@ public class CarResource {
 	private String remark;
 	private String brand_name;
 	private int standard;
+	private String vin;
 	
+	public String getVin() {
+		return vin;
+	}
+
+	public void setVin(String vin) {
+		vin = vin;
+	}
+
 	public CarResource(){}
 	
 	public String getBrand_name() {
@@ -43,7 +52,8 @@ public class CarResource {
 	public CarResource(String id, String colors, 
 					   String discount_way, String discount_content, 
 					   String remark, String brand_name, 
-					   String car_model_name, int standard) {
+					   String car_model_name, int standard,
+					   String vin) {
 		this.id = id;
 		this.colors = colors;
 		this.discount_way = discount_way;
@@ -55,6 +65,7 @@ public class CarResource {
 			this.standard = 1;
 		else
 			this.standard = 2;
+		this.vin = vin;
 	}
 
 	public String getId() {
@@ -98,7 +109,7 @@ public class CarResource {
 	}
 
 	public static void main(String[] args) {
-		CarResource cr = new CarResource("1234", "['珍珠白#黑色', '炫晶黑#黑色']", "2", "3.5", "欢迎来电","宝马","X1", 1);
+		CarResource cr = new CarResource("1234", "['珍珠白#黑色', '炫晶黑#黑色']", "2", "3.5", "欢迎来电","宝马","X1", 1, "12345");
 		String res = JSON.toJSON(cr).toString();
 		System.out.println(res);
 		cr = JSON.parseObject(res, CarResource.class);

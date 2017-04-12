@@ -3,7 +3,6 @@ package com.niuniu;
 import java.io.BufferedWriter;
 import java.util.ArrayList;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.apache.solr.common.SolrDocumentList;
 
 import com.alibaba.fastjson.JSON;
@@ -320,7 +319,7 @@ public class ResourceMessageProcessor {
 					}
 					baseCarFinder.generateColors();
 					baseCarFinder.generateRealPrice();
-					baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode);
+					baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, null);
 					baseCarFinder.printParsingResult(writer);
 					fillHeaderRecord(baseCarFinder, mode);
 				}
@@ -359,7 +358,9 @@ public class ResourceMessageProcessor {
 					continue;
 				}
 				baseCarFinder.generateColors();
-				baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode);
+				String VIN = baseCarFinder.extractVIN();
+				baseCarFinder.generarteParellelPrice();
+				baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, VIN);
 				baseCarFinder.printParsingResult(writer);
 				fillHeaderRecord(baseCarFinder, -1);
 			}
@@ -371,7 +372,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("2016保时捷卡宴 SE 混合动力\n  黑/黑米   车架号：59148   \n特价：97万 电话： 18198631583\n车型简介\n18轮、多功能运动型方向盘、LED日间行车灯、LED尾灯、巡航定速、后窗加热、自动尾门、双疝气大灯、自动启停、2区空调控制、8向电动座椅调节、全景天窗、前排座椅加热、吸烟包 \n 科雷嘉1748白 棕 蓝 红↓️29000\n科雷嘉1638 白 棕 红↓29000\n科雷嘉1848 白 棕 蓝 红↓29000\n科雷嘉1968 黑 棕↓29000\n科雷傲1928 白 棕↓ 14000\n科雷傲2058 白 棕 金↓14000\n科雷傲2198 白↓14000\n科雷傲2298 白↓14000\n科雷傲2458白 棕 金15000\n科雷傲2698 白 棕 15000\n卡缤 1598  橙白↓️45000\n\n凯迪拉克:\nATSL 2988白、红、黑、紫\nATSL 3188白、红、黑、紫\nXTS 3499黑、白\nXTS 3699黑、白 金\nXT5 3599黑 白\nXT5 3799 黑\nXT5 3899黑、白 摩卡\nXT5 4199 黑、白\nCT6 4399黑、白\nCT6 4699黑 白\nCT6 4899黑  白\n以上现车，发全国！手续齐\n——————————\nDS 现车特价\nDS4S 1499 红，白，紫\nDS4S 1719  红  \nDS4S 1879 白 \n\n5LS 1688白 紫 \n5LS 1868白 紫\n\nDS5 2199白 \nDS5 30.89  金\n\nDS6 2069白 紫 岩\nDS6 2299   紫  岩 白  \n \n————————————\n沃尔沃 有户来电\nS60L\n276900智进 耀目沙 水晶白\n309900智远  枫木棕\n340900智驭  枫木棕\nXC60 \n17.5款\n358900   暮色铜 枫木棕\n378900   水晶白 枫木棕 耀目沙\n398900   枫木棕 耀目沙\n429900   暮色铜  水晶白 枫木棕 暮色铜        \nV40 \n2299 弗拉明戈红          \n2459 水晶白 暮色铜   耀目沙 \n2659 亚马逊蓝\nV60CC          \n3999  暮色铜 醇咖 水晶白\nXC90          \n9386 水晶白\nS90\n3698 枫木棕 贻贝蓝\n4068 玛瑙黑 枫木棕\n4488 玛瑙黑\n5518 枫木棕\n4s店提车，店车店票，手续齐13602159352 邵娟\n\n本公司主营 【jeep】【凯迪拉克】【英菲尼迪】【DS、宝沃】【沃尔沃】【林肯】【进口起亚】【斯巴鲁】【福特】【雷诺】【自家平行进口车】\n\n13602159352 邵娟15033769169 【微信号】");
+		resourceMessageProcessor.setMessages("2016保时捷卡宴 SE 混合动力  黑/黑米   车架号：59148  特价：97万 电话： 18198631583\n车型简介\n18轮、多功能运动型方向盘、LED日间行车灯、LED尾灯、巡航定速、后窗加热、自动尾门、双疝气大灯、自动启停、2区空调控制、8向电动座椅调节、全景天窗、前排座椅加热、吸烟包 \n 科雷嘉1748白 棕 蓝 红↓️29000\n科雷嘉1638 白 棕 红↓29000\n科雷嘉1848 白 棕 蓝 红↓29000\n科雷嘉1968 黑 棕↓29000\n科雷傲1928 白 棕↓ 14000\n科雷傲2058 白 棕 金↓14000\n科雷傲2198 白↓14000\n科雷傲2298 白↓14000\n科雷傲2458白 棕 金15000\n科雷傲2698 白 棕 15000\n卡缤 1598  橙白↓️45000\n\n凯迪拉克:\nATSL 2988白、红、黑、紫\nATSL 3188白、红、黑、紫\nXTS 3499黑、白\nXTS 3699黑、白 金\nXT5 3599黑 白\nXT5 3799 黑\nXT5 3899黑、白 摩卡\nXT5 4199 黑、白\nCT6 4399黑、白\nCT6 4699黑 白\nCT6 4899黑  白\n以上现车，发全国！手续齐\n——————————\nDS 现车特价\nDS4S 1499 红，白，紫\nDS4S 1719  红  \nDS4S 1879 白 \n\n5LS 1688白 紫 \n5LS 1868白 紫\n\nDS5 2199白 \nDS5 30.89  金\n\nDS6 2069白 紫 岩\nDS6 2299   紫  岩 白  \n \n————————————\n沃尔沃 有户来电\nS60L\n276900智进 耀目沙 水晶白\n309900智远  枫木棕\n340900智驭  枫木棕\nXC60 \n17.5款\n358900   暮色铜 枫木棕\n378900   水晶白 枫木棕 耀目沙\n398900   枫木棕 耀目沙\n429900   暮色铜  水晶白 枫木棕 暮色铜        \nV40 \n2299 弗拉明戈红          \n2459 水晶白 暮色铜   耀目沙 \n2659 亚马逊蓝\nV60CC          \n3999  暮色铜 醇咖 水晶白\nXC90          \n9386 水晶白\nS90\n3698 枫木棕 贻贝蓝\n4068 玛瑙黑 枫木棕\n4488 玛瑙黑\n5518 枫木棕\n4s店提车，店车店票，手续齐13602159352 邵娟\n\n本公司主营 【jeep】【凯迪拉克】【英菲尼迪】【DS、宝沃】【沃尔沃】【林肯】【进口起亚】【斯巴鲁】【福特】【雷诺】【自家平行进口车】\n\n13602159352 邵娟15033769169 【微信号】");
 		/*
 		if(!resourceMessageProcessor.checkValidation()){
 			System.out.println("不符合规范");
