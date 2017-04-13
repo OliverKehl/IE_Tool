@@ -33,11 +33,6 @@ public class ResourceMessageProcessorTest {
 			while ((line = reader.readLine()) != null) {
 				ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor(writer);
 				resourceMessageProcessor.setMessages(line);
-				if(!resourceMessageProcessor.checkValidation()){
-					System.out.println("不符合规范" + "\t" + line);
-					Thread.sleep(1000);
-					continue;
-				}
 				resourceMessageProcessor.process();
 				System.out.println("##########################################################################################");
 				System.out.println("##########################################################################################");

@@ -2,14 +2,21 @@ package com.niuniu;
 
 import java.io.BufferedWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.solr.common.SolrDocumentList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 import com.niuniu.cache.CacheManager;
+import com.niuniu.config.NiuniuBatchConfig;
+import com.niuniu.rankings.NiuniuCustomComponent;
 
 public class ResourceMessageProcessor {
-	
+	public final static Logger log = LoggerFactory.getLogger(ResourceMessageProcessor.class);
 	String last_brand_name;
 	String last_model_name;
 	String last_style_name;
@@ -33,7 +40,14 @@ public class ResourceMessageProcessor {
 	
 	public ResourceMessageProcessor(){
 		init();
-		solr_client = new USolr("http://121.40.204.159:8080/solr/");
+		//solr_client = new USolr("http://121.40.204.159:8080/solr/");
+		solr_client = new USolr(NiuniuBatchConfig.getSolrHost());
+	}
+	
+	public ResourceMessageProcessor(String host){
+		init();
+		//solr_client = new USolr("http://121.40.204.159:8080/solr/");
+		solr_client = new USolr(host);
 	}
 	
 	public ResourceMessageProcessor(USolr solr_client){
@@ -44,13 +58,8 @@ public class ResourceMessageProcessor {
 	public ResourceMessageProcessor(BufferedWriter writer){
 		init();
 		this.writer = writer;
-		solr_client = new USolr("http://121.40.204.159:8080/solr/");
-	}
-	
-	public ResourceMessageProcessor(String messages){
-		init();
-		this.messages = messages;
-		parse();
+		//solr_client = new USolr("http://121.40.204.159:8080/solr/");
+		solr_client = new USolr(NiuniuBatchConfig.getSolrHost());
 	}
 	
 	public void init(){
@@ -171,7 +180,7 @@ public class ResourceMessageProcessor {
 				writer.write(s);
 				writer.flush();
 			}else{
-				System.out.println(s);
+				log.info(s + "是无效数据");
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -193,7 +202,6 @@ public class ResourceMessageProcessor {
 			SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(s, solr_client);
 			int mode = simpleMessageClassifier.predict();
 			if(mode==1){
-				System.out.println(s);
 				return false;
 			}
 		}
@@ -207,10 +215,35 @@ public class ResourceMessageProcessor {
 		int parallel = 0;
 		for(int i=0;i<5 && i<queryResult.size();i++){
 			String standard = queryResult.get(i).get("standard").toString();
+			if(i==0 && standard.equals("1"))
+				return 1;
 			if("2".equals(standard))
 				parallel++;
 		}
 		return parallel>=Math.min(3, (queryResult.size()-1)/2 + 1)?2:1;
+	}
+	
+	private boolean isInvalidInfo(BaseCarFinder baseCarFinder){
+		if(baseCarFinder.query_results.size()>=40){
+			if(baseCarFinder.models.isEmpty() && baseCarFinder.prices.isEmpty())
+				return true;
+			if(baseCarFinder.prices.isEmpty() && baseCarFinder.styles.isEmpty())
+				return true;
+		}
+		return false;
+	}
+	
+	// 在搜索结果数量较少，例如只有3998这个指导价的情况下，需要判定搜索结果里的品牌个数，如果有多个，则需要向上回溯，找到正确的品牌
+	private boolean hasMultiBrands(SolrDocumentList queryResult){
+		Set<String> brands_counter = new HashSet<String>();
+		float maxScore = NumberUtils.toFloat(queryResult.get(0).get("score").toString());
+		for(int i=0;i<queryResult.size();i++){
+			float score = NumberUtils.toFloat(queryResult.get(i).get("score").toString());
+			if(score<maxScore)
+				break;
+			brands_counter.add(queryResult.get(i).get("brand_name").toString());
+		}
+		return brands_counter.size()>1;
 	}
 	
 	public boolean process(){
@@ -227,6 +260,7 @@ public class ResourceMessageProcessor {
 				last_brand_name = cr.getBrand_name();
 				last_model_name = cr.getCar_model_name();
 				last_standard_name = cr.getStandard()==2?-1:1;
+				log.info(user_id + "_" + s + "\t 缓存命中");
 				continue;
 			}
 			
@@ -240,7 +274,6 @@ public class ResourceMessageProcessor {
 			SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(s, solr_client);
 			int mode = simpleMessageClassifier.predict();
 			if(mode==0){
-				
 				//是上一个平行进口车的配置、备注信息
 				if(last_standard_name==-1){
 					CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
@@ -255,8 +288,15 @@ public class ResourceMessageProcessor {
 			BaseCarFinder baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
 			boolean status = baseCarFinder.generateBaseCarId(s, null);
 			
-			if(!status || (baseCarFinder.query_results.size()>=40 && baseCarFinder.query_results.getMaxScore()<3000)){
+			if(!status || (baseCarFinder.query_results.size()>=40 && baseCarFinder.query_results.getMaxScore()<2500)){
 				status = false;
+			}
+			
+			if(status){
+				if(isInvalidInfo(baseCarFinder)){
+					fillHeaderRecord(baseCarFinder);
+					status = false;
+				}
 			}
 			
 			if(!status){
@@ -279,7 +319,21 @@ public class ResourceMessageProcessor {
 				if(reJudgeStandard(baseCarFinder.query_results)==2){
 					mode=-1;
 				}else{
-					if(baseCarFinder.query_results.size()>=3 || baseCarFinder.query_results.getMaxScore()<3000){
+					if(baseCarFinder.query_results.size()>=20 && baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty() && baseCarFinder.prices.isEmpty()){
+						status = false;
+						writeInvalidInfo(concatWithSpace(s));
+						continue;
+					}
+					/*
+					 * 可能有歧义，例如 730 928 既有宝骏又有宝马
+					 */
+					BaseCarFinder baseCarFinder2 = new BaseCarFinder(solr_client, last_brand_name);
+					boolean status2 = baseCarFinder2.generateBaseCarId(s, last_brand_name,mode);
+					if(status2){
+						baseCarFinder = baseCarFinder2;
+					}
+					
+					if(baseCarFinder.query_results.size()>=3 || baseCarFinder.query_results.getMaxScore()<2500 || (baseCarFinder.query_results.size()<=3 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
 						String prefix = rebuildQueryPrefix(baseCarFinder,0);
 						if(!prefix.isEmpty()){
 							baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
@@ -305,14 +359,14 @@ public class ResourceMessageProcessor {
 								continue;
 							}
 						}else{
-							if(baseCarFinder.query_results.size()>5){
+							if(baseCarFinder.query_results.size()>5 || (baseCarFinder.query_results.size()<=3 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
 								fillHeaderRecord(baseCarFinder);
 								writeInvalidInfo(concatWithSpace(s));
 								continue;
 							}
 						}
 					}
-					if(baseCarFinder.query_results.getMaxScore()<3000){
+					if(baseCarFinder.query_results.getMaxScore()<2500  || (baseCarFinder.query_results.size()<=3 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
 						// 置信度较低，查找结果的分数低于某个阈值
 						writeInvalidInfo(concatWithSpace(s));
 						continue;
@@ -331,7 +385,7 @@ public class ResourceMessageProcessor {
 					//平行进口车车型库没找到。。。是不是还要再回到中规国产去找呢？？？
 					// TODO
 				}
-				if(baseCarFinder.query_results.getMaxScore()<3000){
+				if(baseCarFinder.query_results.getMaxScore()<2500){
 					String prefix = rebuildQueryPrefix(baseCarFinder,0);
 					if(!prefix.isEmpty()){
 						baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
@@ -352,7 +406,7 @@ public class ResourceMessageProcessor {
 						}
 					}
 				}
-				if(baseCarFinder.query_results.getMaxScore()<3000){
+				if(baseCarFinder.query_results.getMaxScore()<2500){
 					// 置信度较低，查找结果的分数低于某个阈值
 					writeInvalidInfo(concatWithSpace(s));
 					continue;
@@ -372,7 +426,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("2016保时捷卡宴 SE 混合动力  黑/黑米   车架号：59148  特价：97万 电话： 18198631583\n车型简介\n18轮、多功能运动型方向盘、LED日间行车灯、LED尾灯、巡航定速、后窗加热、自动尾门、双疝气大灯、自动启停、2区空调控制、8向电动座椅调节、全景天窗、前排座椅加热、吸烟包 \n 科雷嘉1748白 棕 蓝 红↓️29000\n科雷嘉1638 白 棕 红↓29000\n科雷嘉1848 白 棕 蓝 红↓29000\n科雷嘉1968 黑 棕↓29000\n科雷傲1928 白 棕↓ 14000\n科雷傲2058 白 棕 金↓14000\n科雷傲2198 白↓14000\n科雷傲2298 白↓14000\n科雷傲2458白 棕 金15000\n科雷傲2698 白 棕 15000\n卡缤 1598  橙白↓️45000\n\n凯迪拉克:\nATSL 2988白、红、黑、紫\nATSL 3188白、红、黑、紫\nXTS 3499黑、白\nXTS 3699黑、白 金\nXT5 3599黑 白\nXT5 3799 黑\nXT5 3899黑、白 摩卡\nXT5 4199 黑、白\nCT6 4399黑、白\nCT6 4699黑 白\nCT6 4899黑  白\n以上现车，发全国！手续齐\n——————————\nDS 现车特价\nDS4S 1499 红，白，紫\nDS4S 1719  红  \nDS4S 1879 白 \n\n5LS 1688白 紫 \n5LS 1868白 紫\n\nDS5 2199白 \nDS5 30.89  金\n\nDS6 2069白 紫 岩\nDS6 2299   紫  岩 白  \n \n————————————\n沃尔沃 有户来电\nS60L\n276900智进 耀目沙 水晶白\n309900智远  枫木棕\n340900智驭  枫木棕\nXC60 \n17.5款\n358900   暮色铜 枫木棕\n378900   水晶白 枫木棕 耀目沙\n398900   枫木棕 耀目沙\n429900   暮色铜  水晶白 枫木棕 暮色铜        \nV40 \n2299 弗拉明戈红          \n2459 水晶白 暮色铜   耀目沙 \n2659 亚马逊蓝\nV60CC          \n3999  暮色铜 醇咖 水晶白\nXC90          \n9386 水晶白\nS90\n3698 枫木棕 贻贝蓝\n4068 玛瑙黑 枫木棕\n4488 玛瑙黑\n5518 枫木棕\n4s店提车，店车店票，手续齐13602159352 邵娟\n\n本公司主营 【jeep】【凯迪拉克】【英菲尼迪】【DS、宝沃】【沃尔沃】【林肯】【进口起亚】【斯巴鲁】【福特】【雷诺】【自家平行进口车】\n\n13602159352 邵娟15033769169 【微信号】");
+		resourceMessageProcessor.setMessages("途观L 2468 白  下 7500");
 		/*
 		if(!resourceMessageProcessor.checkValidation()){
 			System.out.println("不符合规范");

@@ -2,7 +2,9 @@ package com.niuniu;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -17,6 +19,8 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.ModifiableSolrParams;
 
+import com.niuniu.config.NiuniuBatchConfig;
+
 
 public class Utils {
 	
@@ -26,6 +30,7 @@ public class Utils {
 	
 	private static final String regEx;
 	private static Pattern specialCharPattern;
+	private static Pattern dashEscapePattern;
 	
 	private static String replace(String line) {
 		char[] c = line.toCharArray();
@@ -79,23 +84,50 @@ public class Utils {
 		regEx = "[-`·~!@#$%^&*()+=|{}':;',//[//]<>/?~！@#￥%……&*（）—+|{}【】‘；：”“’。，、？_]";
 		specialCharPattern = Pattern.compile(regEx);
 		
+		String eL = "[a-zA-Z]+-\\w";
+		dashEscapePattern = Pattern.compile(eL);
+		
 		InputStream is = null;
         BufferedReader reader = null; 
 		try{
-			is = TokenTagClassifier.class.getClassLoader().getResourceAsStream("com/niuniu/base_car_price_reference");
-			reader = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				line = line.replaceAll(",", "\t");
-				String[] arrs = line.split("\t");
-				PRICE_GUIDE_25.put(NumberUtils.createInteger(arrs[0]), NumberUtils.createFloat(arrs[1]));
-				PRICE_GUIDE_50.put(NumberUtils.createInteger(arrs[0]), NumberUtils.createFloat(arrs[2]));
-				PRICE_GUIDE_75.put(NumberUtils.createInteger(arrs[0]), NumberUtils.createFloat(arrs[3]));
+			is = openResource(Utils.class.getClassLoader(), NiuniuBatchConfig.getPriceReferenceModel());
+			if(is!=null){
+				reader = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+				String line = null;
+				while ((line = reader.readLine()) != null) {
+					line = line.replaceAll(",", "\t");
+					String[] arrs = line.split("\t");
+					PRICE_GUIDE_25.put(NumberUtils.createInteger(arrs[0]), NumberUtils.createFloat(arrs[1]));
+					PRICE_GUIDE_50.put(NumberUtils.createInteger(arrs[0]), NumberUtils.createFloat(arrs[2]));
+					PRICE_GUIDE_75.put(NumberUtils.createInteger(arrs[0]), NumberUtils.createFloat(arrs[3]));
+				}
 			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
+	
+	public static InputStream openResource(ClassLoader classLoader, String resource) throws IOException {
+	    InputStream is=null;
+	    try {
+	      File f0 = new File(resource);
+	      File f = f0;
+	      
+	      if (f.isFile() && f.canRead()) {
+	        return new FileInputStream(f);
+	      } else if (f != f0) { // no success with $CWD/$configDir/$resource
+	        if (f0.isFile() && f0.canRead())
+	          return new FileInputStream(f0);
+	      }
+	      // delegate to the class loader (looking into $INSTANCE_DIR/lib jars)
+	      is = classLoader.getResourceAsStream(resource);
+	      if (is == null)
+	        return null;
+	    } catch (Exception e) {
+	      throw new IOException("Error opening " + resource, e);
+	    }
+	    return is;
+	  }
 	
 	private static int Minimum(int a, int b, int c) {
 		int im = a < b ? a : b;
@@ -156,7 +188,7 @@ public class Utils {
 			return null;
 		SolrDocumentList query_results = null;
 		solr.clear();
-		solr.selectIndex("niuniu_basecars");
+		solr.selectIndex(NiuniuBatchConfig.getSolrCore());
 		solr.setFields("*", "score");
 		solr.setStart(0);
 		solr.setRows(100);
@@ -180,7 +212,7 @@ public class Utils {
 			return null;
 		SolrDocumentList query_results = null;
 		solr.clear();
-		solr.selectIndex("niuniu_basecars");
+		solr.selectIndex(NiuniuBatchConfig.getSolrCore());
 		solr.setFields("*", "score");
 		solr.setStart(0);
 		solr.setRows(100);
@@ -206,7 +238,7 @@ public class Utils {
 		}
 		ArrayList<String> ele_arr = new ArrayList<String>();
 		solr.clear();
-		solr.selectIndex("niuniu_basecars");
+		solr.selectIndex(NiuniuBatchConfig.getSolrCore());
 		ModifiableSolrParams params = new ModifiableSolrParams();
 		params.set("qt", "/tokenize");
 		params.set("start", "0");
@@ -257,13 +289,15 @@ public class Utils {
 		message = message.replaceAll("➕", " 加 ");
 		//message = message.replaceAll("[\ud83c\udc00-\ud83c\udfff]|[\ud83d\udc00-\ud83d\udfff]|[\u2600-\u27ff]", "");
 		message = message.replaceAll("[\ud83c\uec00-\ud83c\udfff]|[\ud83d\uec00-\ud83d\udfff]|[\u2600-\u27ff]", " ");
+		message = message.replaceAll(" \\.", " ");
+		message = message.replaceAll("\\. ", " ");
+		message = escapeDash(message);
 		return message.trim();
 	}
 	/*
 	 * 去掉每行头部的起始标识，比如1. 1、 1 
 	 */
 	public static String removeHeader(String str){
-		System.out.println(str);
 		String eL = "^\\d[.\\s、]";
 		Pattern p = Pattern.compile(eL);
 		Matcher m = p.matcher(str);
@@ -317,6 +351,14 @@ public class Utils {
 		Matcher m = p.matcher(str);
 		String line = m.replaceAll(" 下").trim();
 		return line.trim();
+	}
+	
+	public static String escapeDash(String str){
+		Matcher m = dashEscapePattern.matcher(str);
+		while(m.find()){
+				str = str.replace(m.group(0), m.group(0).replaceAll("-", ""));
+		}
+		return str;
 	}
 	
 	public static void main(String[] args){

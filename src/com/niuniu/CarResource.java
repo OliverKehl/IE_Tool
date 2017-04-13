@@ -18,7 +18,7 @@ public class CarResource {
 	}
 
 	public void setVin(String vin) {
-		vin = vin;
+		this.vin = vin;
 	}
 
 	public CarResource(){}
@@ -65,7 +65,10 @@ public class CarResource {
 			this.standard = 1;
 		else
 			this.standard = 2;
-		this.vin = vin;
+		if(vin==null)
+			this.vin = "";
+		else
+			this.vin = vin;
 	}
 
 	public String getId() {

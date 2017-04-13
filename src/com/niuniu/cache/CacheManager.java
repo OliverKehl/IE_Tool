@@ -1,5 +1,7 @@
 package com.niuniu.cache;
 
+import com.niuniu.config.NiuniuBatchConfig;
+
 import redis.clients.jedis.Jedis;
 
 public class CacheManager {
@@ -7,17 +9,20 @@ public class CacheManager {
 	private static String url;
 	private static int port;
 	private static int db;
+	private static String password;
 	private static int ttl;
 	
 	static{
-		url = "127.0.0.1";
-		port = 6379;
-		db = 6;
-		ttl = 3600*24;
+		url = NiuniuBatchConfig.getRedisHost();
+		port = NiuniuBatchConfig.getRedisPort();
+		db = NiuniuBatchConfig.getRedisIndex();
+		ttl = NiuniuBatchConfig.getExpiredSeconds();
+		password = NiuniuBatchConfig.getRedisPassword();
 	}
 	
 	public static Jedis before(){
 		Jedis jedis = JedisUtil.getInstance().getJedis(url, port);
+		//jedis.auth(password);
 		jedis.select(db);
 		return jedis;
 	}

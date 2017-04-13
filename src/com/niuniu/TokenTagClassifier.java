@@ -2,11 +2,17 @@ package com.niuniu;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.niuniu.config.NiuniuBatchConfig;
 
 
 /*
@@ -15,11 +21,12 @@ import java.util.Map;
 public class TokenTagClassifier {
 	
 	private Map<String, String> taggingMap = null;
-	
+	public final static Logger log = LoggerFactory.getLogger(TokenTagClassifier.class);
 	//需要换成其他方式的路径
-	public static final String PATH = "/Users/kehl/Documents/workspace/MessageProcessor/src/com/niuniu/resource/indicator/tags.m";
 	
 	private static final TokenTagClassifier singleton;
+	
+	
 	
 	static{
 		singleton = new TokenTagClassifier();
@@ -32,13 +39,14 @@ public class TokenTagClassifier {
 		
 		taggingMap = new HashMap<String, String>();
 		InputStream is = null;
-		File file = new File(PATH);
         BufferedReader reader = null; 
 		try{
-			is = TokenTagClassifier.class.getClassLoader().getResourceAsStream("com/niuniu/tags.m");
+			is = Utils.openResource(this.getClass().getClassLoader(), NiuniuBatchConfig.getTokenTagModel());
 			if(is == null){
-	        	throw new RuntimeException("标签模型不存在");
+				log.error(NiuniuBatchConfig.getTokenTagModel() + "\t标签模型不存在");
+				return;
 	        }
+			
 			reader = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
 			//reader = new BufferedReader(new FileReader(file));
 			String line = null;
@@ -49,7 +57,7 @@ public class TokenTagClassifier {
 					continue;
 				taggingMap.put(arrs[0].trim().toLowerCase(), arrs[1].trim());
 			}
-			System.out.println("token打标初始化完成");
+			log.info(NiuniuBatchConfig.getTokenTagModel() + "\ttoken打标初始化完成");
 		}catch(Exception e){
 			e.printStackTrace();
 		}

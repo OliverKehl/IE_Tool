@@ -3,8 +3,6 @@ package com.niuniu;
 import java.io.BufferedWriter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,11 +10,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
-import org.apache.solr.common.params.ModifiableSolrParams;
 
 import com.alibaba.fastjson.JSON;
 import com.niuniu.cache.CacheManager;
@@ -277,7 +273,6 @@ public class BaseCarFinder {
 			return false;
 		}
 		fillBaseCarIds(base_car_info, this.query_results);
-		System.out.println(base_car_info.size());
 		solr.clear();
 		return base_car_info.size() > 0;
 	}
@@ -301,7 +296,6 @@ public class BaseCarFinder {
 			return false;
 		}
 		fillBaseCarIds(base_car_info, this.query_results);
-		System.out.println(base_car_info.size());
 		solr.clear();
 		return base_car_info.size() > 0;
 	}
@@ -363,9 +357,7 @@ public class BaseCarFinder {
 				indexes.add(idx);
 				colors.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 			} else if (s.endsWith("STYLE") || s.endsWith("PRICE")) {
-				if (s.endsWith("PRICE") && isQuantOrBehave(idx)) {
-					idx--;
-				}
+				idx--;
 				break;
 			}
 		}
@@ -731,6 +723,7 @@ public class BaseCarFinder {
 				String kfc = tmp.substring(tmp.lastIndexOf("|") + 1, tmp.indexOf("#"));
 				if("特价".equals(kfc) || "现价".equals(kfc)){
 					discount_content = p;
+					discount_way = 4;
 					String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
 					int thehe = NumberUtils.toInt(hehe);
 					backup_index = Math.max(backup_index, thehe);
@@ -742,6 +735,7 @@ public class BaseCarFinder {
 			int head = NumberUtils.toInt(head_str);
 			if((head>=1 && this.original_message.charAt(head-1)=='价')){
 				discount_content = p;
+				discount_way = 4;
 				String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
 				int thehe = NumberUtils.toInt(hehe);
 				backup_index = Math.max(backup_index, thehe);
@@ -753,6 +747,7 @@ public class BaseCarFinder {
 				String kfc = tmp.substring(tmp.lastIndexOf("|") + 1, tmp.indexOf("#"));
 				if("万".equals(kfc) || "w".equals(kfc)){
 					discount_content = p;
+					discount_way = 4;
 					String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
 					int thehe = NumberUtils.toInt(hehe) + 1;
 					backup_index = Math.max(backup_index, thehe);
@@ -763,6 +758,7 @@ public class BaseCarFinder {
 			int tail = NumberUtils.toInt(tail_str);
 			if(tail<this.original_message.length() && (this.original_message.charAt(tail)=='万' || this.original_message.charAt(tail)=='w') ){
 				discount_content = p;
+				discount_way = 4;
 				String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
 				int thehe = NumberUtils.toInt(hehe) + 1;
 				backup_index = Math.max(backup_index, thehe);
@@ -841,6 +837,8 @@ public class BaseCarFinder {
 						if (f > 500) {// 例如下25000
 							discount_way = way <= 0 ? 2 : 3;
 							discount_content = f / 10000f;
+							backup_index = Math.max(NumberUtils.createInteger(
+									element.substring(element.indexOf("-") + 1, element.indexOf("|"))), backup_index);
 							return true;
 						} else {// 万、点
 							if (ele_arr.size() - 1 > i) {
@@ -883,7 +881,7 @@ public class BaseCarFinder {
 						}
 					}
 				}
-				if (discount_way != 0 || discount_content != 0) {
+				if (discount_way != 5 || discount_content != 0) {
 					backup_index = Math.max(NumberUtils.createInteger(
 							element.substring(element.indexOf("-") + 1, element.indexOf("|"))), backup_index);
 					break;
@@ -1031,13 +1029,6 @@ public class BaseCarFinder {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		/*
-		 * for (int i = 0; i < result_colors.size(); i++) {
-		 * System.out.println(base_car_id + "\t" + brand_name + "\t" +
-		 * car_model_name + "\t" + base_car_style + "\t" + guiding_price + "\t"
-		 * + result_colors.get(i) + "\t" + discount_way + "\t" +
-		 * discount_content); }
-		 */
 	}
 
 	/*

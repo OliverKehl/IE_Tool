@@ -2,7 +2,9 @@ package com.niuniu.cache;
 
 import java.util.HashMap;
 import java.util.Map;
- 
+
+import com.niuniu.config.NiuniuBatchConfig;
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -34,7 +36,7 @@ public class JedisUtil
             config.setTestOnBorrow(true);
             config.setTestOnReturn(true);
  
-            pool = new JedisPool(config,ip,port,RedisConfig.TIMEOUT);
+            pool = new JedisPool(config,ip,port,RedisConfig.TIMEOUT, NiuniuBatchConfig.getRedisPassword());
             maps.put(key, pool);
         }
         else
