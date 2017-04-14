@@ -22,7 +22,6 @@ public class CacheManager {
 	
 	public static Jedis before(){
 		Jedis jedis = JedisUtil.getInstance().getJedis(url, port);
-		//jedis.auth(password);
 		jedis.select(db);
 		return jedis;
 	}

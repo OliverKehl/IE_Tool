@@ -30,6 +30,8 @@ public class NiuniuBatchConfig {
 	private final String default_redis_index = "6";
 	private final String default_enable_cache = "false";
 	private final String default_expired_seconds = "3600";
+	
+	private boolean enable_cache = true;
 
 	public static String getSolrHost() {
 		return NIUNIU_BATCH_CONFIG.props.getProperty("solr_host", NIUNIU_BATCH_CONFIG.default_solr_host);
@@ -57,8 +59,8 @@ public class NiuniuBatchConfig {
 		return NumberUtils.toInt(str,0);
 	}
 	
-	public static String getEnableCache() {
-		return NIUNIU_BATCH_CONFIG.props.getProperty("enable_cache", NIUNIU_BATCH_CONFIG.default_enable_cache);
+	public static boolean getEnableCache() {
+		return NIUNIU_BATCH_CONFIG.enable_cache;
 	}
 	
 	public static int getExpiredSeconds() {
@@ -84,6 +86,8 @@ public class NiuniuBatchConfig {
 		if (input != null) {
 			try {
 				props.loadFromXML(input);
+				String str = props.getProperty("enable_cache");
+				enable_cache = Boolean.parseBoolean(str);
 			} catch (InvalidPropertiesFormatException e) {
 				e.printStackTrace();
 			} catch (IOException e) {

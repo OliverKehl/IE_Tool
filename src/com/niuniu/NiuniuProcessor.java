@@ -44,9 +44,13 @@ public class NiuniuProcessor extends HttpServlet {
 		response.setContentType("text/html;charset=UTF-8");
 		String str = request.getParameter("message");
 		String user_id = request.getParameter("user_id");
+		String disable_cache = request.getParameter("disable_cache");
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
 		resourceMessageProcessor.setUserId(user_id);
 		resourceMessageProcessor.setMessages(str);
+		if(disable_cache!=null){
+			resourceMessageProcessor.setDisableCache(Boolean.parseBoolean(disable_cache));
+		}
 		
 		resourceMessageProcessor.process();
 		response.getWriter().write(resourceMessageProcessor.resultToJson());

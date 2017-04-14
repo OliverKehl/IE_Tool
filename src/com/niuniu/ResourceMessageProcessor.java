@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import com.alibaba.fastjson.JSON;
 import com.niuniu.cache.CacheManager;
 import com.niuniu.config.NiuniuBatchConfig;
-import com.niuniu.rankings.NiuniuCustomComponent;
 
 public class ResourceMessageProcessor {
 	public final static Logger log = LoggerFactory.getLogger(ResourceMessageProcessor.class);
@@ -36,6 +35,12 @@ public class ResourceMessageProcessor {
 	ArrayList<String> res_discount_content;
 	ArrayList<String> res_remark;
 	
+	boolean disableCache = false;
+	
+	public void setDisableCache(boolean disableCache) {
+		this.disableCache = disableCache;
+	}
+
 	CarResourceGroup carResourceGroup = new CarResourceGroup();
 	
 	public ResourceMessageProcessor(){
@@ -180,7 +185,7 @@ public class ResourceMessageProcessor {
 				writer.write(s);
 				writer.flush();
 			}else{
-				log.info(s + "是无效数据");
+				log.info("[batch_processor]\t" + s + "是无效数据");
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -253,16 +258,20 @@ public class ResourceMessageProcessor {
 				continue;
 			}
 			
-			String hit = CacheManager.get(user_id + "_" + s);
-			if(hit!=null){
-				CarResource cr = JSON.parseObject(hit, CarResource.class);
-				carResourceGroup.getResult().add(cr);
-				last_brand_name = cr.getBrand_name();
-				last_model_name = cr.getCar_model_name();
-				last_standard_name = cr.getStandard()==2?-1:1;
-				log.info(user_id + "_" + s + "\t 缓存命中");
-				continue;
+			
+			if(!disableCache && NiuniuBatchConfig.getEnableCache()){
+				String hit = CacheManager.get(user_id + "_" + s);
+				if(hit!=null){
+					CarResource cr = JSON.parseObject(hit, CarResource.class);
+					carResourceGroup.getResult().add(cr);
+					last_brand_name = cr.getBrand_name();
+					last_model_name = cr.getCar_model_name();
+					last_standard_name = cr.getStandard()==2?-1:1;
+					log.info("[batch_processor]\t" + user_id + "_" + s + "\t 缓存命中");
+					continue;
+				}
 			}
+			
 			
 			String reserve_s = s;
 			
@@ -373,7 +382,7 @@ public class ResourceMessageProcessor {
 					}
 					baseCarFinder.generateColors();
 					baseCarFinder.generateRealPrice();
-					baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, null);
+					baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, null, disableCache);
 					baseCarFinder.printParsingResult(writer);
 					fillHeaderRecord(baseCarFinder, mode);
 				}
@@ -414,7 +423,7 @@ public class ResourceMessageProcessor {
 				baseCarFinder.generateColors();
 				String VIN = baseCarFinder.extractVIN();
 				baseCarFinder.generarteParellelPrice();
-				baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, VIN);
+				baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, VIN, disableCache);
 				baseCarFinder.printParsingResult(writer);
 				fillHeaderRecord(baseCarFinder, -1);
 			}
@@ -427,12 +436,6 @@ public class ResourceMessageProcessor {
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
 		resourceMessageProcessor.setMessages("途观L 2468 白  下 7500");
-		/*
-		if(!resourceMessageProcessor.checkValidation()){
-			System.out.println("不符合规范");
-			return;
-		}
-		*/
 		resourceMessageProcessor.process();
 	}
 }

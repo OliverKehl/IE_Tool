@@ -36,7 +36,10 @@ public class JedisUtil
             config.setTestOnBorrow(true);
             config.setTestOnReturn(true);
  
-            pool = new JedisPool(config,ip,port,RedisConfig.TIMEOUT, NiuniuBatchConfig.getRedisPassword());
+            if(!NiuniuBatchConfig.getRedisPassword().isEmpty())
+            	pool = new JedisPool(config,ip,port,RedisConfig.TIMEOUT, NiuniuBatchConfig.getRedisPassword());
+            else
+            	pool = new JedisPool(config,ip,port,RedisConfig.TIMEOUT);
             maps.put(key, pool);
         }
         else

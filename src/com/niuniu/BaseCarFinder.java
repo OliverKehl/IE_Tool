@@ -13,12 +13,17 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 import com.niuniu.cache.CacheManager;
+import com.niuniu.config.NiuniuBatchConfig;
 
 public class BaseCarFinder {
 
+	public final static Logger log = LoggerFactory.getLogger(BaseCarFinder.class);
+	
 	ArrayList<String> models;
 	ArrayList<String> prices;
 	ArrayList<String> brands;
@@ -938,7 +943,7 @@ public class BaseCarFinder {
 
 	public void addToResponseWithCache(String user_id, String reserve_s, ArrayList<String> res_base_car_ids, ArrayList<String> res_colors,
 			ArrayList<String> res_discount_way, ArrayList<String> res_discount_content, ArrayList<String> res_remark,
-			CarResourceGroup carResourceGroup, int mode, String VIN) {
+			CarResourceGroup carResourceGroup, int mode, String VIN, boolean disableCache) {
 		if (query_results.size() == 0) {
 			try {
 				res_base_car_ids.add("");
@@ -964,7 +969,8 @@ public class BaseCarFinder {
 			if (carResourceGroup == null)
 				carResourceGroup = new CarResourceGroup();
 			carResourceGroup.getResult().add(cr);
-			CacheManager.set(generateKey(user_id, reserve_s), JSON.toJSONString(cr).toString());
+			if(!disableCache && NiuniuBatchConfig.getEnableCache())
+				CacheManager.set(generateKey(user_id, reserve_s), JSON.toJSONString(cr).toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1021,10 +1027,10 @@ public class BaseCarFinder {
 		try {
 			if (writer != null) {
 				writer.newLine();
-				writer.write(concatWithSpace(original_message) + "\t\t\t" + result);
+				writer.write(concatWithSpace(original_message) + "\t\t" + result);
 				writer.flush();
 			} else {
-				System.out.println(concatWithSpace(original_message) + "\t\t\t" + result);
+				log.info("[batch_processor]\t" + concatWithSpace(original_message) + "\t\t" + result);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

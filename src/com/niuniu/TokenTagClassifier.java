@@ -1,9 +1,6 @@
 package com.niuniu;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -43,7 +40,7 @@ public class TokenTagClassifier {
 		try{
 			is = Utils.openResource(this.getClass().getClassLoader(), NiuniuBatchConfig.getTokenTagModel());
 			if(is == null){
-				log.error(NiuniuBatchConfig.getTokenTagModel() + "\t标签模型不存在");
+				log.error("[batch_processor]\t" + NiuniuBatchConfig.getTokenTagModel() + "\t标签模型不存在");
 				return;
 	        }
 			
@@ -57,7 +54,7 @@ public class TokenTagClassifier {
 					continue;
 				taggingMap.put(arrs[0].trim().toLowerCase(), arrs[1].trim());
 			}
-			log.info(NiuniuBatchConfig.getTokenTagModel() + "\ttoken打标初始化完成");
+			log.info("[batch_processor]\t" + NiuniuBatchConfig.getTokenTagModel() + "\ttoken打标初始化完成");
 		}catch(Exception e){
 			e.printStackTrace();
 		}
