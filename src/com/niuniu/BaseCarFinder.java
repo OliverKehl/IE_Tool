@@ -871,18 +871,26 @@ public class BaseCarFinder {
 						} else {
 							if (ele_arr.size() - 1 > i) {
 								String content = ele_arr.get(i + 1);
+								content = content.substring(content.lastIndexOf("|") + 1, content.indexOf("#"));
 								if (content.equals("点")) {
 									discount_way = 1;
 									discount_content = f;
 								} else if (content.equals("w") || content.equals("万")) {
 									discount_way = 2;
 									discount_content = f;
+								} else if (content.equals("折") && (f>0 && f<100)){
+									discount_way = 1;
+									if(f<10)
+										discount_content = 100 - f*10;
+									else
+										discount_content = 100 - f;
 								} else {
 									// 不确定是下xx点还是下xx万，使用行情价判定
 									judgeMarketingPrice(f);
 								}
+							}else{
+								judgeMarketingPrice(f);
 							}
-							judgeMarketingPrice(f);
 						}
 					}
 				}
@@ -987,7 +995,7 @@ public class BaseCarFinder {
 		if (c == ',' || c == ')' || c == ']' || c == '}')
 			return remark.substring(1).trim();
 
-		if (remark.startsWith("万") || remark.startsWith("点") || remark.startsWith("元")) {
+		if (remark.startsWith("万") || remark.startsWith("点") || remark.startsWith("元") || remark.startsWith("w") || remark.startsWith("折")) {
 			if (remark.length() == 1) {
 				return "";
 			} else {
