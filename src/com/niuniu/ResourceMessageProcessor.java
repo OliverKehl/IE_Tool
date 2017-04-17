@@ -241,6 +241,8 @@ public class ResourceMessageProcessor {
 	// 在搜索结果数量较少，例如只有3998这个指导价的情况下，需要判定搜索结果里的品牌个数，如果有多个，则需要向上回溯，找到正确的品牌
 	private boolean hasMultiBrands(SolrDocumentList queryResult){
 		Set<String> brands_counter = new HashSet<String>();
+		if(queryResult.size()==0)
+			return false;
 		float maxScore = NumberUtils.toFloat(queryResult.get(0).get("score").toString());
 		for(int i=0;i<queryResult.size();i++){
 			float score = NumberUtils.toFloat(queryResult.get(i).get("score").toString());
@@ -323,6 +325,7 @@ public class ResourceMessageProcessor {
 				continue;
 			}
 			
+			boolean fucking_status = true;
 			// 找到的款式太多，需要使用头部的信息来缩小范围
 			if(mode==1){
 				if(reJudgeStandard(baseCarFinder.query_results)==2){
@@ -333,43 +336,64 @@ public class ResourceMessageProcessor {
 						writeInvalidInfo(concatWithSpace(s));
 						continue;
 					}
+					
 					/*
-					 * 可能有歧义，例如 730 928 既有宝骏又有宝马
+					 * 该行只有指导价，所以需要把上一行的所有信息都带过来
 					 */
-					BaseCarFinder baseCarFinder2 = new BaseCarFinder(solr_client, last_brand_name);
-					boolean status2 = baseCarFinder2.generateBaseCarId(s, last_brand_name,mode);
-					if(status2){
-						baseCarFinder = baseCarFinder2;
+					if(!baseCarFinder.prices.isEmpty() && baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty()){
+						String all_prefix = rebuildQueryPrefix(baseCarFinder,1);
+						if(!all_prefix.isEmpty()){
+							BaseCarFinder baseCarFinder_new = new BaseCarFinder(solr_client, last_brand_name);
+							status = baseCarFinder_new.generateBaseCarId(s, all_prefix, mode);
+							if(status){
+								baseCarFinder = baseCarFinder_new;
+							}else{
+								fucking_status = status;
+							}
+						}
+					}
+					if(!status){
+						/*
+						 * 可能有歧义，例如 730 928 既有宝骏又有宝马
+						 */
+						BaseCarFinder baseCarFinder2 = new BaseCarFinder(solr_client, last_brand_name);
+						boolean status2 = baseCarFinder2.generateBaseCarId(s, last_brand_name,mode);
+						if(status2){
+							baseCarFinder = baseCarFinder2;
+						}
 					}
 					
+					
 					if(baseCarFinder.query_results.size()>=3 || baseCarFinder.query_results.getMaxScore()<2500 || (baseCarFinder.query_results.size()<=3 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
-						String prefix = rebuildQueryPrefix(baseCarFinder,0);
+						String prefix = rebuildQueryPrefix(baseCarFinder,1);
 						if(!prefix.isEmpty()){
-							baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
-							status = baseCarFinder.generateBaseCarId(s, prefix, mode);
-							if(baseCarFinder.query_results.size()==0){
-								continue;
-							}
-							
-							if(baseCarFinder.query_results.size()>5){
-								String all_prefix = rebuildQueryPrefix(baseCarFinder,1);
-								if(!all_prefix.equals(prefix)){
-									baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
-									status = baseCarFinder.generateBaseCarId(s, all_prefix, mode);
-									if(baseCarFinder.query_results.size()==0){
-										continue;
+							BaseCarFinder baseCarFinder_new = new BaseCarFinder(solr_client, last_brand_name);
+							status = baseCarFinder_new.generateBaseCarId(s, prefix, mode);
+							if(status){
+								baseCarFinder = baseCarFinder_new;
+							}else{
+								String simple_prefix = rebuildQueryPrefix(baseCarFinder,0);
+								if(!simple_prefix.equals(prefix)){
+									baseCarFinder_new = new BaseCarFinder(solr_client, last_brand_name);
+									status = baseCarFinder_new.generateBaseCarId(s, simple_prefix, mode);
+									if(status){
+										baseCarFinder = baseCarFinder_new;
 									}
 								}
 							}
+						}
 							
-							if(baseCarFinder.query_results.size()>5 && baseCarFinder.isInvalidMessage()){
+						if(baseCarFinder.query_results.size()>5 && baseCarFinder.isInvalidMessage()){
+							if(!(baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty())){
 								fillHeaderRecord(baseCarFinder);
-								writeInvalidInfo(concatWithSpace(s));
-								continue;
 							}
+							writeInvalidInfo(concatWithSpace(s));
+							continue;
 						}else{
 							if(baseCarFinder.query_results.size()>5 || (baseCarFinder.query_results.size()<=3 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
-								fillHeaderRecord(baseCarFinder);
+								if(!(baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty())){
+									fillHeaderRecord(baseCarFinder);
+								}
 								writeInvalidInfo(concatWithSpace(s));
 								continue;
 							}
@@ -380,6 +404,16 @@ public class ResourceMessageProcessor {
 						writeInvalidInfo(concatWithSpace(s));
 						continue;
 					}
+					if(!fucking_status && baseCarFinder.query_results.getMaxScore()<3000 && baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty()){
+						BaseCarFinder baseCarFinder_new = new BaseCarFinder(solr_client, last_brand_name);
+						String simple_prefix = rebuildQueryPrefix(baseCarFinder,0);
+						status = baseCarFinder_new.generateBaseCarId(s, simple_prefix, mode);
+						if(!status){
+							writeInvalidInfo(concatWithSpace(s));
+							continue;
+						}
+					}
+					
 					baseCarFinder.generateColors();
 					baseCarFinder.generateRealPrice();
 					baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, null, disableCache);
@@ -435,7 +469,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("迈腾\n2209黑21000\n2349黑21500\n2589流沙金26000\n2589黑25000\n2499银\n一汽大众特许经销商\n王良18910383379");
+		resourceMessageProcessor.setMessages("新捷达\n856 白 银15000\n976 白 银15500\n956 白 金 银14000\n老捷达1056白19000\n  宝来\n1078白20000\n1078黑 金19000\n1198白 黑 灰 银 金18800手动\n1198白18000自动\n1198金19000自动\n1318白 黑 金 银17500\n1418白19000\n  蔚领\n1259 棕金 9000\n1489 白 黑 棕9000\n1519 白9000\n  高尔夫百万\n1549 红 白 金16500\n1659 白 金16500\n1719 白16000\n嘉旅\n1679白17500\n1439橙17500\n  速腾\n1318 白 20000\n1408 灰 白 银 黑19500\n1528 黑 白 20000\n1488 黑 白18500\n1588 白21000\n1628 黑 19000\n1728 黑 白21000\n1628 银 白 金21500\n  迈腾\n1979 黑21000\n2209黑21000\n2349黑21500\n2589流沙金26000\n2589黑25000\n2499银\n一汽大众特许经销商\n王良18910383379\n");
 		resourceMessageProcessor.process();
 	}
 }
