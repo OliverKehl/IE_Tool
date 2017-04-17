@@ -435,7 +435,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("途观L 2468 白  下 7500");
+		resourceMessageProcessor.setMessages("迈腾\n2209黑21000\n2349黑21500\n2589流沙金26000\n2589黑25000\n2499银\n一汽大众特许经销商\n王良18910383379");
 		resourceMessageProcessor.process();
 	}
 }

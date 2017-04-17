@@ -81,7 +81,7 @@ public class Utils {
 	}
 	
 	static{
-		regEx = "[-`·~!@#$%^&*()+=|{}':;',//[//]<>/?~！@#￥%……&*（）—+|{}【】‘；：”“’。，、？_]";
+		regEx = "^[-`·~!@#$%^&*()+=|{}':;',//[//]<>/?~！@#￥%……&*（）—+|{}【】‘；：”“’。，、？_]*";
 		specialCharPattern = Pattern.compile(regEx);
 		
 		String eL = "[a-zA-Z]+-\\w";
@@ -105,6 +105,12 @@ public class Utils {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+	}
+	
+	public static String removeRemarkIllegalHeader(String remark){
+		Matcher m = specialCharPattern.matcher(remark);
+		String res = m.replaceAll("").trim();
+		return res;
 	}
 	
 	public static InputStream openResource(ClassLoader classLoader, String resource) throws IOException {

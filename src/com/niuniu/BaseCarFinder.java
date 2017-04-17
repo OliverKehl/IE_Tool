@@ -24,11 +24,11 @@ public class BaseCarFinder {
 
 	public final static Logger log = LoggerFactory.getLogger(BaseCarFinder.class);
 	
-	ArrayList<String> models;
-	ArrayList<String> prices;
-	ArrayList<String> brands;
-	ArrayList<String> styles;
-	ArrayList<String> colors;
+	public ArrayList<String> models;
+	public ArrayList<String> prices;
+	public ArrayList<String> brands;
+	public ArrayList<String> styles;
+	public ArrayList<String> colors;
 	ArrayList<Integer> indexes;
 	ArrayList<String> ele_arr;
 	SolrDocumentList query_results;
@@ -939,7 +939,7 @@ public class BaseCarFinder {
 			res_colors.add(result_colors.toString());
 			res_discount_way.add(Integer.toString(discount_way));
 			res_discount_content.add(Float.toString(discount_content));
-			res_remark.add(postProcessRemark(this.original_message.substring(backup_index)));
+			res_remark.add(Utils.removeRemarkIllegalHeader(postProcessRemark(this.original_message.substring(backup_index))));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -972,7 +972,7 @@ public class BaseCarFinder {
 
 		try {
 			CarResource cr = new CarResource(base_car_id, result_colors.toString(), Integer.toString(discount_way),
-					Float.toString(discount_content), postProcessRemark(this.original_message.substring(backup_index)),
+					Float.toString(discount_content), Utils.removeRemarkIllegalHeader(postProcessRemark(this.original_message.substring(backup_index))),
 					brand_name, car_model_name, mode, VIN);
 			if (carResourceGroup == null)
 				carResourceGroup = new CarResourceGroup();
@@ -983,7 +983,7 @@ public class BaseCarFinder {
 			e.printStackTrace();
 		}
 	}
-
+	
 	private String postProcessRemark(String remark) {
 		if (remark == null)
 			return "";
@@ -1031,7 +1031,7 @@ public class BaseCarFinder {
 		String base_car_id = query_results.get(0).get("id").toString();
 		String result = base_car_id + "\t" + brand_name + "\t" + car_model_name + "\t" + base_car_style + "\t"
 				+ guiding_price + "\t" + result_colors.toString() + "\t" + discount_way + "\t" + discount_content + "\t"
-				+ postProcessRemark(this.original_message.substring(backup_index));
+				+ Utils.removeRemarkIllegalHeader(postProcessRemark(this.original_message.substring(backup_index)));
 		try {
 			if (writer != null) {
 				writer.newLine();
