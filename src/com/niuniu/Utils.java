@@ -293,6 +293,7 @@ public class Utils {
 		message = message.replaceAll("↓", " 下 ");
 		message = message.replaceAll("↓", " 下 ");
 		message = message.replaceAll("➕", " 加 ");
+		message = message.replaceAll("＋", "+");
 		//message = message.replaceAll("[\ud83c\udc00-\ud83c\udfff]|[\ud83d\udc00-\ud83d\udfff]|[\u2600-\u27ff]", "");
 		message = message.replaceAll("[\ud83c\uec00-\ud83c\udfff]|[\ud83d\uec00-\ud83d\udfff]|[\u2600-\u27ff]", " ");
 		message = message.replaceAll(" \\.", " ");
@@ -356,6 +357,11 @@ public class Utils {
 		Pattern p = Pattern.compile(eL);
 		Matcher m = p.matcher(str);
 		String line = m.replaceAll(" 下").trim();
+		
+		eL = "(?<=[^\\d])\\s+[\\+＋](?=\\d+)(?=\\.?)(?=\\d+)";
+		p = Pattern.compile(eL);
+		m = p.matcher(line);
+		line = m.replaceAll(" 加").trim();
 		return line.trim();
 	}
 	
@@ -370,6 +376,9 @@ public class Utils {
 	public static void main(String[] args){
 		USolr solr = new USolr("http://121.40.204.159:8080/solr/");
 		String line = "1、视金钱如粪土的)";
+		//System.out.println(Utils.normalizePrice("宝马320是   -10.5"));
+		line = Utils.preProcess("中规 猛禽F150 4998 蓝色 现车 ＋5.3");
+		System.out.println(Utils.normalizePrice(line));
 		//System.out.println(clean(line, solr));
 		
 	}

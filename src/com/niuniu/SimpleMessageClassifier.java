@@ -261,11 +261,10 @@ public class SimpleMessageClassifier {
 		return isValidLine();
 	}
 
-	public static void main(String[] args) {
+	public static void tmain(String[] args) {
 		USolr solr = new USolr("http://121.40.204.159:8080/solr/");
 		String message = "主营中东宝马";
 		SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(message, solr);
-		simpleMessageClassifier.prepare();
 		int mode = simpleMessageClassifier.predict();
 		if (mode == 1)
 			System.out.println("多个价格");
@@ -273,25 +272,27 @@ public class SimpleMessageClassifier {
 			System.out.println("单个价格");
 	}
 
-	public static void tmain(String[] args) {
+	public static void main(String[] args) {
 		File file = new File(
 				"/Users/kehl/Documents/workspace/MessageProcessor/src/com/niuniu/resource/indicator/test_case");
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new FileReader(file));
 			String line = null;
+			USolr solr_client = new USolr("http://115.29.240.213:8983/solr/");
 			while ((line = reader.readLine()) != null) {
-				Thread.sleep(1000);
-				USolr solr_client = new USolr("http://121.40.204.159:8080/solr/");
-				ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor(solr_client);
-				resourceMessageProcessor.setMessages(line);
-				if (!resourceMessageProcessor.checkValidation()) {
-					System.out.println("不符合规范" + "\t" + line);
-					continue;
-				} else {
-					System.out.println("符合规范" + "\t" + line);
+				//Thread.sleep(1000);
+				
+				String[] arrs = line.split("\\\\n");
+				for(String s:arrs){
+					SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(s, solr_client);
+					int mode = simpleMessageClassifier.predict();
+					if (mode==0) {
+						System.out.println("不符合规范" + "\t" + s);
+						continue;
+					}
 				}
-				solr_client.close();
+				//solr_client.close();
 				/*
 				 * resourceMessageProcessor.process(); System.out.println(
 				 * "##########################################################################################"

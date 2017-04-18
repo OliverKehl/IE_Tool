@@ -469,7 +469,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("新捷达\n856 白 银15000\n976 白 银15500\n956 白 金 银14000\n老捷达1056白19000\n  宝来\n1078白20000\n1078黑 金19000\n1198白 黑 灰 银 金18800手动\n1198白18000自动\n1198金19000自动\n1318白 黑 金 银17500\n1418白19000\n  蔚领\n1259 棕金 9000\n1489 白 黑 棕9000\n1519 白9000\n  高尔夫百万\n1549 红 白 金16500\n1659 白 金16500\n1719 白16000\n嘉旅\n1679白17500\n1439橙17500\n  速腾\n1318 白 20000\n1408 灰 白 银 黑19500\n1528 黑 白 20000\n1488 黑 白18500\n1588 白21000\n1628 黑 19000\n1728 黑 白21000\n1628 银 白 金21500\n  迈腾\n1979 黑21000\n2209黑21000\n2349黑21500\n2589流沙金26000\n2589黑25000\n2499银\n一汽大众特许经销商\n王良18910383379\n");
+		resourceMessageProcessor.setMessages("中规 猛禽F150 4998 蓝色 现车 ＋5.3");
 		resourceMessageProcessor.process();
 	}
 }

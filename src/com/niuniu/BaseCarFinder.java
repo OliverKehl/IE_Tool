@@ -846,7 +846,10 @@ public class BaseCarFinder {
 									element.substring(element.indexOf("-") + 1, element.indexOf("|"))), backup_index);
 							return true;
 						} else {// 万、点
-							if (ele_arr.size() - 1 > i) {
+							if(way==1){
+								discount_way = 3;
+								discount_content = f;//加XX万
+							}else if (ele_arr.size() - 1 > i) {
 								String content = ele_arr.get(i + 1);
 								content = content.substring(content.lastIndexOf("|") + 1, content.indexOf("#"));
 								if (content.equals("点")) {
