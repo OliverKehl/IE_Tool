@@ -261,18 +261,19 @@ public class SimpleMessageClassifier {
 		return isValidLine();
 	}
 
-	public static void tmain(String[] args) {
+	public static void main(String[] args) {
 		USolr solr = new USolr("http://121.40.204.159:8080/solr/");
-		String message = "主营中东宝马";
+		String message = "            2998珍白 黑 2.75";
+		message = Utils.normalizePrice(Utils.cleanDate(Utils.clean(Utils.normalize(message), solr)));
 		SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(message, solr);
 		int mode = simpleMessageClassifier.predict();
-		if (mode == 1)
-			System.out.println("多个价格");
+		if (mode == 0)
+			System.out.println("不合格");
 		else
-			System.out.println("单个价格");
+			System.out.println("合格");
 	}
 
-	public static void main(String[] args) {
+	public static void ttmain(String[] args) {
 		File file = new File(
 				"/Users/kehl/Documents/workspace/MessageProcessor/src/com/niuniu/resource/indicator/test_case");
 		BufferedReader reader = null;
