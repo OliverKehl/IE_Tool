@@ -37,7 +37,7 @@ public class BaseCarFinder {
 	float discount_content = 0f;
 	Set<String> base_colors_set;
 	String[] base_colors = { "黑", "白", "红", "灰", "棕", "银", "金", "蓝", "紫", "米" };
-	ArrayList<String> result_colors;
+	Set<String> result_colors;
 	String pre_brand_name;
 
 	String cur_brand;
@@ -70,7 +70,7 @@ public class BaseCarFinder {
 		for (String s : base_colors) {
 			base_colors_set.add(s);
 		}
-		result_colors = new ArrayList<String>();
+		result_colors = new HashSet<String>();
 		solr = new USolr("http://121.40.204.159:8080/solr/");
 
 		suffix_quants_set = new HashSet<String>();
@@ -95,7 +95,7 @@ public class BaseCarFinder {
 		for (String s : base_colors) {
 			base_colors_set.add(s);
 		}
-		result_colors = new ArrayList<String>();
+		result_colors = new HashSet<String>();
 		this.solr = solr;
 
 		suffix_quants_set = new HashSet<String>();
@@ -120,7 +120,7 @@ public class BaseCarFinder {
 		for (String s : base_colors) {
 			base_colors_set.add(s);
 		}
-		result_colors = new ArrayList<String>();
+		result_colors = new HashSet<String>();
 		this.solr = solr;
 		this.pre_brand_name = pre_brand_name;
 

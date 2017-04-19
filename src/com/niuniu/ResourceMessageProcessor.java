@@ -145,8 +145,8 @@ public class ResourceMessageProcessor {
 			this.last_model_name = baseCarFinder.cur_model;
 		if(baseCarFinder.styles.size()>0)
 			this.last_style_name = baseCarFinder.styles.get(0);
-		else
-			this.last_style_name = "";
+		//else
+			//this.last_style_name = "";
 		this.last_standard_name = standard;
 	}
 	
@@ -469,7 +469,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("中规 猛禽F150 4998 蓝色 现车 ＋5.3");
+		resourceMessageProcessor.setMessages("北京浩众伟业有限公司\n大量出车了 店保专场\n118  256白黑22\n120  292白黑25\n218  2369白黑24\n218  2499蓝黑23\n218  2899白黑16\n218  3253白黑8\n318  288白黑15\n318  3099白黑17\n320  32白黑19\n320  3259白黑 开米黑19.5\n320  3499白黑19.5\n320  3539白黑  蓝黑20\n520  4356白棕  开米棕17.5\n525  4666白棕  开米棕17.5\n525  4996白摩卡  黑摩卡  开米摩卡17.5\nx1  286白黑  开米黑11\nx1  306白黑  开米黑  星光棕黑11\nx1  319星光棕摩卡11\nx1  345矿白摩卡11\nx3  421白黑13\nx3  448白黑  白米15\nx4  53X白摩卡14\nx5  758白摩卡  黑摩卡13\nx5  791白摩卡  黑摩卡  星光棕棕15\nx6  838白棕  黑棕15\n520  457白棕22\n3GT  398白黑16\n5GT  688白黑21\n以下裸车出\n118  26  蓝黑 5点来\n118  2624蓝黑  5点来\nX3   448白黑 15\nX5   791  黑摩卡 15\n218  2699白黑 24来\n220  2989白黑 24来\n联系方式18911474986 何经理");
 		resourceMessageProcessor.process();
 	}
 }
