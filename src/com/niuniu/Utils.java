@@ -298,6 +298,7 @@ public class Utils {
 		message = message.replaceAll("[\ud83c\uec00-\ud83c\udfff]|[\ud83d\uec00-\ud83d\udfff]|[\u2600-\u27ff]", " ");
 		message = message.replaceAll(" \\.", " ");
 		message = message.replaceAll("\\. ", " ");
+		message = message.replaceAll("\u20e3", " ");
 		message = escapeDash(message);
 		return message.trim();
 	}
