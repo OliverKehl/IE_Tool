@@ -2,9 +2,7 @@ package com.niuniu.config;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.InvalidPropertiesFormatException;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.math.NumberUtils;
@@ -28,7 +26,6 @@ public class NiuniuBatchConfig {
 	private final String default_redis_port = "6379";
 	private final String default_redis_password = "";
 	private final String default_redis_index = "6";
-	private final String default_enable_cache = "false";
 	private final String default_expired_seconds = "3600";
 	
 	private boolean enable_cache = true;

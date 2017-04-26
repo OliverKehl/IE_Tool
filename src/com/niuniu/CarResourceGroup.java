@@ -2,8 +2,6 @@ package com.niuniu;
 
 import java.util.ArrayList;
 
-import com.alibaba.fastjson.JSON;
-
 public class CarResourceGroup {
 	ArrayList<CarResource> result;
 	String status;

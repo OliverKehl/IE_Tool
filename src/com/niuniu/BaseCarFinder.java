@@ -1087,17 +1087,4 @@ public class BaseCarFinder {
 			return true;
 		return false;
 	}
-
-	public static void main(String[] args) {
-		BaseCarFinder baseCarFinder = new BaseCarFinder();
-		boolean status = baseCarFinder.generateBaseCarId("大切诺基2017款 6899 黑黑 黑白 白白 棕色", null);
-		if ((baseCarFinder.query_results.size() == 0 || baseCarFinder.query_results.size() > 2)
-				&& baseCarFinder.models.isEmpty()) {
-			baseCarFinder = new BaseCarFinder();
-			status = baseCarFinder.generateBaseCarId("博瑞\n129800 黑黑 下8000", "");
-		}
-		baseCarFinder.generateColors();
-		baseCarFinder.generateRealPrice();
-		baseCarFinder.printParsingResult(null);
-	}
 }

@@ -3,7 +3,6 @@ package com.niuniu;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,6 +30,8 @@ public class Utils {
 	private static final String regEx;
 	private static Pattern specialCharPattern;
 	private static Pattern dashEscapePattern;
+	private static Pattern headerPricePattern;
+	private static Pattern headerOrderPattern;
 	
 	private static String replace(String line) {
 		char[] c = line.toCharArray();
@@ -86,6 +87,12 @@ public class Utils {
 		
 		String eL = "[a-zA-Z]+-\\w";
 		dashEscapePattern = Pattern.compile(eL);
+		
+		eL = "";
+		headerPricePattern = Pattern.compile(eL);
+		
+		eL = "";
+		headerOrderPattern = Pattern.compile(eL);
 		
 		InputStream is = null;
         BufferedReader reader = null; 
@@ -309,9 +316,11 @@ public class Utils {
 	 * 去掉每行头部的起始标识，比如1. 1、 1 
 	 */
 	public static String removeHeader(String str){
-		String eL = "^\\d[.\\s、]";
-		Pattern p = Pattern.compile(eL);
-		Matcher m = p.matcher(str);
+		Matcher m1 = headerPricePattern.matcher(str);
+		if(m1.find())
+			return str;
+		
+		Matcher m = headerOrderPattern.matcher(str);
 		String line = m.replaceAll(" ").trim();
 		return line.trim();
 	}
@@ -383,9 +392,9 @@ public class Utils {
 	
 	public static void main(String[] args){
 		USolr solr = new USolr("http://121.40.204.159:8080/solr/");
-		String line = "1、视金钱如粪土的)";
+		String line = "7.68万 白色 近期车";
 		//System.out.println(Utils.normalizePrice("宝马320是   -10.5"));
-		line = Utils.preProcess(" 中规 猛禽F150 4998 蓝色 现车 ＋5.3");
+		System.out.println(Utils.clean(line, solr));
 		System.out.println(Utils.preProcess(line));
 		//System.out.println(clean(line, solr));
 		

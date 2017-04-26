@@ -98,7 +98,7 @@ public class ResourceMessageProcessor {
 	}
 	
 	private void parse(){
-		String[] tmp = messages.split("\n");
+		String[] tmp = messages.split("\\\\n");
 		if(tmp.length<2)
 			message_arr = tmp;
 		else{
@@ -474,7 +474,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("今日特价奥迪资源\nA4 \n3023色全下12留\n      3398色全下13留\n      3728色全下13留\n      3688色全下13留\nA6 4188色全下17.5\n      4388色全下17.5\n      4765色全下18.5\n      5305色全下17.5\n      4668色全下17.5\n      4745色全下18.5      \nQ5 4004白 黑15.5\n      4276白 黑15.5\n 全国  无要求\n电话15962418589 可微信");
+		resourceMessageProcessor.setMessages("海马 \n 福美来17款手动舒适 \n 7.68万 白色 近期车 \n 单台下1.4万 东区自提");
 		resourceMessageProcessor.process();
 	}
 }
