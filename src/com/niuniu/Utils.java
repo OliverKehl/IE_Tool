@@ -258,6 +258,8 @@ public class Utils {
 			solr.ExecuteQuery(params);
 			String response = solr.queryresponse.toString();
 			String parse_result = response.substring(response.lastIndexOf("result") + 7, response.length() - 2).trim();
+			if(parse_result.isEmpty())
+				return ele_arr;
 			String[] elements = parse_result.split(" ");
 
 			for (int i = 0; i < elements.length; i++) {
@@ -299,6 +301,7 @@ public class Utils {
 		message = message.replaceAll(" \\.", " ");
 		message = message.replaceAll("\\. ", " ");
 		message = message.replaceAll("\u20e3", " ");
+		message = message.replaceAll(" ", " ");
 		message = escapeDash(message);
 		return message.trim();
 	}
@@ -323,7 +326,11 @@ public class Utils {
 			return null;
 		String tmp = removeHeader(preProcess(source));
 		String result = tmp;
+		if(tmp.isEmpty())
+			return "";
 		ArrayList<String> res = tokenize(tmp, solr,"filter_word");
+		if(res.size()==0)
+			return "";
 		String ele = res.get(0);
 		if(ele.endsWith("OTHERS")){
 			String a = ele.substring(0, ele.indexOf("-"));
@@ -378,8 +385,8 @@ public class Utils {
 		USolr solr = new USolr("http://121.40.204.159:8080/solr/");
 		String line = "1、视金钱如粪土的)";
 		//System.out.println(Utils.normalizePrice("宝马320是   -10.5"));
-		line = Utils.preProcess("中规 猛禽F150 4998 蓝色 现车 ＋5.3");
-		System.out.println(Utils.normalizePrice(line));
+		line = Utils.preProcess(" 中规 猛禽F150 4998 蓝色 现车 ＋5.3");
+		System.out.println(Utils.preProcess(line));
 		//System.out.println(clean(line, solr));
 		
 	}

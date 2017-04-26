@@ -23,7 +23,7 @@ import com.niuniu.config.NiuniuBatchConfig;
 public class BaseCarFinder {
 
 	public final static Logger log = LoggerFactory.getLogger(BaseCarFinder.class);
-	
+
 	public ArrayList<String> models;
 	public ArrayList<String> prices;
 	public ArrayList<String> brands;
@@ -191,10 +191,14 @@ public class BaseCarFinder {
 		return real_tag;
 	}
 
-	private int parse(ArrayList<String> tokens) {
+	private int parse(ArrayList<String> tokens, String message) {
 		boolean price_status = false;
 		for (int i = 0; i < tokens.size(); i++) {
 			String s = tokens.get(i);
+			int start = NumberUtils.toInt(s.substring(0, s.indexOf('-')));
+			if (start > 0 && '#' == message.charAt(start - 1)) {
+				return i;
+			}
 			if (s.endsWith("#OTHERS") || s.endsWith("#COLOR")) {
 				if (s.contains("指导价")) {
 					tokens.remove(i);
@@ -246,7 +250,7 @@ public class BaseCarFinder {
 		ele_arr = Utils.tokenize(message, solr, "filter_word");
 		if (ele_arr == null)
 			return null;
-		vital_info_index = parse(ele_arr);
+		vital_info_index = parse(ele_arr, message);
 		int stop = 0;
 		if (vital_info_index == ele_arr.size()) {
 			stop = message.length();
@@ -281,7 +285,7 @@ public class BaseCarFinder {
 		solr.clear();
 		return base_car_info.size() > 0;
 	}
-	
+
 	public boolean generateBaseCarId(String message, String pre_info, int standard) {
 		if (message.isEmpty())
 			return false;
@@ -704,29 +708,29 @@ public class BaseCarFinder {
 	}
 
 	/*
-	 * 提取平行进口车的成交价 
+	 * 提取平行进口车的成交价
 	 */
-	public boolean generarteParellelPrice(){
+	public boolean generarteParellelPrice() {
 		discount_way = 5;
 		discount_content = 0f;
-		for(int i=vital_info_index; i<ele_arr.size();i++){
+		for (int i = vital_info_index; i < ele_arr.size(); i++) {
 			String element = ele_arr.get(i);
-			
-			if(i - vital_info_index >=15)//已经在扫配置信息了，停止，不指望从配置信息里获取价格，价格索性就电议，然后填到备注里
+
+			if (i - vital_info_index >= 15)// 已经在扫配置信息了，停止，不指望从配置信息里获取价格，价格索性就电议，然后填到备注里
 				return false;
-			
-			if(!element.endsWith("PRICE")){
+
+			if (!element.endsWith("PRICE")) {
 				continue;
 			}
 			String fc = element.substring(element.lastIndexOf("|") + 1, element.indexOf("#"));
 			float p = NumberUtils.toFloat(fc);
-			if(p<20 || p>=1000)//平行进口车的价格不会落在这个区间外
+			if (p < 20 || p >= 1000)// 平行进口车的价格不会落在这个区间外
 				continue;
-			
-			if(i>0){
-				String tmp = ele_arr.get(i-1);
+
+			if (i > 0) {
+				String tmp = ele_arr.get(i - 1);
 				String kfc = tmp.substring(tmp.lastIndexOf("|") + 1, tmp.indexOf("#"));
-				if("特价".equals(kfc) || "现价".equals(kfc)){
+				if ("特价".equals(kfc) || "现价".equals(kfc)) {
 					discount_content = p;
 					discount_way = 4;
 					String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
@@ -735,10 +739,10 @@ public class BaseCarFinder {
 					return true;
 				}
 			}
-			
+
 			String head_str = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
 			int head = NumberUtils.toInt(head_str);
-			if((head>=1 && this.original_message.charAt(head-1)=='价')){
+			if ((head >= 1 && this.original_message.charAt(head - 1) == '价')) {
 				discount_content = p;
 				discount_way = 4;
 				String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
@@ -746,11 +750,11 @@ public class BaseCarFinder {
 				backup_index = Math.max(backup_index, thehe);
 				return true;
 			}
-			
-			if((i+1)<ele_arr.size()){
-				String tmp = ele_arr.get(i+1);
+
+			if ((i + 1) < ele_arr.size()) {
+				String tmp = ele_arr.get(i + 1);
 				String kfc = tmp.substring(tmp.lastIndexOf("|") + 1, tmp.indexOf("#"));
-				if("万".equals(kfc) || "w".equals(kfc)){
+				if ("万".equals(kfc) || "w".equals(kfc)) {
 					discount_content = p;
 					discount_way = 4;
 					String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
@@ -761,7 +765,8 @@ public class BaseCarFinder {
 			}
 			String tail_str = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
 			int tail = NumberUtils.toInt(tail_str);
-			if(tail<this.original_message.length() && (this.original_message.charAt(tail)=='万' || this.original_message.charAt(tail)=='w') ){
+			if (tail < this.original_message.length()
+					&& (this.original_message.charAt(tail) == '万' || this.original_message.charAt(tail) == 'w')) {
 				discount_content = p;
 				discount_way = 4;
 				String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
@@ -772,19 +777,19 @@ public class BaseCarFinder {
 		}
 		return false;
 	}
-	
+
 	/*
 	 * 提取车架号
 	 */
-	public String extractVIN(){
-		for(int i=vital_info_index;i<ele_arr.size();i++){
+	public String extractVIN() {
+		for (int i = vital_info_index; i < ele_arr.size(); i++) {
 			String ele = ele_arr.get(i);
 			String pre_ele = null;
-			if(i>0){
-				pre_ele = ele_arr.get(i-1);
-				if(pre_ele.contains("车架号")){
+			if (i > 0) {
+				pre_ele = ele_arr.get(i - 1);
+				if (pre_ele.contains("车架号")) {
 					String content = ele.substring(ele.lastIndexOf("|") + 1, ele.indexOf("#"));
-					if(content.matches("[0-9]{4,6}$")){
+					if (content.matches("[0-9]{4,6}$")) {
 						String hehe = ele.substring(ele.indexOf("-") + 1, ele.indexOf("|"));
 						int thehe = NumberUtils.toInt(hehe);
 						backup_index = Math.max(backup_index, thehe);
@@ -792,27 +797,27 @@ public class BaseCarFinder {
 					}
 				}
 			}
-			if(ele.endsWith("PRICE")){
+			if (ele.endsWith("PRICE")) {
 				String head_str = ele.substring(0, ele.indexOf("-"));
 				String tail_str = ele.substring(ele.indexOf("-") + 1, ele.indexOf("|"));
 				String content = ele.substring(ele.lastIndexOf("|") + 1, ele.indexOf("#"));
 				int head = NumberUtils.toInt(head_str);
 				int tail = NumberUtils.toInt(tail_str);
-				if(content.matches("[0-9]{4,6}$")){
-					if(content.startsWith("0")){//0开头肯定是车架号
+				if (content.matches("[0-9]{4,6}$")) {
+					if (content.startsWith("0")) {// 0开头肯定是车架号
 						String hehe = ele.substring(ele.indexOf("-") + 1, ele.indexOf("|"));
 						int thehe = NumberUtils.toInt(hehe);
 						backup_index = Math.max(backup_index, thehe);
 						return content;
 					}
-					if((head>=1 && this.original_message.charAt(head-1)=='#')){
+					if ((head >= 1 && this.original_message.charAt(head - 1) == '#')) {
 						String hehe = ele.substring(ele.indexOf("-") + 1, ele.indexOf("|"));
 						int thehe = NumberUtils.toInt(hehe);
 						backup_index = Math.max(backup_index, thehe);
 						return content;
 					}
-					if((tail<this.original_message.length() && this.original_message.charAt(tail)=='#')){
-						backup_index = Math.max(backup_index, tail+1);
+					if ((tail < this.original_message.length() && this.original_message.charAt(tail) == '#')) {
+						backup_index = Math.max(backup_index, tail + 1);
 						return content;
 					}
 				}
@@ -820,7 +825,7 @@ public class BaseCarFinder {
 		}
 		return null;
 	}
-	
+
 	public boolean generateRealPrice() {
 		try {
 			for (int i = vital_info_index; i < ele_arr.size(); i++) {
@@ -842,14 +847,16 @@ public class BaseCarFinder {
 						if (f > 500) {// 例如下25000
 							discount_way = way <= 0 ? 2 : 3;
 							discount_content = f / 10000f;
-							backup_index = Math.max(NumberUtils.createInteger(
-									element.substring(element.indexOf("-") + 1, element.indexOf("|"))), backup_index);
+							backup_index = Math.max(
+									NumberUtils.createInteger(
+											element.substring(element.indexOf("-") + 1, element.indexOf("|"))),
+									backup_index);
 							return true;
 						} else {// 万、点
-							if(way==1){
+							if (way == 1) {
 								discount_way = 3;
-								discount_content = f;//加XX万
-							}else if (ele_arr.size() - 1 > i) {
+								discount_content = f;// 加XX万
+							} else if (ele_arr.size() - 1 > i) {
 								String content = ele_arr.get(i + 1);
 								content = content.substring(content.lastIndexOf("|") + 1, content.indexOf("#"));
 								if (content.equals("点")) {
@@ -881,17 +888,17 @@ public class BaseCarFinder {
 								} else if (content.equals("w") || content.equals("万")) {
 									discount_way = 2;
 									discount_content = f;
-								} else if (content.equals("折") && (f>0 && f<100)){
+								} else if (content.equals("折") && (f > 0 && f < 100)) {
 									discount_way = 1;
-									if(f<10)
-										discount_content = 100 - f*10;
+									if (f < 10)
+										discount_content = 100 - f * 10;
 									else
 										discount_content = 100 - f;
 								} else {
 									// 不确定是下xx点还是下xx万，使用行情价判定
 									judgeMarketingPrice(f);
 								}
-							}else{
+							} else {
 								judgeMarketingPrice(f);
 							}
 						}
@@ -942,7 +949,8 @@ public class BaseCarFinder {
 			res_colors.add(result_colors.toString());
 			res_discount_way.add(Integer.toString(discount_way));
 			res_discount_content.add(Float.toString(discount_content));
-			res_remark.add(Utils.removeRemarkIllegalHeader(postProcessRemark(this.original_message.substring(backup_index))));
+			res_remark.add(
+					Utils.removeRemarkIllegalHeader(postProcessRemark(this.original_message.substring(backup_index))));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -952,9 +960,10 @@ public class BaseCarFinder {
 		return user_id + "_" + mes;
 	}
 
-	public void addToResponseWithCache(String user_id, String reserve_s, ArrayList<String> res_base_car_ids, ArrayList<String> res_colors,
-			ArrayList<String> res_discount_way, ArrayList<String> res_discount_content, ArrayList<String> res_remark,
-			CarResourceGroup carResourceGroup, int mode, String VIN, boolean disableCache) {
+	public void addToResponseWithCache(String user_id, String reserve_s, ArrayList<String> res_base_car_ids,
+			ArrayList<String> res_colors, ArrayList<String> res_discount_way, ArrayList<String> res_discount_content,
+			ArrayList<String> res_remark, CarResourceGroup carResourceGroup, int mode, String VIN,
+			boolean disableCache) {
 		if (query_results.size() == 0) {
 			try {
 				res_base_car_ids.add("");
@@ -975,18 +984,19 @@ public class BaseCarFinder {
 
 		try {
 			CarResource cr = new CarResource(base_car_id, result_colors.toString(), Integer.toString(discount_way),
-					Float.toString(discount_content), Utils.removeRemarkIllegalHeader(postProcessRemark(this.original_message.substring(backup_index))),
+					Float.toString(discount_content),
+					Utils.removeRemarkIllegalHeader(postProcessRemark(this.original_message.substring(backup_index))),
 					brand_name, car_model_name, mode, VIN);
 			if (carResourceGroup == null)
 				carResourceGroup = new CarResourceGroup();
 			carResourceGroup.getResult().add(cr);
-			if(!disableCache && NiuniuBatchConfig.getEnableCache())
+			if (!disableCache && NiuniuBatchConfig.getEnableCache())
 				CacheManager.set(generateKey(user_id, reserve_s), JSON.toJSONString(cr).toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private String postProcessRemark(String remark) {
 		if (remark == null)
 			return "";
@@ -998,7 +1008,8 @@ public class BaseCarFinder {
 		if (c == ',' || c == ')' || c == ']' || c == '}')
 			return remark.substring(1).trim();
 
-		if (remark.startsWith("万") || remark.startsWith("点") || remark.startsWith("元") || remark.startsWith("w") || remark.startsWith("折")) {
+		if (remark.startsWith("万") || remark.startsWith("点") || remark.startsWith("元") || remark.startsWith("w")
+				|| remark.startsWith("折")) {
 			if (remark.length() == 1) {
 				return "";
 			} else {
@@ -1052,7 +1063,17 @@ public class BaseCarFinder {
 	 * 是头上的[新朗逸] 还是正儿八经的征文
 	 */
 	public boolean isHeader() {
-		return prices.size() == 0 && original_message.trim().length() < 8 ? true : false;
+		if (prices.size() == 0 && original_message.trim().length() < 8)
+			return true;
+		if (prices.size() == 1 && original_message.trim().length() < 8
+				&& ( (prices.get(0).equals("301") || prices.get(0).equals("308") || prices.get(0).equals("408")
+						|| prices.get(0).equals("2008") || prices.get(0).equals("3008") || prices.get(0).equals("4008")
+						|| prices.get(0).equals("5008") || prices.get(0).equals("508") ) && brands.isEmpty() ) ){
+			models.add(prices.get(0));
+			prices.clear();
+			return true;
+		}
+		return false;
 	}
 
 	/*

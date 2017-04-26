@@ -98,7 +98,7 @@ public class ResourceMessageProcessor {
 	}
 	
 	private void parse(){
-		String[] tmp = messages.split("\\\\n");
+		String[] tmp = messages.split("\n");
 		if(tmp.length<2)
 			message_arr = tmp;
 		else{
@@ -156,6 +156,9 @@ public class ResourceMessageProcessor {
 			if(baseCarFinder.brands.size()==0 && last_brand_name !=null && !last_brand_name.isEmpty()){
 				return last_brand_name;
 			}
+			if(baseCarFinder.models.size()!=0 && !baseCarFinder.models.get(0).equals(last_model_name)){
+				return "";
+			}
 			if(baseCarFinder.models.size()==0 && last_model_name !=null && !last_model_name.isEmpty()){
 				return last_model_name;
 			}
@@ -166,7 +169,9 @@ public class ResourceMessageProcessor {
 			if(baseCarFinder.brands.size()==0 && last_brand_name !=null && !last_brand_name.isEmpty()){
 				standard_query += " " + last_brand_name;
 			}
-			
+			if(baseCarFinder.models.size()!=0 && !baseCarFinder.models.get(0).equals(last_model_name)){
+				return standard_query;
+			}
 			if(baseCarFinder.models.size()==0 && last_model_name !=null && !last_model_name.isEmpty()){
 				standard_query += " " + last_model_name;
 			}
@@ -256,7 +261,7 @@ public class ResourceMessageProcessor {
 	public boolean process(){
 		long t1 = System.currentTimeMillis();
 		for(String s : message_arr){
-			if(s.trim().isEmpty()){
+			if(s.trim().isEmpty() || s.length()<2){
 				continue;
 			}
 			
@@ -364,7 +369,7 @@ public class ResourceMessageProcessor {
 					}
 					
 					
-					if(baseCarFinder.query_results.size()>=3 || baseCarFinder.query_results.getMaxScore()<2500 || (baseCarFinder.query_results.size()<=3 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
+					if(baseCarFinder.query_results.size()>=3 || baseCarFinder.query_results.getMaxScore()<2500 || (baseCarFinder.query_results.size()<=4 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
 						String prefix = rebuildQueryPrefix(baseCarFinder,1);
 						if(!prefix.isEmpty()){
 							BaseCarFinder baseCarFinder_new = new BaseCarFinder(solr_client, last_brand_name);
@@ -383,23 +388,23 @@ public class ResourceMessageProcessor {
 							}
 						}
 							
-						if(baseCarFinder.query_results.size()>5 && baseCarFinder.isInvalidMessage()){
+						if(baseCarFinder.query_results.size()>=5 && baseCarFinder.isInvalidMessage()){
 							if(!(baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty())){
 								fillHeaderRecord(baseCarFinder);
 							}
-							writeInvalidInfo(concatWithSpace(s));
+							writeInvalidInfo(concatWithSpace(s + "\t 返回结果较多"));
 							continue;
 						}else{
-							if(baseCarFinder.query_results.size()>5 || (baseCarFinder.query_results.size()<=3 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
+							if(baseCarFinder.query_results.size()>=5 || (baseCarFinder.query_results.size()<=4 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
 								if(!(baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty())){
 									fillHeaderRecord(baseCarFinder);
 								}
-								writeInvalidInfo(concatWithSpace(s));
+								writeInvalidInfo(concatWithSpace(s + "\t 返回结果较多"));
 								continue;
 							}
 						}
 					}
-					if(baseCarFinder.query_results.getMaxScore()<2500  || (baseCarFinder.query_results.size()<=3 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
+					if(baseCarFinder.query_results.getMaxScore()<2500  || (baseCarFinder.query_results.size()<=5 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
 						// 置信度较低，查找结果的分数低于某个阈值
 						writeInvalidInfo(concatWithSpace(s));
 						continue;
@@ -469,7 +474,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("北京浩众伟业有限公司\n大量出车了 店保专场\n118  256白黑22\n120  292白黑25\n218  2369白黑24\n218  2499蓝黑23\n218  2899白黑16\n218  3253白黑8\n318  288白黑15\n318  3099白黑17\n320  32白黑19\n320  3259白黑 开米黑19.5\n320  3499白黑19.5\n320  3539白黑  蓝黑20\n520  4356白棕  开米棕17.5\n525  4666白棕  开米棕17.5\n525  4996白摩卡  黑摩卡  开米摩卡17.5\nx1  286白黑  开米黑11\nx1  306白黑  开米黑  星光棕黑11\nx1  319星光棕摩卡11\nx1  345矿白摩卡11\nx3  421白黑13\nx3  448白黑  白米15\nx4  53X白摩卡14\nx5  758白摩卡  黑摩卡13\nx5  791白摩卡  黑摩卡  星光棕棕15\nx6  838白棕  黑棕15\n520  457白棕22\n3GT  398白黑16\n5GT  688白黑21\n以下裸车出\n118  26  蓝黑 5点来\n118  2624蓝黑  5点来\nX3   448白黑 15\nX5   791  黑摩卡 15\n218  2699白黑 24来\n220  2989白黑 24来\n联系方式18911474986 何经理");
+		resourceMessageProcessor.setMessages("今日特价奥迪资源\nA4 \n3023色全下12留\n      3398色全下13留\n      3728色全下13留\n      3688色全下13留\nA6 4188色全下17.5\n      4388色全下17.5\n      4765色全下18.5\n      5305色全下17.5\n      4668色全下17.5\n      4745色全下18.5      \nQ5 4004白 黑15.5\n      4276白 黑15.5\n 全国  无要求\n电话15962418589 可微信");
 		resourceMessageProcessor.process();
 	}
 }

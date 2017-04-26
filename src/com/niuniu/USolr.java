@@ -95,6 +95,7 @@ public class USolr {
 	public void clear() {
 		queryresponse=null;
 		solrquery.clear();
+		solrquery.clearSorts();
 	}
 
 	public boolean setQuery(String query) {
