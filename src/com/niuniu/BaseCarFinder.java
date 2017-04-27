@@ -49,7 +49,7 @@ public class BaseCarFinder {
 
 	int backup_index = 0;
 
-	String[] suffix_quants = { "台", "轮", "度", "速", "天", "分钟", "小时", "秒", "辆", "年", "月" };
+	String[] suffix_quants = { "台", "轮", "度", "速", "天", "分钟", "小时", "秒", "辆", "年", "月", "寸" };
 	String[] prefix_behave = { "送" };
 
 	Set<String> suffix_quants_set;
@@ -212,7 +212,18 @@ public class BaseCarFinder {
 			} else if (s.endsWith("#MODEL")) {
 				models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 			} else if (s.endsWith("#STYLE")) {
-				styles.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+				String tmp = s.substring(s.lastIndexOf("|") + 1, s.indexOf("#"));
+				float tmp_f = NumberUtils.toFloat(tmp, 0f);
+				if(tmp_f>0){
+					int j = i+1;
+					if(j<tokens.size()){
+						String s2 = tokens.get(j);
+						String tmp2 = s2.substring(s2.lastIndexOf("|") + 1, s2.indexOf("#"));
+						if(tmp2.equals("w") || tmp2.equals("折") || tmp2.equals("万") || tmp2.equals("点"))
+							return i;
+					}
+				}
+				styles.add(tmp);
 			} else if (s.endsWith("MODEL_STYLE")) {
 				String real_tag = judgeRealTag(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 				if (real_tag != null) {
@@ -263,6 +274,15 @@ public class BaseCarFinder {
 		return sub_query;
 	}
 
+	private boolean isOldStyleQuery(){
+		for(String s:styles){
+			if("老".equals(s) || "老款".equals(s)){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean generateBaseCarId(String message, String pre_info) {
 		if (message.isEmpty())
 			return false;
@@ -274,7 +294,8 @@ public class BaseCarFinder {
 		String sub_query = parseMessage(solr, message);
 		if (pre_info != null)
 			sub_query = pre_info + " " + sub_query;
-		query_results = Utils.select(sub_query, solr);
+		boolean shit = isOldStyleQuery();
+		query_results = Utils.select(sub_query, solr, shit);
 		if (query_results == null) {
 			// 1. 空行
 			// 2. 把颜色放指导价前面了
@@ -297,7 +318,17 @@ public class BaseCarFinder {
 		String sub_query = parseMessage(solr, message);
 		if (pre_info != null)
 			sub_query = pre_info + " " + sub_query;
-		query_results = Utils.select(sub_query, solr, standard);
+		boolean shit = false;
+		if(pre_info!=null && !pre_info.isEmpty()){
+			String[] tmp_arr = pre_info.split(" ");
+			for(String tmp:tmp_arr){
+				tmp = tmp.trim();
+				if("老".equals(tmp) || "老款".equals(tmp))
+					shit = true;
+			}
+		}
+		 
+		query_results = Utils.select(sub_query, solr, standard, shit);
 		if (query_results == null) {
 			// 1. 空行
 			// 2. 把颜色放指导价前面了
@@ -689,6 +720,35 @@ public class BaseCarFinder {
 		}
 	}
 
+	/*
+	 * 有的人的车直接写价格，而不是下点或者下万，如果找到某个地方是万，但是数字前面没有明确的下，优惠等关键词，就judge
+	 */
+	private void judgeMarketingPriceW(float coupon) {
+		Object guiding_price = query_results.get(0).get("guiding_price_s");
+		if (guiding_price == null) {
+			discount_way = 4;
+			discount_content = coupon;
+			return;
+		}
+		int id = NumberUtils.createInteger(query_results.get(0).get("id").toString());
+		float price = NumberUtils.createFloat(guiding_price.toString());
+		float price2 = price - coupon;
+		float bias2 = calcPriceBias(id, price2);
+		float price3 = coupon;
+		float bias3 = calcPriceBias(id, price3);
+		
+		// 下xx万
+		if (bias2 < bias3) {
+			discount_way = 2;
+			discount_content = coupon;
+		}
+		// 直接报价
+		if (bias3 < bias2) {
+			discount_way = 4;
+			discount_content = coupon;
+		}
+	}
+	
 	private boolean isQuantOrBehave(int cur) {
 		if (cur > 0) {
 			String content = ele_arr.get(cur - 1);
@@ -886,7 +946,8 @@ public class BaseCarFinder {
 									discount_way = 1;
 									discount_content = f;
 								} else if (content.equals("w") || content.equals("万")) {
-									discount_way = 2;
+									//discount_way = 2;
+									judgeMarketingPriceByW(f);
 									discount_content = f;
 								} else if (content.equals("折") && (f > 0 && f < 100)) {
 									discount_way = 1;

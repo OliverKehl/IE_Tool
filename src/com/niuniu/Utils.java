@@ -88,10 +88,10 @@ public class Utils {
 		String eL = "[a-zA-Z]+-\\w";
 		dashEscapePattern = Pattern.compile(eL);
 		
-		eL = "";
+		eL = "^\\d.\\d";
 		headerPricePattern = Pattern.compile(eL);
 		
-		eL = "";
+		eL = "^\\d[.\\s、]";
 		headerOrderPattern = Pattern.compile(eL);
 		
 		InputStream is = null;
@@ -196,7 +196,7 @@ public class Utils {
 		return "";
 	}
 	
-	public static SolrDocumentList select(String query, USolr solr){
+	public static SolrDocumentList select(String query, USolr solr, boolean popularity){
 		if(solr==null || query==null || query.isEmpty())
 			return null;
 		SolrDocumentList query_results = null;
@@ -210,6 +210,9 @@ public class Utils {
 		//TODO
 		//需要把后续的所有tag是STYLE的内容加入到搜索条件中
 		solr.addSortField("score", false);// 按年份降序排列
+		if(popularity){
+			solr.addSortField("popularity", false);// 按资源热度降序排列
+		}
 		solr.addSortField("year", false);// 按年份降序排列
 		try {
 			solr.ExecuteQuery();
@@ -220,7 +223,7 @@ public class Utils {
 		return query_results;
 	}
 	
-	public static SolrDocumentList select(String query, USolr solr, int standard){
+	public static SolrDocumentList select(String query, USolr solr, int standard, boolean popularity){
 		if(solr==null || query==null || query.isEmpty())
 			return null;
 		SolrDocumentList query_results = null;
@@ -235,6 +238,9 @@ public class Utils {
 		//TODO
 		//需要把后续的所有tag是STYLE的内容加入到搜索条件中
 		solr.addSortField("score", false);// 按年份降序排列
+		if(popularity){
+			solr.addSortField("popularity", false);// 按资源热度降序排列
+		}
 		solr.addSortField("year", false);// 按年份降序排列
 		try {
 			solr.ExecuteQuery();
@@ -392,7 +398,7 @@ public class Utils {
 	
 	public static void main(String[] args){
 		USolr solr = new USolr("http://121.40.204.159:8080/solr/");
-		String line = "7.68万 白色 近期车";
+		String line = "5.加版雷克萨斯LX570，黑红，顶配，现车，有关单，155.2万";
 		//System.out.println(Utils.normalizePrice("宝马320是   -10.5"));
 		System.out.println(Utils.clean(line, solr));
 		System.out.println(Utils.preProcess(line));
