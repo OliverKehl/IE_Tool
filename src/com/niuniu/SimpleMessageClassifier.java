@@ -148,6 +148,12 @@ public class SimpleMessageClassifier {
 						continue;
 					}
 				}
+				
+				int idx = NumberUtils.toInt(ele.substring(0, ele.indexOf('-')));
+				if(idx>0 && message.charAt(idx-1)=='#')
+					continue;
+				
+				
 				int c = isRealPrice(i);
 				if (c == 1 && !ele.contains("MODEL")) {
 					real_prices.add(ele);

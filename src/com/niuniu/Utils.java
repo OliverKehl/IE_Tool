@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.ModifiableSolrParams;
+import org.nlpcn.commons.lang.jianfan.Converter;
 
 import com.niuniu.config.NiuniuBatchConfig;
 
@@ -33,6 +34,7 @@ public class Utils {
 	private static Pattern headerPricePattern;
 	private static Pattern headerOrderPattern;
 	
+	// 全角半角转换
 	private static String replace(String line) {
 		char[] c = line.toCharArray();
 		for (int i = 0; i < c.length; i++) {
@@ -316,6 +318,7 @@ public class Utils {
 		message = message.replaceAll("\u20e3", " ");
 		message = message.replaceAll(" ", " ");
 		message = escapeDash(message);
+		message = Converter.SIMPLIFIED.convert(message);
 		return message.trim();
 	}
 	/*
@@ -398,9 +401,9 @@ public class Utils {
 	
 	public static void main(String[] args){
 		USolr solr = new USolr("http://121.40.204.159:8080/solr/");
-		String line = "5.加版雷克萨斯LX570，黑红，顶配，现车，有关单，155.2万";
+		String line = "2017款美規陸虎行政3.0/黑黑/5月4日到港/140 配置:HSE包、駕駛輔助包、22輪、360度停車輔助、烏木頂、加熱方向盤、自動泊車輔助";
 		//System.out.println(Utils.normalizePrice("宝马320是   -10.5"));
-		System.out.println(Utils.clean(line, solr));
+		System.out.println(Utils.replace(line));
 		System.out.println(Utils.preProcess(line));
 		//System.out.println(clean(line, solr));
 		
