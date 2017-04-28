@@ -381,7 +381,7 @@ public class Utils {
 		Matcher m = p.matcher(str);
 		String line = m.replaceAll(" 下").trim();
 		
-		eL = "(?<=[^\\d])\\s+[\\+＋](?=\\d+)(?=\\.?)(?=\\d+)";
+		eL = "[\\+](?=\\d+)(?=\\.?)(?=\\d+)";
 		p = Pattern.compile(eL);
 		m = p.matcher(line);
 		line = m.replaceAll(" 加").trim();
