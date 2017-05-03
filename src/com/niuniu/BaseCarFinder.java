@@ -447,10 +447,20 @@ public class BaseCarFinder {
 				result_colors.add(buildColorString(outer, inner, outer_standard, inner_standard));
 			} else {
 				// 第二个颜色并不是内饰
-				String outer_standard = matchStandardColor(outer, 0);
-				result_colors.add(fetchValidColor(outer_standard, outer) + "#");
-				outer_standard = matchStandardColor(inner, 0);
-				result_colors.add(fetchValidColor(outer_standard, inner) + "#");
+				if(isExplicitOuterColor(indexes.get(0)) && isExplicitInnerColor(indexes.get(1))){
+					String outer_standard = matchStandardColor(outer, 0);
+					String inner_standard = matchStandardColor(inner, 1);
+					result_colors.add(buildColorString(outer, inner, outer_standard, inner_standard));
+				}else if (isExplicitOuterColor(indexes.get(1)) && isExplicitInnerColor(indexes.get(0))){
+					String outer_standard = matchStandardColor(outer, 1);
+					String inner_standard = matchStandardColor(inner, 0);
+					result_colors.add(buildColorString(inner, outer, inner_standard, outer_standard));
+				}else{
+					String outer_standard = matchStandardColor(outer, 0);
+					result_colors.add(fetchValidColor(outer_standard, outer) + "#");
+					outer_standard = matchStandardColor(inner, 0);
+					result_colors.add(fetchValidColor(outer_standard, inner) + "#");
+				}
 			}
 		} else {
 			mod = calcColorMode();
@@ -541,7 +551,7 @@ public class BaseCarFinder {
 		}
 		c = ele_arr.get(idx + 1);
 		content = c.substring(c.lastIndexOf("|") + 1, c.lastIndexOf("#"));
-		if (content.equals("外") || content.equals("外色") || content.equals("外饰")) {
+		if (content.equals("外") || content.equals("外色") || content.equals("外饰") || content.equals("车")) {
 			return true;
 		}
 		return false;
