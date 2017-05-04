@@ -514,7 +514,28 @@ public class BaseCarFinder {
 	public int calcColorMode() {
 		if (colors.size() != indexes.size())
 			return -1;
-
+		
+		boolean outer_flag = true;
+		for(int i=0;i<colors.size();i++){
+			if(colors.get(i).length()!=1){
+				outer_flag = false;
+				break;
+			}
+		}
+		if(outer_flag && colors.size()%2==1)
+			return 0;
+		outer_flag = true;
+		for(int i=0;i<colors.size()-1;i++){
+			String cur = colors.get(i);
+			String next = colors.get(i + 1);
+			if(cur.length()==1 && next.length()==1 && isAdjacentColor(indexes.get(i), indexes.get(i+1)))
+				continue;
+			else
+				outer_flag = false;
+		}
+		if(outer_flag)//全是外饰
+			return 0;
+		
 		// 内外都有
 		for (int i = 0; i < indexes.size(); i++) {
 			String c = colors.get(i);
