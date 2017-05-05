@@ -967,8 +967,17 @@ public class BaseCarFinder {
 						}
 					} else {
 						if (f > 500) {
-							f = f / 10000;
-							judgeMarketingPriceByW(f);
+							if(ele_arr.size() - 1 > i){
+								String content = ele_arr.get(i + 1);
+								content = content.substring(content.lastIndexOf("|") + 1, content.indexOf("#"));
+								if (content.equals("w") || content.equals("万")) {
+									discount_way = 4;
+									discount_content = f;
+								}
+							}else{
+								f = f / 10000;
+								judgeMarketingPriceByW(f);
+							}
 						} else {
 							if (ele_arr.size() - 1 > i) {
 								String content = ele_arr.get(i + 1);
