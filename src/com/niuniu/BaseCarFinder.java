@@ -353,6 +353,9 @@ public class BaseCarFinder {
 		}
 		standard_colors = tmp.split(",");
 		int ans = 1000;
+		if(color.endsWith("色") && color.length()>1){
+			color = color.substring(0, color.length()-1);
+		}
 		ArrayList<Integer> candidates = new ArrayList<Integer>();
 		for (int i = 0; i < standard_colors.length; i++) {
 			int distance = Utils.getEditDistance(color, standard_colors[i]);
