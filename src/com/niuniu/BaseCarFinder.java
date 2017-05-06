@@ -976,6 +976,9 @@ public class BaseCarFinder {
 								if (content.equals("w") || content.equals("万")) {
 									discount_way = 4;
 									discount_content = f;
+								}else{
+									f = f / 10000;
+									judgeMarketingPriceByW(f);
 								}
 							}else{
 								f = f / 10000;
