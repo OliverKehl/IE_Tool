@@ -243,14 +243,14 @@ public class SimpleMessageClassifier {
 	}
 
 	public int isValidLine() {
+		for(int i=0;i<tokens.size();i++){
+			if(tokens.get(i).contains("车架号"))
+				return -1;
+		}
 		if (real_prices.size() > 1 || fake_prices.size() > 2)
 			return 0;
 		if (latent_prices.size() >= 3)
 			return 0;
-		for(int i=0;i<tokens.size();i++){
-			if(tokens.contains("车架号"))
-				return -1;
-		}
 		if (standards.isEmpty())
 			return 1;
 		String cur_standard = standards.get(0);

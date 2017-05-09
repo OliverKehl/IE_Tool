@@ -811,7 +811,7 @@ public class BaseCarFinder {
 			String element = ele_arr.get(i);
 
 			if (i - vital_info_index >= 15)// 已经在扫配置信息了，停止，不指望从配置信息里获取价格，价格索性就电议，然后填到备注里
-				return false;
+				break;
 
 			if (!element.endsWith("PRICE")) {
 				continue;
@@ -867,6 +867,28 @@ public class BaseCarFinder {
 				int thehe = NumberUtils.toInt(hehe) + 1;
 				backup_index = Math.max(backup_index, thehe);
 				return true;
+			}
+		}
+		String token = ele_arr.get(ele_arr.size()-1);
+		if(token.endsWith("PRICE")){
+			float f = NumberUtils.toFloat(token.substring(token.lastIndexOf("|") + 1, token.indexOf("#")), 0f);
+			if(f!=0){
+				discount_content = f;
+				discount_way=4;
+				return true;
+			}
+		}else{
+			String tmp = token.substring(token.lastIndexOf("|") + 1, token.indexOf("#"));
+			if(tmp.equals("万") || tmp.equals("w")){
+				if(ele_arr.size()-2>=10){
+					String token2 = ele_arr.get(ele_arr.size()-2);
+					float f2 = NumberUtils.toFloat(token2.substring(token2.lastIndexOf("|") + 1, token2.indexOf("#")), 0f);
+					if(f2!=0){
+						discount_content = f2;
+						discount_way=4;
+						return true;
+					}
+				}
 			}
 		}
 		return false;
