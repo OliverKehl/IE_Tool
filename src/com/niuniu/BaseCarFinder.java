@@ -296,7 +296,7 @@ public class BaseCarFinder {
 			sub_query = pre_info + " " + sub_query;
 		boolean shit = isOldStyleQuery();
 		query_results = Utils.select(sub_query, solr, shit);
-		if (query_results == null) {
+		if (query_results == null || (sub_query.length()<3 && brands.isEmpty() && models.isEmpty() && styles.isEmpty())) {
 			// 1. 空行
 			// 2. 把颜色放指导价前面了
 			// TODO
@@ -926,16 +926,22 @@ public class BaseCarFinder {
 						backup_index = Math.max(backup_index, thehe);
 						return content;
 					}
+					while(head>=1 && this.original_message.charAt(head - 1) == ' ')
+						head--;
 					if ((head >= 1 && this.original_message.charAt(head - 1) == '#')) {
 						String hehe = ele.substring(ele.indexOf("-") + 1, ele.indexOf("|"));
 						int thehe = NumberUtils.toInt(hehe);
 						backup_index = Math.max(backup_index, thehe);
 						return content;
 					}
+					
+					while(tail< this.original_message.length() && this.original_message.charAt(tail)==' ')
+						tail++;
 					if ((tail < this.original_message.length() && this.original_message.charAt(tail) == '#')) {
 						backup_index = Math.max(backup_index, tail + 1);
 						return content;
 					}
+					
 				}
 			}
 		}
