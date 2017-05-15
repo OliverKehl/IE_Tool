@@ -265,8 +265,6 @@ public class ResourceMessageProcessor {
 		String price = ParallelResourcePriceClassifier.predict(info);
 		//从price中提取数字部分
 		if( price != null){
-			
-			
 			if(price.matches("\\d{1,3}(\\.\\d)?(w|W|万)$")){
 				price = price.substring(0,  price.length()-1);
 			}
@@ -508,11 +506,14 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("17款美规行政汽油黑咖\n黑色金属漆，HSE包（全景天窗，14项牛津打孔真皮座椅，电吸门，LED氙灯，智能卡，前排通风座椅，前后加热座椅，20寸轮毂，脚感电尾门，三区空调，电动折叠记忆后视镜）驾驶员辅助包（驾驶员状态监控，盲点辅助，交通标识识别，智能限速）6月初交车.135");
+		resourceMessageProcessor.setMessages("17款加版坦途1794 黑棕 白棕\n配置：天窗 并道辅助 真皮座椅加热 通风 USB蓝牙 大屏 JBL音响 倒影 雷达 巡航 防侧滑 多功能方向盘 后视镜加热 LED日行灯 大灯高度调节 桃木内饰 字标扶手箱 后货箱内衬 20寸轮毂 主副驾驶电动调节 后挡风玻璃自动升降 自动恒温空调 电动折叠后视镜\n47.5 现车手续齐 ");
 		resourceMessageProcessor.process();
 		CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
+		System.out.println(JSON.toJSON(crg));
+		/*
 		for(int i=0;i<resourceMessageProcessor.carResourceGroup.result.size();i++){
 			System.out.println(JSON.toJSON(crg.result.get(i)).toString());
 		}
+		*/
 	}
 }

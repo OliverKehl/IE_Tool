@@ -56,7 +56,9 @@ public class ParallelResourcePriceClassifier {
 			if(m.find()){
 				int start = m.start();
 				int end = m.end();
-				String tmp = clue.substring(start+1, end);
+				if(clue.charAt(start)<'0' || clue.charAt(start)>'9')
+					start++;
+				String tmp = clue.substring(start, end);
 				Matcher m2 = singleton.price_pattern.matcher(tmp);
 				if(m2.find())
 					return tmp.substring(m2.start(), m2.end());
