@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 import com.niuniu.cache.CacheManager;
+import com.niuniu.classifier.TokenTagClassifier;
 import com.niuniu.config.NiuniuBatchConfig;
 
 public class BaseCarFinder {
@@ -818,7 +819,7 @@ public class BaseCarFinder {
 			}
 			String fc = element.substring(element.lastIndexOf("|") + 1, element.indexOf("#"));
 			float p = NumberUtils.toFloat(fc);
-			if (p < 20 || p >= 1000)// 平行进口车的价格不会落在这个区间外
+			if (p < 20 || p >= 1000 || fc.matches("[0-9]{4,6}$"))// 平行进口车的价格不会落在这个区间外
 				continue;
 
 			if (i > 0) {
@@ -871,8 +872,9 @@ public class BaseCarFinder {
 		}
 		String token = ele_arr.get(ele_arr.size()-1);
 		if(token.endsWith("PRICE")){
-			float f = NumberUtils.toFloat(token.substring(token.lastIndexOf("|") + 1, token.indexOf("#")), 0f);
-			if(f!=0){
+			String content = token.substring(token.lastIndexOf("|") + 1, token.indexOf("#"));
+			float f = NumberUtils.toFloat(content, 0f);
+			if(f!=0 && f<1000 && !content.matches("[0-9]{4,6}$")){
 				discount_content = f;
 				discount_way=4;
 				return true;
@@ -941,6 +943,11 @@ public class BaseCarFinder {
 						backup_index = Math.max(backup_index, tail + 1);
 						return content;
 					}
+					
+					String hehe = ele.substring(ele.indexOf("-") + 1, ele.indexOf("|"));
+					int thehe = NumberUtils.toInt(hehe);
+					backup_index = Math.max(backup_index, thehe);
+					return content;
 					
 				}
 			}
@@ -1097,7 +1104,7 @@ public class BaseCarFinder {
 
 	public void addToResponseWithCache(String user_id, String reserve_s, ArrayList<String> res_base_car_ids,
 			ArrayList<String> res_colors, ArrayList<String> res_discount_way, ArrayList<String> res_discount_content,
-			ArrayList<String> res_remark, CarResourceGroup carResourceGroup, int mode, String VIN,
+			ArrayList<String> res_remark, CarResourceGroup carResourceGroup, int mode, String VIN, String resource_type,
 			boolean disableCache) {
 		if (query_results.size() == 0) {
 			try {
@@ -1124,7 +1131,7 @@ public class BaseCarFinder {
 			CarResource cr = new CarResource(base_car_id, result_colors.toString(), Integer.toString(discount_way),
 					Float.toString(discount_content),
 					Utils.removeRemarkIllegalHeader(postProcessRemark(this.original_message.substring(backup_index))),
-					brand_name, car_model_name, mode, VIN, year, style_name, standard_name);
+					brand_name, car_model_name, mode, VIN, year, style_name, standard_name, resource_type);
 			if (carResourceGroup == null)
 				carResourceGroup = new CarResourceGroup();
 			carResourceGroup.getResult().add(cr);

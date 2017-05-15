@@ -1,4 +1,4 @@
-package com.niuniu;
+package com.niuniu.classifier;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,6 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang.math.NumberUtils;
+
+import com.niuniu.USolr;
+import com.niuniu.Utils;
 
 public class SimpleMessageClassifier {
 	USolr solr;
@@ -247,18 +250,20 @@ public class SimpleMessageClassifier {
 			if(tokens.get(i).contains("车架号"))
 				return -1;
 		}
+		if(!standards.isEmpty()){
+			String cur_standard = standards.get(0);
+			cur_standard = cur_standard.substring(cur_standard.lastIndexOf("|") + 1, cur_standard.indexOf("#"));
+			if (cur_standard.equals("中东") || cur_standard.equals("加版") || cur_standard.equals("欧版")
+					|| cur_standard.equals("美规") || cur_standard.equals("墨西哥版")) {
+				return -1;
+			}
+		}
 		if (real_prices.size() > 1 || fake_prices.size() > 2)
 			return 0;
 		if (latent_prices.size() >= 3)
 			return 0;
 		if (standards.isEmpty())
 			return 1;
-		String cur_standard = standards.get(0);
-		cur_standard = cur_standard.substring(cur_standard.lastIndexOf("|") + 1, cur_standard.indexOf("#"));
-		if (cur_standard.equals("中东") || cur_standard.equals("加版") || cur_standard.equals("欧版")
-				|| cur_standard.equals("美规") || cur_standard.equals("墨西哥版")) {
-			return -1;
-		}
 		return 1;
 	}
 

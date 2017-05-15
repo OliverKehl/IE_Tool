@@ -1,4 +1,4 @@
-package com.niuniu;
+package com.niuniu.classifier;
 
 /*
  *  批量发布资源规格判定

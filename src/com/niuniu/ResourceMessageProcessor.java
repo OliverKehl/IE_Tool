@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 import com.niuniu.cache.CacheManager;
+import com.niuniu.classifier.ParallelResourcePriceClassifier;
+import com.niuniu.classifier.ResourceTypeClassifier;
+import com.niuniu.classifier.SimpleMessageClassifier;
 import com.niuniu.config.NiuniuBatchConfig;
 
 public class ResourceMessageProcessor {
@@ -258,6 +261,20 @@ public class ResourceMessageProcessor {
 		return brands_counter.size()>1;
 	}
 	
+	private void reExtractPriceFromConfiguration(CarResource cr, String info){
+		String price = ParallelResourcePriceClassifier.predict(info);
+		//从price中提取数字部分
+		if( price != null){
+			
+			
+			if(price.matches("\\d{1,3}(\\.\\d)?(w|W|万)$")){
+				price = price.substring(0,  price.length()-1);
+			}
+			cr.setDiscount_way("4");
+			cr.setDiscount_content(price);
+		}
+	}
+	
 	public boolean process(){
 		long t1 = System.currentTimeMillis();
 		for(String s : message_arr){
@@ -294,6 +311,14 @@ public class ResourceMessageProcessor {
 				if(last_standard_name==-1){
 					CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
 					tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
+					if(tmpCR.getResource_type()==null){
+						String resource_type = ResourceTypeClassifier.predict(s);
+						if(resource_type!=null)
+							tmpCR.setResource_type(resource_type);
+					}
+					if(tmpCR.getDiscount_way().equals("5")){
+						reExtractPriceFromConfiguration(tmpCR, s);
+					}
 				}
 				continue;
 				// 该行文本包含多个指导价
@@ -319,6 +344,14 @@ public class ResourceMessageProcessor {
 				if(last_standard_name==-1){
 					CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
 					tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
+					if(tmpCR.getResource_type()==null){
+						String resource_type = ResourceTypeClassifier.predict(s);
+						if(resource_type!=null)
+							tmpCR.setResource_type(resource_type);
+					}
+					if(tmpCR.getDiscount_way().equals("5")){
+						reExtractPriceFromConfiguration(tmpCR, s);
+					}
 				}
 				writeInvalidInfo(concatWithSpace(s));
 				continue;
@@ -421,7 +454,7 @@ public class ResourceMessageProcessor {
 					
 					baseCarFinder.generateColors();
 					baseCarFinder.generateRealPrice();
-					baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, null, disableCache);
+					baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, null, "现车", disableCache);
 					baseCarFinder.printParsingResult(writer);
 					fillHeaderRecord(baseCarFinder, mode);
 				}
@@ -462,7 +495,8 @@ public class ResourceMessageProcessor {
 				baseCarFinder.generateColors();
 				String VIN = baseCarFinder.extractVIN();
 				baseCarFinder.generarteParellelPrice();
-				baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, VIN, disableCache);
+				String resource_type = ResourceTypeClassifier.predict(s);
+				baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, VIN, resource_type, disableCache);
 				baseCarFinder.printParsingResult(writer);
 				fillHeaderRecord(baseCarFinder, -1);
 			}
@@ -474,7 +508,11 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("海马 \n 福美来17款手动舒适 \n 7.68万 白色 近期车 \n 单台下1.4万 东区自提");
+		resourceMessageProcessor.setMessages("17款美规行政汽油黑咖\n黑色金属漆，HSE包（全景天窗，14项牛津打孔真皮座椅，电吸门，LED氙灯，智能卡，前排通风座椅，前后加热座椅，20寸轮毂，脚感电尾门，三区空调，电动折叠记忆后视镜）驾驶员辅助包（驾驶员状态监控，盲点辅助，交通标识识别，智能限速）6月初交车.135");
 		resourceMessageProcessor.process();
+		CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
+		for(int i=0;i<resourceMessageProcessor.carResourceGroup.result.size();i++){
+			System.out.println(JSON.toJSON(crg.result.get(i)).toString());
+		}
 	}
 }

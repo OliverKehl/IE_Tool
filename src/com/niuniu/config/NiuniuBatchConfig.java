@@ -14,6 +14,10 @@ public class NiuniuBatchConfig {
 	
 	public final String TOKEN_TAG_MODEL = "com/niuniu/config/tags.m";
 	
+	public final String RESOURCE_TYPE_PATTERN = "com/niuniu/config/resource_type.pattern";
+	
+	public final String PARALLEL_PRICE_PATTERN = "com/niuniu/config/parallel_price.pattern";
+	
 	public final String PRICE_REFERENCE_MODEL = "com/niuniu/config/base_car_price_reference";
 
 	private static final NiuniuBatchConfig NIUNIU_BATCH_CONFIG;
@@ -69,6 +73,14 @@ public class NiuniuBatchConfig {
 		return NIUNIU_BATCH_CONFIG.props.getProperty("token_tag_model", NIUNIU_BATCH_CONFIG.TOKEN_TAG_MODEL);
 	}
 	
+	public static String getResourceTypeModel() {
+		return NIUNIU_BATCH_CONFIG.props.getProperty("resource_type_pattern", NIUNIU_BATCH_CONFIG.RESOURCE_TYPE_PATTERN);
+	}
+	
+	public static String getParallelPriceModel() {
+		return NIUNIU_BATCH_CONFIG.props.getProperty("parallel_price_pattern", NIUNIU_BATCH_CONFIG.PARALLEL_PRICE_PATTERN);
+	}
+	
 	public static String getPriceReferenceModel() {
 		return NIUNIU_BATCH_CONFIG.props.getProperty("price_reference_model", NIUNIU_BATCH_CONFIG.PRICE_REFERENCE_MODEL);
 	}
@@ -94,6 +106,6 @@ public class NiuniuBatchConfig {
 	}
 
 	public static void main(String[] args){
-		System.out.println(NiuniuBatchConfig.getSolrHost());
+		System.out.println(NiuniuBatchConfig.getResourceTypeModel());
 	}
 }

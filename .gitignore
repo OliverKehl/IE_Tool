@@ -26,5 +26,5 @@ tags.m
 config.xml
 
 
-
+build/
 .DS_store

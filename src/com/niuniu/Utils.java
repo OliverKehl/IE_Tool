@@ -90,10 +90,10 @@ public class Utils {
 		String eL = "[a-zA-Z]+-\\w";
 		dashEscapePattern = Pattern.compile(eL);
 		
-		eL = "^\\d.\\d";
+		eL = "^\\d\\.\\d";
 		headerPricePattern = Pattern.compile(eL);
 		
-		eL = "^\\d[.\\s、]";
+		eL = "^\\d[\\.;\\s、]";
 		headerOrderPattern = Pattern.compile(eL);
 		
 		InputStream is = null;
@@ -406,7 +406,6 @@ public class Utils {
 		System.out.println(Utils.replace(line));
 		System.out.println(Utils.preProcess(line));
 		//System.out.println(clean(line, solr));
-		
 	}
 	
 }
