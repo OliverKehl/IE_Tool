@@ -44,7 +44,7 @@ public class ParallelResourcePriceClassifier {
 				Pattern pattern = Pattern.compile(line);
 				patterns.add(pattern);
 			}
-			log.info("[batch_processor]\t" + NiuniuBatchConfig.getParallelPriceModel() + "\tt平行进口车价格正则表达式初始化完成");
+			log.info("[batch_processor]\t" + NiuniuBatchConfig.getParallelPriceModel() + "\t平行进口车价格正则表达式初始化完成");
 		}catch(Exception e){
 			e.printStackTrace();
 		}

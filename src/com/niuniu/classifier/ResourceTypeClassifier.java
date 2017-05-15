@@ -47,7 +47,7 @@ public class ResourceTypeClassifier {
 				Pattern pattern = Pattern.compile(line);
 				patterns.add(pattern);
 			}
-			log.info("[batch_processor]\t" + NiuniuBatchConfig.getResourceTypeModel() + "\tt车源类型正则表达式初始化完成");
+			log.info("[batch_processor]\t" + NiuniuBatchConfig.getResourceTypeModel() + "\t车源类型正则表达式初始化完成");
 		}catch(Exception e){
 			e.printStackTrace();
 		}
