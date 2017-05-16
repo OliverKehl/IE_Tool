@@ -870,25 +870,27 @@ public class BaseCarFinder {
 				return true;
 			}
 		}
-		String token = ele_arr.get(ele_arr.size()-1);
-		if(token.endsWith("PRICE")){
-			String content = token.substring(token.lastIndexOf("|") + 1, token.indexOf("#"));
-			float f = NumberUtils.toFloat(content, 0f);
-			if(f!=0 && f<1000 && !content.matches("[0-9]{4,6}$")){
-				discount_content = f;
-				discount_way=4;
-				return true;
-			}
-		}else{
-			String tmp = token.substring(token.lastIndexOf("|") + 1, token.indexOf("#"));
-			if(tmp.equals("万") || tmp.equals("w")){
-				if(ele_arr.size()-2>=10){
-					String token2 = ele_arr.get(ele_arr.size()-2);
-					float f2 = NumberUtils.toFloat(token2.substring(token2.lastIndexOf("|") + 1, token2.indexOf("#")), 0f);
-					if(f2!=0){
-						discount_content = f2;
-						discount_way=4;
-						return true;
+		if(ele_arr.size()>=15){
+			String token = ele_arr.get(ele_arr.size()-1);
+			if(token.endsWith("PRICE")){
+				String content = token.substring(token.lastIndexOf("|") + 1, token.indexOf("#"));
+				float f = NumberUtils.toFloat(content, 0f);
+				if(f!=0 && f<1000 && !content.matches("[0-9]{4,6}$")){
+					discount_content = f;
+					discount_way=4;
+					return true;
+				}
+			}else{
+				String tmp = token.substring(token.lastIndexOf("|") + 1, token.indexOf("#"));
+				if(tmp.equals("万") || tmp.equals("w")){
+					if(ele_arr.size()-2>=10){
+						String token2 = ele_arr.get(ele_arr.size()-2);
+						float f2 = NumberUtils.toFloat(token2.substring(token2.lastIndexOf("|") + 1, token2.indexOf("#")), 0f);
+						if(f2!=0){
+							discount_content = f2;
+							discount_way=4;
+							return true;
+						}
 					}
 				}
 			}
