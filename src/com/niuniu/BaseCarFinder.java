@@ -200,7 +200,7 @@ public class BaseCarFinder {
 			if (start > 0 && '#' == message.charAt(start - 1)) {
 				return i;
 			}
-			if (s.endsWith("#OTHERS") || s.endsWith("#COLOR")) {
+			if (s.endsWith("#OTHERS") || s.endsWith("#COLOR") || s.endsWith("AREA")) {
 				if (s.contains("指导价")) {
 					tokens.remove(i);
 					continue;
