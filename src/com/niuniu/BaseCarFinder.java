@@ -683,6 +683,8 @@ public class BaseCarFinder {
 		}
 		if (c1.equals(c2))
 			return 1;
+		if(!base_colors_set.contains(c1))
+			return -1;
 		return base_colors_set.contains(c1) && base_colors_set.contains(c2) ? 1 : 0;
 	}
 
