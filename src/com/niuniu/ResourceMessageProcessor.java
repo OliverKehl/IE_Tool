@@ -325,9 +325,15 @@ public class ResourceMessageProcessor {
 			}
 			
 			BaseCarFinder baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
-			boolean status = baseCarFinder.generateBaseCarId(s, null);
+			boolean status = false;
+			if(mode==-1){
+				status = baseCarFinder.generateBaseCarId(s, null, 2);
+			}
+			else{
+				status = baseCarFinder.generateBaseCarId(s, null);
+			}
 			
-			if(!status || (baseCarFinder.query_results.size()>=40 && baseCarFinder.query_results.getMaxScore()<2500)){
+			if(!status || (baseCarFinder.query_results.size()>=40 && baseCarFinder.query_results.getMaxScore()<2500) || baseCarFinder.query_results.getMaxScore()<2600){
 				status = false;
 			}
 			
@@ -506,7 +512,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("17款加版坦途1794 黑棕 白棕\n配置：天窗 并道辅助 真皮座椅加热 通风 USB蓝牙 大屏 JBL音响 倒影 雷达 巡航 防侧滑 多功能方向盘 后视镜加热 LED日行灯 大灯高度调节 桃木内饰 字标扶手箱 后货箱内衬 20寸轮毂 主副驾驶电动调节 后挡风玻璃自动升降 自动恒温空调 电动折叠后视镜\n47.5 现车手续齐 ");
+		resourceMessageProcessor.setMessages("宝马118矿白黑256 下 22.5");
 		resourceMessageProcessor.process();
 		CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		System.out.println(JSON.toJSON(crg));

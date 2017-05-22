@@ -60,7 +60,7 @@ public class USolr {
 			if (server == null) {
 				server = new HttpSolrServer(url);
 				server.setSoTimeout(10000); // socket read timeout
-				server.setConnectionTimeout(1000);
+				server.setConnectionTimeout(5000);
 				server.setDefaultMaxConnectionsPerHost(100);
 				server.setMaxTotalConnections(100);
 				server.setFollowRedirects(false); // defaults to false

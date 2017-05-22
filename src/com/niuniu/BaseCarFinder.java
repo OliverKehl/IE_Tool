@@ -43,7 +43,7 @@ public class BaseCarFinder {
 
 	String cur_brand;
 	String cur_model;
-
+	
 	String original_message;
 
 	USolr solr;
@@ -55,6 +55,8 @@ public class BaseCarFinder {
 
 	Set<String> suffix_quants_set;
 	Set<String> prefix_behave_set;
+	
+	boolean colorBeforePrice = false;
 
 	// 指导价
 	// 考虑色全的情况
@@ -175,6 +177,8 @@ public class BaseCarFinder {
 				return false;
 			return true;
 		}
+		if(f>100 && f%10!=0 )
+			return true;
 		return false;
 	}
 
@@ -192,7 +196,7 @@ public class BaseCarFinder {
 		return real_tag;
 	}
 
-	private int parse(ArrayList<String> tokens, String message) {
+	private int parse(ArrayList<String> tokens, String message, int standard) {
 		boolean price_status = false;
 		for (int i = 0; i < tokens.size(); i++) {
 			String s = tokens.get(i);
@@ -201,6 +205,14 @@ public class BaseCarFinder {
 				return i;
 			}
 			if (s.endsWith("#OTHERS") || s.endsWith("#COLOR") || s.endsWith("AREA")) {
+				
+				backup_index = Math.max(NumberUtils.createInteger(s.substring(s.indexOf("-") + 1, s.indexOf("|"))),
+						backup_index);
+				
+				if(standard!=2 && s.endsWith("COLOR") && !price_status){
+					colorBeforePrice = true;
+					continue;
+				}
 				if (s.contains("指导价")) {
 					tokens.remove(i);
 					continue;
@@ -240,6 +252,14 @@ public class BaseCarFinder {
 					|| s.endsWith("MODEL_STYLE_PRICE")) {
 				if (price_status)
 					return Math.min(i + 1, tokens.size());
+				
+				//扫到指导价
+				if(colorBeforePrice && standard!=2){
+					prices.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+					price_status = price_status | isStandardPrice(s);
+					return Math.min(i + 1, tokens.size());
+				}
+				
 				String real_tag = judgeRealTag(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 				if (real_tag != null) {
 					if (real_tag.equals("MODEL")) {
@@ -258,11 +278,11 @@ public class BaseCarFinder {
 		return tokens.size();
 	}
 
-	private String parseMessage(USolr solr, String message) {
+	private String parseMessage(USolr solr, String message, int standard) {
 		ele_arr = Utils.tokenize(message, solr, "filter_word");
 		if (ele_arr == null)
 			return null;
-		vital_info_index = parse(ele_arr, message);
+		vital_info_index = parse(ele_arr, message, standard);
 		int stop = 0;
 		if (vital_info_index == ele_arr.size()) {
 			stop = message.length();
@@ -292,7 +312,7 @@ public class BaseCarFinder {
 		Map<Integer, Float> base_car_info = new HashMap<Integer, Float>();
 		if (solr == null)
 			return false;
-		String sub_query = parseMessage(solr, message);
+		String sub_query = parseMessage(solr, message, 1);
 		if (pre_info != null)
 			sub_query = pre_info + " " + sub_query;
 		boolean shit = isOldStyleQuery();
@@ -316,7 +336,7 @@ public class BaseCarFinder {
 		Map<Integer, Float> base_car_info = new HashMap<Integer, Float>();
 		if (solr == null)
 			return false;
-		String sub_query = parseMessage(solr, message);
+		String sub_query = parseMessage(solr, message, standard);
 		if (pre_info != null)
 			sub_query = pre_info + " " + sub_query;
 		boolean shit = false;
@@ -395,22 +415,42 @@ public class BaseCarFinder {
 	 */
 	public void generateColors() {
 		int idx = 0;
-		for (idx = vital_info_index; idx < ele_arr.size(); idx++) {
-			String s = ele_arr.get(idx);
-			if (s.endsWith("#COLOR")) {
-				indexes.add(idx);
-				colors.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
-			} else if (s.endsWith("STYLE") || s.endsWith("PRICE")) {
-				idx--;
-				break;
+		if(!colorBeforePrice){
+			for (idx = 0; idx < ele_arr.size(); idx++) {
+				String s = ele_arr.get(idx);
+				if (s.endsWith("#COLOR")) {
+					indexes.add(idx);
+					colors.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+				} else if (!colors.isEmpty() && (s.endsWith("STYLE") || s.endsWith("PRICE"))) {
+					idx--;
+					break;
+				}
 			}
-		}
-		if (idx < ele_arr.size()) {
-			String temp = ele_arr.get(idx);
-			backup_index = Math.max(NumberUtils.createInteger(temp.substring(temp.indexOf("-") + 1, temp.indexOf("|"))),
-					backup_index);
-		} else {
-			backup_index = Math.max(original_message.length(), backup_index);
+			if (idx < ele_arr.size()) {
+				String temp = ele_arr.get(idx);
+				backup_index = Math.max(NumberUtils.createInteger(temp.substring(temp.indexOf("-") + 1, temp.indexOf("|"))),
+						backup_index);
+			} else {
+				backup_index = Math.max(original_message.length(), backup_index);
+			}
+		}else{
+			for (idx = 0; idx < vital_info_index; idx++) {
+				String s = ele_arr.get(idx);
+				if (s.endsWith("#COLOR")) {
+					indexes.add(idx);
+					colors.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+				} else if (!colors.isEmpty() && (s.endsWith("STYLE") || s.endsWith("PRICE"))) {
+					idx--;
+					break;
+				}
+			}
+			if (idx < ele_arr.size()) {
+				String temp = ele_arr.get(idx);
+				backup_index = Math.max(NumberUtils.createInteger(temp.substring(temp.indexOf("-") + 1, temp.indexOf("|"))),
+						backup_index);
+			} else {
+				backup_index = Math.max(original_message.length(), backup_index);
+			}
 		}
 		int mod = 0;// 默认是外和内分开
 		if (colors.size() == 1) {// 黑白对应外+内，而米黄对应的只是外饰，摩卡对应的也是外饰
