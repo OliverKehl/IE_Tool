@@ -466,9 +466,21 @@ public class ResourceMessageProcessor {
 			if(mode==-1){
 				//如果是平行进口车
 				boolean tmp_status = baseCarFinder.generateBaseCarId(s, null, 2);
-				if(tmp_status){
-					//平行进口车车型库没找到。。。是不是还要再回到中规国产去找呢？？？
-					// TODO
+				if(!tmp_status){
+					if(last_standard_name==-1){
+						CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
+						tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
+						if(tmpCR.getResource_type()==null){
+							String resource_type = ResourceTypeClassifier.predict(s);
+							if(resource_type!=null)
+								tmpCR.setResource_type(resource_type);
+						}
+						if(tmpCR.getDiscount_way().equals("5")){
+							reExtractPriceFromConfiguration(tmpCR, s);
+						}
+					}
+					writeInvalidInfo(concatWithSpace(s));
+					continue;
 				}
 				if(baseCarFinder.query_results.getMaxScore()<2500){
 					String prefix = rebuildQueryPrefix(baseCarFinder,0);
@@ -512,7 +524,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("宝马118矿白黑256 下 22.5");
+		resourceMessageProcessor.setMessages("思域12.79炫动蓝下6000，\n白4500\nXRV12.78白下6800\nXRV13.78黑、白、蓝、银，橙\nXRV13.98白下7500\nXRV14.98黑、金，白\nXRV16.28白、银，金，蓝，黑\n思铂睿新款\n22.99白、棕下24000\n混动2659白下25000\n电话15656521004");
 		resourceMessageProcessor.process();
 		CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		System.out.println(JSON.toJSON(crg));
