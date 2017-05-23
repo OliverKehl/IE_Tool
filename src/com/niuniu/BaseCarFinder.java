@@ -50,7 +50,7 @@ public class BaseCarFinder {
 
 	int backup_index = 0;
 
-	String[] suffix_quants = { "台", "轮", "度", "速", "天", "分钟", "小时", "秒", "辆", "年", "月", "寸" };
+	String[] suffix_quants = { "台", "轮", "度", "速", "天", "分钟", "小时", "秒", "辆", "年", "月", "寸", "月底"};
 	String[] prefix_behave = { "送" };
 
 	Set<String> suffix_quants_set;
@@ -196,6 +196,16 @@ public class BaseCarFinder {
 		return real_tag;
 	}
 
+	private boolean priceSuffix(int cur){
+		if((cur+1)>=ele_arr.size())
+			return false;
+		String content = ele_arr.get(cur + 1);
+		content = content.substring(content.lastIndexOf("|") + 1, content.indexOf("#"));
+		if ("折".equals(content) || "万".equals(content) || "点".equals(content) || "w".equals(content))
+			return true;
+		return false;
+	}
+	
 	private int parse(ArrayList<String> tokens, String message, int standard) {
 		boolean price_status = false;
 		for (int i = 0; i < tokens.size(); i++) {
@@ -250,6 +260,10 @@ public class BaseCarFinder {
 				}
 			} else if (s.endsWith("#STYLE_PRICE") || s.endsWith("#FPRICE") || s.endsWith("MODEL_PRICE")
 					|| s.endsWith("MODEL_STYLE_PRICE")) {
+				//TODO
+				if(isQuantOrBehave(i) || priceSuffix(i)){
+					return i;
+				}
 				if (price_status)
 					return Math.min(i + 1, tokens.size());
 				
