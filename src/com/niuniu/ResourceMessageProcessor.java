@@ -86,6 +86,26 @@ public class ResourceMessageProcessor {
 	public String resultToJson(){
 		if(carResourceGroup==null)
 			carResourceGroup = new CarResourceGroup();
+		for(CarResource cr : carResourceGroup.result){
+			if(cr.getDiscount_way()==null || cr.getDiscount_way().equals("0"))
+				continue;
+			if(cr.getDiscount_way().equals("4")){
+				cr.setReal_price(cr.getDiscount_content());
+			}else{
+				String guiding_price = cr.getGuiding_price();
+				if(guiding_price!=null && !guiding_price.equals("0.0")){
+					float price = NumberUtils.createFloat(guiding_price);
+					float coupon = NumberUtils.toFloat(cr.getDiscount_content());
+					if(cr.getDiscount_way().equals("1")){
+						cr.setReal_price(Float.toString(Utils.round(price * (100 - coupon) / 100f, 2)));
+					}else if(cr.getDiscount_way().equals("2")){
+						cr.setReal_price(Float.toString(Utils.round(price - coupon, 2)));
+					}else if(cr.getDiscount_way().equals("3")){
+						cr.setReal_price(Float.toString(Utils.round(price + coupon, 2)));
+					}
+				}
+			}
+		}
 		return JSON.toJSON(carResourceGroup).toString();
 	}
 	
@@ -108,7 +128,7 @@ public class ResourceMessageProcessor {
 			ArrayList<String> hehe = new ArrayList<String>();
 			hehe.add(tmp[0]);
 			for(int i=1;i<tmp.length;i++){
-				if(tmp[i].equals(hehe.get(hehe.size()-1))){
+				if(tmp[i].equals(hehe.get(hehe.size()-1)) || tmp[i].trim().isEmpty()){
 					continue;
 				}else{
 					hehe.add(tmp[i]);
@@ -466,6 +486,11 @@ public class ResourceMessageProcessor {
 			if(mode==-1){
 				//如果是平行进口车
 				boolean tmp_status = baseCarFinder.generateBaseCarId(s, null, 2);
+				if(baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty()){
+					status = false;
+					writeInvalidInfo(concatWithSpace(s));
+					continue;
+				}
 				if(!tmp_status){
 					if(last_standard_name==-1){
 						CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
@@ -519,15 +544,17 @@ public class ResourceMessageProcessor {
 		}
 		long t2 = System.currentTimeMillis();
 		carResourceGroup.setQTime(Long.toString(t2-t1));
+		log.info("[batch_processor]\t" + "总耗时： \t" + Long.toString(t2-t1));
 		return true;
 	}
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("思域12.79炫动蓝下6000，\n白4500\nXRV12.78白下6800\nXRV13.78黑、白、蓝、银，橙\nXRV13.98白下7500\nXRV14.98黑、金，白\nXRV16.28白、银，金，蓝，黑\n思铂睿新款\n22.99白、棕下24000\n混动2659白下25000\n电话15656521004");
+		resourceMessageProcessor.setMessages("探险者17款3.5运动版5998：黑色，白色，灰色");
 		resourceMessageProcessor.process();
 		CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
-		System.out.println(JSON.toJSON(crg));
+		//System.out.println(JSON.toJSON(crg));
+		System.out.println(resourceMessageProcessor.resultToJson());
 		/*
 		for(int i=0;i<resourceMessageProcessor.carResourceGroup.result.size();i++){
 			System.out.println(JSON.toJSON(crg.result.get(i)).toString());

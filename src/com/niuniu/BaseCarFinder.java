@@ -744,15 +744,10 @@ public class BaseCarFinder {
 		if (guiding_price == 0f) {
 			return 1.0f;
 		} else {
-			return round(Math.abs(expected_price - guiding_price) / guiding_price, 2);
+			return Utils.round(Math.abs(expected_price - guiding_price) / guiding_price, 2);
 		}
 	}
 
-	private float round(float value, int scale) {
-		BigDecimal bdBigDecimal = new BigDecimal(value);
-		bdBigDecimal = bdBigDecimal.setScale(scale, BigDecimal.ROUND_HALF_UP);
-		return bdBigDecimal.floatValue();
-	}
 
 	private void judgeMarketingPriceByW(float coupon) {
 		Object guiding_price = query_results.get(0).get("guiding_price_s");
@@ -779,6 +774,28 @@ public class BaseCarFinder {
 		}
 	}
 
+	private void judgeMarketingPriceWithDiscount(float coupon){
+		Object guiding_price = query_results.get(0).get("guiding_price_s");
+		if (guiding_price == null) {
+			discount_way = 4;
+			discount_content = coupon;
+			return;
+		}
+		int id = NumberUtils.createInteger(query_results.get(0).get("id").toString());
+		float price = NumberUtils.createFloat(guiding_price.toString());
+		float price1 = Utils.round(price * (100 - coupon) / 100f, 2);
+		float bias1 = calcPriceBias(id, price1);
+		float price2 = price - coupon;
+		float bias2 = calcPriceBias(id, price2);
+		if(bias1<bias2){
+			discount_way = 1;
+			discount_content = coupon;
+		}else{
+			discount_way = 2;
+			discount_content = coupon;
+		}
+	}
+	
 	private void judgeMarketingPrice(float coupon) {
 		Object guiding_price = query_results.get(0).get("guiding_price_s");
 		if (guiding_price == null) {
@@ -788,7 +805,7 @@ public class BaseCarFinder {
 		}
 		int id = NumberUtils.createInteger(query_results.get(0).get("id").toString());
 		float price = NumberUtils.createFloat(guiding_price.toString());
-		float price1 = round(price * (100 - coupon) / 100f, 2);
+		float price1 = Utils.round(price * (100 - coupon) / 100f, 2);
 		float bias1 = calcPriceBias(id, price1);
 		float price2 = price - coupon;
 		float bias2 = calcPriceBias(id, price2);
@@ -1054,7 +1071,7 @@ public class BaseCarFinder {
 									discount_content = f;
 								} else {
 									// 不确定是下xx点还是下xx万，使用行情价判定
-									judgeMarketingPrice(f);
+									judgeMarketingPriceWithDiscount(f);
 								}
 							} else {
 								// 不确定是下xx点还是下xx万，使用行情价判定
@@ -1184,12 +1201,13 @@ public class BaseCarFinder {
 		int year = NumberUtils.toInt(query_results.get(0).get("year").toString());
 		String style_name = query_results.get(0).get("base_car_style").toString();
 		String standard_name = query_results.get(0).get("standard_name").toString();
-
+		String guiding_price = query_results.get(0).get("guiding_price_s").toString();
+		
 		try {
 			CarResource cr = new CarResource(base_car_id, result_colors.toString(), Integer.toString(discount_way),
 					Float.toString(discount_content),
 					Utils.removeRemarkIllegalHeader(postProcessRemark(this.original_message.substring(backup_index))),
-					brand_name, car_model_name, mode, VIN, year, style_name, standard_name, resource_type);
+					brand_name, car_model_name, mode, VIN, year, style_name, standard_name, resource_type, guiding_price);
 			if (carResourceGroup == null)
 				carResourceGroup = new CarResourceGroup();
 			carResourceGroup.getResult().add(cr);

@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -398,6 +399,12 @@ public class Utils {
 				str = str.replace(m.group(0), m.group(0).replaceAll("-", ""));
 		}
 		return str;
+	}
+	
+	public static float round(float value, int scale) {
+		BigDecimal bdBigDecimal = new BigDecimal(value);
+		bdBigDecimal = bdBigDecimal.setScale(scale, BigDecimal.ROUND_HALF_UP);
+		return bdBigDecimal.floatValue();
 	}
 	
 	public static void main(String[] args){
