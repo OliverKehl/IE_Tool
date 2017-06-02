@@ -296,10 +296,10 @@ public class ResourceMessageProcessor {
 	public boolean process(){
 		long t1 = System.currentTimeMillis();
 		for(String s : message_arr){
+			
 			if(s.trim().isEmpty() || s.length()<2){
 				continue;
 			}
-			
 			
 			if(!disableCache && NiuniuBatchConfig.getEnableCache()){
 				String hit = CacheManager.get(user_id + "_" + s);
@@ -313,7 +313,6 @@ public class ResourceMessageProcessor {
 					continue;
 				}
 			}
-			
 			
 			String reserve_s = s;
 			
@@ -550,9 +549,9 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("探险者17款3.5运动版5998：黑色，白色，灰色");
+		resourceMessageProcessor.setMessages("XJ1208白黑优惠31个点");
 		resourceMessageProcessor.process();
-		CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
+		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));
 		System.out.println(resourceMessageProcessor.resultToJson());
 		/*

@@ -1,7 +1,6 @@
 package com.niuniu;
 
 import java.io.BufferedWriter;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -748,7 +747,9 @@ public class BaseCarFinder {
 		}
 	}
 
-
+	/*
+	 * 有的人的车直接写价格，而不是下点或者下万，如果找到某个地方是万，但是数字前面没有明确的下，优惠等关键词，就judge
+	 */
 	private void judgeMarketingPriceByW(float coupon) {
 		Object guiding_price = query_results.get(0).get("guiding_price_s");
 		if (guiding_price == null) {
@@ -823,35 +824,6 @@ public class BaseCarFinder {
 		}
 		// 直接报价
 		if (bias3 < bias1 && bias3 < bias2) {
-			discount_way = 4;
-			discount_content = coupon;
-		}
-	}
-
-	/*
-	 * 有的人的车直接写价格，而不是下点或者下万，如果找到某个地方是万，但是数字前面没有明确的下，优惠等关键词，就judge
-	 */
-	private void judgeMarketingPriceW(float coupon) {
-		Object guiding_price = query_results.get(0).get("guiding_price_s");
-		if (guiding_price == null) {
-			discount_way = 4;
-			discount_content = coupon;
-			return;
-		}
-		int id = NumberUtils.createInteger(query_results.get(0).get("id").toString());
-		float price = NumberUtils.createFloat(guiding_price.toString());
-		float price2 = price - coupon;
-		float bias2 = calcPriceBias(id, price2);
-		float price3 = coupon;
-		float bias3 = calcPriceBias(id, price3);
-		
-		// 下xx万
-		if (bias2 < bias3) {
-			discount_way = 2;
-			discount_content = coupon;
-		}
-		// 直接报价
-		if (bias3 < bias2) {
 			discount_way = 4;
 			discount_content = coupon;
 		}
