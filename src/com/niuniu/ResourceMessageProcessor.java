@@ -484,6 +484,7 @@ public class ResourceMessageProcessor {
 			}
 			if(mode==-1){
 				//如果是平行进口车
+				baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
 				boolean tmp_status = baseCarFinder.generateBaseCarId(s, null, 2);
 				if(baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty()){
 					status = false;
@@ -549,7 +550,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("XJ1208白黑优惠31个点");
+		resourceMessageProcessor.setMessages("CLA220 319红黑2保");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

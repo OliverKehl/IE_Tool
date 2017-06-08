@@ -429,12 +429,12 @@ public class BaseCarFinder {
 	public void generateColors() {
 		int idx = 0;
 		if(!colorBeforePrice){
-			for (idx = 0; idx < ele_arr.size(); idx++) {
+			for (idx = vital_info_index; idx < ele_arr.size(); idx++) {
 				String s = ele_arr.get(idx);
 				if (s.endsWith("#COLOR")) {
 					indexes.add(idx);
 					colors.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
-				} else if (!colors.isEmpty() && (s.endsWith("STYLE") || s.endsWith("PRICE"))) {
+				} else if (s.endsWith("STYLE") || s.endsWith("PRICE")) {
 					idx--;
 					break;
 				}
