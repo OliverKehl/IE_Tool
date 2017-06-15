@@ -488,7 +488,7 @@ public class ResourceMessageProcessor {
 						}
 					}
 					
-					baseCarFinder.generateColors();
+					baseCarFinder.generateColors(mode);
 					baseCarFinder.generateRealPrice();
 					baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, null, "现车", disableCache);
 					baseCarFinder.printParsingResult(writer);
@@ -547,7 +547,7 @@ public class ResourceMessageProcessor {
 					writeInvalidInfo(concatWithSpace(s));
 					continue;
 				}
-				baseCarFinder.generateColors();
+				baseCarFinder.generateColors(mode);
 				String VIN = baseCarFinder.extractVIN();
 				baseCarFinder.generarteParellelPrice();
 				String resource_type = ResourceTypeClassifier.predict(s);
@@ -564,7 +564,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("17款加版Q7（8418）金米 手续齐");
+		resourceMessageProcessor.setMessages("[耶][耶]17款霸道2700白米 黎巴嫩版 今天现车 43万");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

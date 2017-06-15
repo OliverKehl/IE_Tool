@@ -57,6 +57,9 @@ public class BaseCarFinder {
 	
 	boolean colorBeforePrice = false;
 
+	Set<String> specialDigitalToken = null;
+	String[] specialDigits = {"1500","1794","2500","2700","3000","3004","3500","4000","4500","4600","5000","5700","5802","6004","6104","7004","7504"};
+	
 	// 指导价
 	// 考虑色全的情况
 
@@ -83,6 +86,10 @@ public class BaseCarFinder {
 
 		for (String s : prefix_behave)
 			prefix_behave_set.add(s);
+		
+		specialDigitalToken = new HashSet<String>();
+		for(int i=0;i<specialDigits.length;i++)
+			specialDigitalToken.add(specialDigits[i]);
 	}
 
 	public BaseCarFinder(USolr solr) {
@@ -108,6 +115,10 @@ public class BaseCarFinder {
 
 		for (String s : prefix_behave)
 			prefix_behave_set.add(s);
+		
+		specialDigitalToken = new HashSet<String>();
+		for(int i=0;i<specialDigits.length;i++)
+			specialDigitalToken.add(specialDigits[i]);
 	}
 
 	public BaseCarFinder(USolr solr, String pre_brand_name) {
@@ -134,6 +145,10 @@ public class BaseCarFinder {
 
 		for (String s : prefix_behave)
 			prefix_behave_set.add(s);
+		
+		specialDigitalToken = new HashSet<String>();
+		for(int i=0;i<specialDigits.length;i++)
+			specialDigitalToken.add(specialDigits[i]);
 	}
 
 	/*
@@ -297,8 +312,9 @@ public class BaseCarFinder {
 						continue;
 					}
 				} else {
-					if(standard==1){
-						prices.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+					String hehe = s.substring(s.lastIndexOf("|") + 1, s.indexOf("#"));
+					if(standard==1 || hehe.length()<4 || (standard==2 && specialDigitalToken.contains(hehe))){
+						prices.add(hehe);
 						price_status = price_status | isStandardPrice(s);
 					}else{
 						return i;
@@ -444,7 +460,7 @@ public class BaseCarFinder {
 	 * 金黑#COLOR 那么就可以结合上下文的颜色情况来确定这里的棕黑和金黑是不是也要拆分
 	 * 
 	 */
-	public void generateColors() {
+	public void generateColors(int mode) {
 		int idx = 0;
 		if(!colorBeforePrice){
 			for (idx = vital_info_index; idx < ele_arr.size(); idx++) {
@@ -452,9 +468,14 @@ public class BaseCarFinder {
 				if (s.endsWith("#COLOR")) {
 					indexes.add(idx);
 					colors.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
-				} else if (s.endsWith("STYLE") || s.endsWith("PRICE")) {
+				} else if (mode==1 && (s.endsWith("STYLE") || s.endsWith("PRICE"))) {
 					idx--;
 					break;
+				}else if(mode==-1){
+					if(colors.size()!=0){
+						idx--;
+						break;
+					}
 				}
 			}
 			if (idx < ele_arr.size()) {
@@ -483,6 +504,8 @@ public class BaseCarFinder {
 				backup_index = Math.max(original_message.length(), backup_index);
 			}
 		}
+		if(colors.size()==0)
+			return;
 		int mod = 0;// 默认是外和内分开
 		if (colors.size() == 1) {// 黑白对应外+内，而米黄对应的只是外饰，摩卡对应的也是外饰
 			String color = colors.get(0);
