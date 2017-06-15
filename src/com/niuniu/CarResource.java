@@ -169,7 +169,7 @@ public class CarResource {
 	}
 
 	public void setRemark(String remark) {
-		this.remark = remark;
+		this.remark = remark.trim();
 	}
 
 	public static void main(String[] args) {

@@ -16,6 +16,8 @@ public class NiuniuBatchConfig {
 	
 	public final String RESOURCE_TYPE_PATTERN = "com/niuniu/config/resource_type.pattern";
 	
+	public final String PARALLEL_VIN_PATTERN = "com/niuniu/config/parallel_vin.pattern";
+	
 	public final String PARALLEL_PRICE_PATTERN = "com/niuniu/config/parallel_price.pattern";
 	
 	public final String PRICE_REFERENCE_MODEL = "com/niuniu/config/base_car_price_reference";
@@ -75,6 +77,10 @@ public class NiuniuBatchConfig {
 	
 	public static String getResourceTypeModel() {
 		return NIUNIU_BATCH_CONFIG.props.getProperty("resource_type_pattern", NIUNIU_BATCH_CONFIG.RESOURCE_TYPE_PATTERN);
+	}
+	
+	public static String getParallelVinModel() {
+		return NIUNIU_BATCH_CONFIG.props.getProperty("parallel_vin_pattern", NIUNIU_BATCH_CONFIG.PARALLEL_VIN_PATTERN);
 	}
 	
 	public static String getParallelPriceModel() {

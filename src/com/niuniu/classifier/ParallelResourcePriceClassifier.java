@@ -31,7 +31,7 @@ public class ParallelResourcePriceClassifier {
 		try{
 			is = Utils.openResource(this.getClass().getClassLoader(), NiuniuBatchConfig.getParallelPriceModel());
 			if(is == null){
-				log.error("[batch_processor]\t" + NiuniuBatchConfig.getParallelPriceModel() + "\t平行进口车价格正则文件不存在");
+				log.error("[batch_processor]\t {} \t平行进口车价格正则文件不存在", NiuniuBatchConfig.getParallelPriceModel());
 				return;
 	        }
 			
@@ -44,7 +44,7 @@ public class ParallelResourcePriceClassifier {
 				Pattern pattern = Pattern.compile(line);
 				patterns.add(pattern);
 			}
-			log.info("[batch_processor]\t" + NiuniuBatchConfig.getParallelPriceModel() + "\t平行进口车价格正则表达式初始化完成");
+			log.info("[batch_processor]\t {} \t平行进口车价格正则表达式初始化完成", NiuniuBatchConfig.getParallelPriceModel());
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -58,6 +58,8 @@ public class ParallelResourcePriceClassifier {
 				int end = m.end();
 				if(clue.charAt(start)<'0' || clue.charAt(start)>'9')
 					start++;
+				if(clue.charAt(start)=='0')
+					return null;
 				String tmp = clue.substring(start, end);
 				Matcher m2 = singleton.price_pattern.matcher(tmp);
 				if(m2.find())
@@ -68,6 +70,6 @@ public class ParallelResourcePriceClassifier {
 		return null;
 	}
 	public static void main(String[] args){
-		System.out.println(ParallelResourcePriceClassifier.predict("5.20asd到港62.5w"));
+		System.out.println(ParallelResourcePriceClassifier.predict("#1705 黑/咖"));
 	}
 }

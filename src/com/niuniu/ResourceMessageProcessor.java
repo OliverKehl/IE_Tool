@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.alibaba.fastjson.JSON;
 import com.niuniu.cache.CacheManager;
 import com.niuniu.classifier.ParallelResourcePriceClassifier;
+import com.niuniu.classifier.ParallelResourceVinClassifier;
 import com.niuniu.classifier.ResourceTypeClassifier;
 import com.niuniu.classifier.SimpleMessageClassifier;
 import com.niuniu.config.NiuniuBatchConfig;
@@ -213,7 +214,7 @@ public class ResourceMessageProcessor {
 				writer.write(s);
 				writer.flush();
 			}else{
-				log.info("[batch_processor]\t" + s + "是无效数据");
+				log.info("[batch_processor]\t {} 是无效数据",s);
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -293,6 +294,16 @@ public class ResourceMessageProcessor {
 		}
 	}
 	
+	private String reExtractVinFromConfiguration(CarResource cr, String info){
+		StringBuilder sb = new StringBuilder(info);
+		if(cr.getVin()==null || cr.getVin().isEmpty()){
+			String vin = ParallelResourceVinClassifier.predict(sb);
+			if(vin!=null)
+				cr.setVin(vin);
+		}
+		return new String(sb);
+	}
+	
 	public boolean process(){
 		long t1 = System.currentTimeMillis();
 		for(String s : message_arr){
@@ -309,7 +320,7 @@ public class ResourceMessageProcessor {
 					last_brand_name = cr.getBrand_name();
 					last_model_name = cr.getCar_model_name();
 					last_standard_name = cr.getStandard()==2?-1:1;
-					log.info("[batch_processor]\t" + user_id + "_" + s + "\t 缓存命中");
+					log.info("[batch_processor]\t {}_{}\t 缓存命中", user_id, s);
 					continue;
 				}
 			}
@@ -327,7 +338,7 @@ public class ResourceMessageProcessor {
 				//是上一个平行进口车的配置、备注信息
 				if(last_standard_name==-1){
 					CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
-					tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
+					s = reExtractVinFromConfiguration(tmpCR, s);
 					if(tmpCR.getResource_type()==null){
 						String resource_type = ResourceTypeClassifier.predict(s);
 						if(resource_type!=null)
@@ -336,6 +347,7 @@ public class ResourceMessageProcessor {
 					if(tmpCR.getDiscount_way().equals("5")){
 						reExtractPriceFromConfiguration(tmpCR, s);
 					}
+					tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
 				}
 				continue;
 				// 该行文本包含多个指导价
@@ -366,7 +378,7 @@ public class ResourceMessageProcessor {
 			if(!status){
 				if(last_standard_name==-1){
 					CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
-					tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
+					s = reExtractVinFromConfiguration(tmpCR, s);
 					if(tmpCR.getResource_type()==null){
 						String resource_type = ResourceTypeClassifier.predict(s);
 						if(resource_type!=null)
@@ -375,6 +387,7 @@ public class ResourceMessageProcessor {
 					if(tmpCR.getDiscount_way().equals("5")){
 						reExtractPriceFromConfiguration(tmpCR, s);
 					}
+					tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
 				}
 				writeInvalidInfo(concatWithSpace(s));
 				continue;
@@ -494,7 +507,7 @@ public class ResourceMessageProcessor {
 				if(!tmp_status){
 					if(last_standard_name==-1){
 						CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
-						tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
+						s = reExtractVinFromConfiguration(tmpCR, s);
 						if(tmpCR.getResource_type()==null){
 							String resource_type = ResourceTypeClassifier.predict(s);
 							if(resource_type!=null)
@@ -503,6 +516,7 @@ public class ResourceMessageProcessor {
 						if(tmpCR.getDiscount_way().equals("5")){
 							reExtractPriceFromConfiguration(tmpCR, s);
 						}
+						tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
 					}
 					writeInvalidInfo(concatWithSpace(s));
 					continue;
@@ -544,13 +558,13 @@ public class ResourceMessageProcessor {
 		}
 		long t2 = System.currentTimeMillis();
 		carResourceGroup.setQTime(Long.toString(t2-t1));
-		log.info("[batch_processor]\t" + "总耗时： \t" + Long.toString(t2-t1));
+		log.info("[batch_processor]\t 总耗时： {}", Long.toString(t2-t1));
 		return true;
 	}
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("CLA220 319红黑2保");
+		resourceMessageProcessor.setMessages("17款美规GLS450 \n #1705 黑/咖 P01 全景 拖钩 外观包 后娱预留");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

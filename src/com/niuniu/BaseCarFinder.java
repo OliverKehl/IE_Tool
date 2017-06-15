@@ -205,12 +205,26 @@ public class BaseCarFinder {
 		return false;
 	}
 	
+	private boolean isVinWithSpace(int idx, String message, int standard){
+		if(standard==1)
+			return false;
+		while(idx>0){
+			if(message.charAt(idx-1)==' ')
+				idx--;
+			else if(message.charAt(idx-1)=='#')
+				return true;
+			else 
+				break;
+		}
+		return false;
+	}
+	
 	private int parse(ArrayList<String> tokens, String message, int standard) {
 		boolean price_status = false;
 		for (int i = 0; i < tokens.size(); i++) {
 			String s = tokens.get(i);
 			int start = NumberUtils.toInt(s.substring(0, s.indexOf('-')));
-			if (start > 0 && '#' == message.charAt(start - 1)) {
+			if (start > 0 && isVinWithSpace(start, message, standard)) {
 				return i;
 			}
 			if (s.endsWith("#OTHERS") || s.endsWith("#COLOR") || s.endsWith("AREA")) {
@@ -1245,7 +1259,7 @@ public class BaseCarFinder {
 				writer.write(concatWithSpace(original_message) + "\t\t" + result);
 				writer.flush();
 			} else {
-				log.info("[batch_processor]\t" + concatWithSpace(original_message) + "\t\t" + result);
+				log.info("[batch_processor]\t {} \t\t {}",concatWithSpace(original_message), result);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

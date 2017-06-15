@@ -34,7 +34,7 @@ public class ResourceTypeClassifier {
 		try{
 			is = Utils.openResource(this.getClass().getClassLoader(), NiuniuBatchConfig.getResourceTypeModel());
 			if(is == null){
-				log.error("[batch_processor]\t" + NiuniuBatchConfig.getResourceTypeModel() + "\t车源类型正则文件不存在");
+				log.error("[batch_processor]\t {} \t车源类型正则文件不存在", NiuniuBatchConfig.getResourceTypeModel());
 				return;
 	        }
 			
@@ -47,7 +47,7 @@ public class ResourceTypeClassifier {
 				Pattern pattern = Pattern.compile(line);
 				patterns.add(pattern);
 			}
-			log.info("[batch_processor]\t" + NiuniuBatchConfig.getResourceTypeModel() + "\t车源类型正则表达式初始化完成");
+			log.info("[batch_processor]\t {} \t车源类型正则表达式初始化完成", NiuniuBatchConfig.getResourceTypeModel());
 		}catch(Exception e){
 			e.printStackTrace();
 		}

@@ -41,7 +41,7 @@ public class TokenTagClassifier {
 		try{
 			is = Utils.openResource(this.getClass().getClassLoader(), NiuniuBatchConfig.getTokenTagModel());
 			if(is == null){
-				log.error("[batch_processor]\t" + NiuniuBatchConfig.getTokenTagModel() + "\t标签模型不存在");
+				log.error("[batch_processor]\t {} \t标签模型不存在", NiuniuBatchConfig.getTokenTagModel());
 				return;
 	        }
 			
@@ -55,7 +55,7 @@ public class TokenTagClassifier {
 					continue;
 				taggingMap.put(arrs[0].trim().toLowerCase(), arrs[1].trim());
 			}
-			log.info("[batch_processor]\t" + NiuniuBatchConfig.getTokenTagModel() + "\ttoken打标初始化完成");
+			log.info("[batch_processor]\t {} \ttoken打标初始化完成", NiuniuBatchConfig.getTokenTagModel());
 		}catch(Exception e){
 			e.printStackTrace();
 		}
