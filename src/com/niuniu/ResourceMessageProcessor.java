@@ -564,7 +564,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("17款美规GLS450 \n #1705 黑/咖 P01 全景 拖钩 外观包 后娱预留");
+		resourceMessageProcessor.setMessages("17款加版Q7（8418）金米 手续齐");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

@@ -297,8 +297,12 @@ public class BaseCarFinder {
 						continue;
 					}
 				} else {
-					prices.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
-					price_status = price_status | isStandardPrice(s);
+					if(standard==1){
+						prices.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+						price_status = price_status | isStandardPrice(s);
+					}else{
+						return i;
+					}
 				}
 			}
 		}
