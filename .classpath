@@ -40,5 +40,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-pool2-2.4.2.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jedis-2.5.2.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/nlp-lang-1.7.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/junit-4.8.2.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

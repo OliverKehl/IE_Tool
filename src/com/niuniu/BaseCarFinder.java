@@ -244,7 +244,7 @@ public class BaseCarFinder {
 			}
 			if (s.endsWith("#OTHERS") || s.endsWith("#COLOR") || s.endsWith("AREA")) {
 				
-				backup_index = Math.max(NumberUtils.createInteger(s.substring(s.indexOf("-") + 1, s.indexOf("|"))),
+				backup_index = Math.max(NumberUtils.createInteger(s.substring(0, s.indexOf('-'))),
 						backup_index);
 				
 				if(standard!=2 && s.endsWith("COLOR") && !price_status){
@@ -255,6 +255,8 @@ public class BaseCarFinder {
 					tokens.remove(i);
 					continue;
 				}
+				if(standard==2 && s.endsWith("#COLOR"))
+					continue;
 				return i;
 				// stop = NumberUtils.createInteger(s.substring(0,
 				// s.indexOf("-")));
@@ -462,8 +464,12 @@ public class BaseCarFinder {
 	 */
 	public void generateColors(int mode) {
 		int idx = 0;
+		int start_index = 0;
 		if(!colorBeforePrice){
-			for (idx = vital_info_index; idx < ele_arr.size(); idx++) {
+			if(mode!=-1){
+				start_index = vital_info_index;
+			}
+			for (idx = start_index; idx < ele_arr.size(); idx++) {
 				String s = ele_arr.get(idx);
 				if (s.endsWith("#COLOR")) {
 					indexes.add(idx);
@@ -478,11 +484,11 @@ public class BaseCarFinder {
 					}
 				}
 			}
-			if (idx < ele_arr.size()) {
+			if (idx < ele_arr.size() && !colors.isEmpty()) {
 				String temp = ele_arr.get(idx);
 				backup_index = Math.max(NumberUtils.createInteger(temp.substring(temp.indexOf("-") + 1, temp.indexOf("|"))),
 						backup_index);
-			} else {
+			} else if(!colors.isEmpty()){
 				backup_index = Math.max(original_message.length(), backup_index);
 			}
 		}else{
@@ -916,7 +922,7 @@ public class BaseCarFinder {
 					discount_way = 4;
 					String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
 					int thehe = NumberUtils.toInt(hehe);
-					backup_index = Math.max(backup_index, thehe);
+					//backup_index = Math.max(backup_index, thehe);
 					return true;
 				}
 			}
@@ -928,7 +934,7 @@ public class BaseCarFinder {
 				discount_way = 4;
 				String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
 				int thehe = NumberUtils.toInt(hehe);
-				backup_index = Math.max(backup_index, thehe);
+				//backup_index = Math.max(backup_index, thehe);
 				return true;
 			}
 
@@ -940,9 +946,14 @@ public class BaseCarFinder {
 					discount_way = 4;
 					String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
 					int thehe = NumberUtils.toInt(hehe) + 1;
-					backup_index = Math.max(backup_index, thehe);
+					//backup_index = Math.max(backup_index, thehe);
 					return true;
 				}
+			}
+			if((i+1)==ele_arr.size() && p>15){
+				discount_content = p;
+				discount_way = 4;
+				return true;
 			}
 			String tail_str = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
 			int tail = NumberUtils.toInt(tail_str);
@@ -952,7 +963,7 @@ public class BaseCarFinder {
 				discount_way = 4;
 				String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
 				int thehe = NumberUtils.toInt(hehe) + 1;
-				backup_index = Math.max(backup_index, thehe);
+				//backup_index = Math.max(backup_index, thehe);
 				return true;
 			}
 		}

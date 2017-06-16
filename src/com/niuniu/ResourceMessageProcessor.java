@@ -19,6 +19,10 @@ import com.niuniu.classifier.SimpleMessageClassifier;
 import com.niuniu.config.NiuniuBatchConfig;
 
 public class ResourceMessageProcessor {
+	public CarResourceGroup getCarResourceGroup() {
+		return carResourceGroup;
+	}
+
 	public final static Logger log = LoggerFactory.getLogger(ResourceMessageProcessor.class);
 	String last_brand_name;
 	String last_model_name;
@@ -564,7 +568,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("16款神行408粽金黑优惠8.8万（16年12月产）");
+		resourceMessageProcessor.setMessages("贵士468白米冬去西区现车优惠2000");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));
