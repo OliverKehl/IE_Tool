@@ -1247,12 +1247,15 @@ public class BaseCarFinder {
 			if (remark.length() == 1) {
 				return "";
 			} else {
+				/*
 				if (remark.charAt(1) == ' ') {
 					return remark.substring(2);
 				}
+				*/
+				remark = remark.substring(1).trim();
 			}
 		}
-		return remark;
+		return remark.trim();
 	}
 
 	public void printParsingResult(BufferedWriter writer) {

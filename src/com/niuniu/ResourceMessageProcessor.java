@@ -564,7 +564,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("17款公羊1500皮卡6545# 6548# 蓝 /棕 手续齐 （新航库、）45.5");
+		resourceMessageProcessor.setMessages("16款神行408粽金黑优惠8.8万（16年12月产）");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));
