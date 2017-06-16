@@ -33,6 +33,9 @@ public class SimpleMessageClassifier {
 	Set<String> suffix_quants_set;
 	Set<String> prefix_behave_set;
 
+	String[] parallel_tokens = {"公羊", "公羊1500", "2700","3000","4000","4500","4600","5700","1794","塞纳","坦途","gle43",};
+	Set<String> parallelToken;
+	
 	public SimpleMessageClassifier() {
 	}
 
@@ -56,6 +59,11 @@ public class SimpleMessageClassifier {
 
 		this.message = message;
 		this.solr = solr;
+		
+		parallelToken = new HashSet<String>();
+		for(String s:parallel_tokens){
+			parallelToken.add(s);
+		}
 	}
 
 	public boolean isYear(String s) {
@@ -247,7 +255,9 @@ public class SimpleMessageClassifier {
 
 	public int isValidLine() {
 		for(int i=0;i<tokens.size();i++){
-			if(tokens.get(i).contains("车架号"))
+			String tmp = tokens.get(i);
+			tmp = tmp.substring(tmp.lastIndexOf("|") + 1, tmp.indexOf("#"));
+			if(tmp.equals("车架号") || parallelToken.contains(tmp))
 				return -1;
 		}
 		if(!standards.isEmpty()){
@@ -274,10 +284,11 @@ public class SimpleMessageClassifier {
 
 	public static void main(String[] args) {
 		USolr solr = new USolr("http://121.40.204.159:8080/solr/");
-		String message = "            2998珍白 黑 2.75";
+		String message = "17款道奇公羊";
 		message = Utils.normalizePrice(Utils.cleanDate(Utils.clean(Utils.normalize(message), solr)));
 		SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(message, solr);
 		int mode = simpleMessageClassifier.predict();
+		System.out.println(mode);
 		if (mode == 0)
 			System.out.println("不合格");
 		else
