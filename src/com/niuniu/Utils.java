@@ -35,6 +35,9 @@ public class Utils {
 	private static Pattern headerPricePattern;
 	private static Pattern headerOrderPattern;
 	
+	private static ArrayList<String> sources;
+	private static ArrayList<String> targets;
+	
 	// 全角半角转换
 	private static String replace(String line) {
 		char[] c = line.toCharArray();
@@ -94,11 +97,14 @@ public class Utils {
 		eL = "^\\d\\.\\d";
 		headerPricePattern = Pattern.compile(eL);
 		
-		eL = "^\\d[\\.;\\s、]";
+		eL = "^\\d{1,2}[\\.;\\s、]";
 		headerOrderPattern = Pattern.compile(eL);
 		
 		InputStream is = null;
         BufferedReader reader = null; 
+        
+        sources = new ArrayList<String>();
+        targets = new ArrayList<String>();
 		try{
 			is = openResource(Utils.class.getClassLoader(), NiuniuBatchConfig.getPriceReferenceModel());
 			if(is!=null){
@@ -110,6 +116,27 @@ public class Utils {
 					PRICE_GUIDE_25.put(NumberUtils.createInteger(arrs[0]), NumberUtils.createFloat(arrs[1]));
 					PRICE_GUIDE_50.put(NumberUtils.createInteger(arrs[0]), NumberUtils.createFloat(arrs[2]));
 					PRICE_GUIDE_75.put(NumberUtils.createInteger(arrs[0]), NumberUtils.createFloat(arrs[3]));
+				}
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		try{
+			is = openResource(Utils.class.getClassLoader(), NiuniuBatchConfig.getTokenReplaceFile());
+			if(is!=null){
+				reader = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+				String line = null;
+				while ((line = reader.readLine()) != null) {
+					line = line.trim();
+					String[] arrs = line.split("\t");
+					sources.add(arrs[0]);
+					if(arrs.length==1)
+						targets.add(" ");
+					else if(arrs[1].charAt(0)>='0' && arrs[1].charAt(0)<='9')
+						targets.add(arrs[1]);
+					else
+						targets.add(" " + arrs[1] + " ");
 				}
 			}
 		}catch(Exception e){
@@ -305,6 +332,10 @@ public class Utils {
 	public static String preProcess(String message) {
 		if(message==null)
 			return null;
+		for(int i=0;i<sources.size();i++){
+			message = message.replaceAll(sources.get(i), targets.get(i));
+		}
+		/*
 		message = message.replaceAll("⬇️", " 下 ");
 		message = message.replaceAll("↓️️", " 下 ");
 		message = message.replaceAll("⬇", " 下 ");
@@ -319,6 +350,9 @@ public class Utils {
 		message = message.replaceAll("\\. ", " ");
 		message = message.replaceAll("\u20e3", " ");
 		message = message.replaceAll(" ", " ");
+		*/
+		message = message.replaceAll(" \\.", " ");
+		message = message.replaceAll("\\. ", " ");
 		message = escapeDash(message);
 		message = Converter.SIMPLIFIED.convert(message);
 		return message.trim();
@@ -409,10 +443,9 @@ public class Utils {
 	
 	public static void main(String[] args){
 		USolr solr = new USolr("http://121.40.204.159:8080/solr/");
-		String line = "2017款美規陸虎行政3.0/黑黑/5月4日到港/140 配置:HSE包、駕駛輔助包、22輪、360度停車輔助、烏木頂、加熱方向盤、自動泊車輔助";
+		String line = "17款c🚘🚘丰田最新资源: ";
 		//System.out.println(Utils.normalizePrice("宝马320是   -10.5"));
-		System.out.println(Utils.replace(line));
-		System.out.println(Utils.preProcess(line));
+		System.out.println(Utils.removeHeader(Utils.preProcess(line)));
 		//System.out.println(clean(line, solr));
 	}
 	

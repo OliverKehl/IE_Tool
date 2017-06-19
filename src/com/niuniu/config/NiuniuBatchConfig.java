@@ -10,6 +10,8 @@ import org.apache.commons.lang.math.NumberUtils;
 public class NiuniuBatchConfig {
 
 	// 默认的配置文件路径
+	public final String TOKEN_REPLACE_FILE = "com/niuniu/config/token_replace_file";
+	
 	public final String DEFAULT_PATH = "com/niuniu/config/config.xml";
 	
 	public final String TOKEN_TAG_MODEL = "com/niuniu/config/tags.m";
@@ -89,6 +91,10 @@ public class NiuniuBatchConfig {
 	
 	public static String getPriceReferenceModel() {
 		return NIUNIU_BATCH_CONFIG.props.getProperty("price_reference_model", NIUNIU_BATCH_CONFIG.PRICE_REFERENCE_MODEL);
+	}
+	
+	public static String getTokenReplaceFile(){
+		return NIUNIU_BATCH_CONFIG.props.getProperty("token_replace_file", NIUNIU_BATCH_CONFIG.TOKEN_REPLACE_FILE);
 	}
 
 	static {

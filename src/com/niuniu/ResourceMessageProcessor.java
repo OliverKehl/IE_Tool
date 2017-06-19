@@ -568,7 +568,9 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("贵士468白米冬去西区现车优惠2000");
+		//resourceMessageProcessor.setMessages("k3\n 968白优惠24500");
+		//resourceMessageProcessor.setMessages("1⃣️0⃣️17款美规GLS450 黑/水晶银 1666#");
+		//TODO token是MODEL_STYLE时，既不往model里放也不往STYLE里放是不是不太合适
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

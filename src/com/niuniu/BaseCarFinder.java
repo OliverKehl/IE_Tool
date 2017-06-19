@@ -287,6 +287,13 @@ public class BaseCarFinder {
 						styles.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 						continue;
 					}
+				}else{
+					/* 
+					 * 在不确定一个term是model还是style时，把它优先归为model
+					 * 因为这里的归类只是作为辅助功能，并不会对搜索的精度造成影响  
+					 */
+					models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+		            continue;
 				}
 			} else if (s.endsWith("#STYLE_PRICE") || s.endsWith("#FPRICE") || s.endsWith("MODEL_PRICE")
 					|| s.endsWith("MODEL_STYLE_PRICE")) {
