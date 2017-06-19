@@ -37,6 +37,21 @@ public class TestResourceMessageProcessor {
 	}
 	
 	@Test
+	public void testResourceBasic() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"k3 \n 968白优惠24500");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("起亚", cr.getBrand_name());
+			Assert.assertEquals("9.68", cr.getGuiding_price());
+		}
+	}
+	
+	@Test
 	public void testResourceRemark() {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
@@ -67,7 +82,6 @@ public class TestResourceMessageProcessor {
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("现代", cr.getBrand_name());
 			Assert.assertEquals("瑞纳", cr.getCar_model_name());
-			Assert.assertEquals(2016, cr.getYear());
 			Assert.assertEquals("9.29", cr.getGuiding_price());
 			Assert.assertEquals("1", cr.getDiscount_way());
 			Assert.assertEquals("23.0", cr.getDiscount_content());

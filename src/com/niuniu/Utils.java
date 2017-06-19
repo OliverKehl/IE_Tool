@@ -443,7 +443,7 @@ public class Utils {
 	
 	public static void main(String[] args){
 		USolr solr = new USolr("http://121.40.204.159:8080/solr/");
-		String line = "17款c🚘🚘丰田最新资源: ";
+		String line = "1⃣️2⃣️17款加版GLS450 #6621 黑/黑 金属漆 豪华包 运动包 灯光包 驾驶员辅助包 脚踏板 行李架 6月底交车131万";
 		//System.out.println(Utils.normalizePrice("宝马320是   -10.5"));
 		System.out.println(Utils.removeHeader(Utils.preProcess(line)));
 		//System.out.println(clean(line, solr));

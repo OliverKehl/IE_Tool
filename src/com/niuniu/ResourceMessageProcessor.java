@@ -293,8 +293,9 @@ public class ResourceMessageProcessor {
 			if(price.matches("\\d{1,3}(\\.\\d)?(w|W|万)$")){
 				price = price.substring(0,  price.length()-1);
 			}
+			float p = NumberUtils.toFloat(price);
 			cr.setDiscount_way("4");
-			cr.setDiscount_content(price);
+			cr.setDiscount_content(Float.toString(p));
 		}
 	}
 	
@@ -338,6 +339,12 @@ public class ResourceMessageProcessor {
 			 */
 			SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(s, solr_client);
 			int mode = simpleMessageClassifier.predict();
+			if(mode==0){//有可能是隐式的平行进口车,可以再抢救一下
+				BaseCarFinder BCF = new BaseCarFinder(solr_client, last_brand_name);
+				boolean flag = BCF.generateBaseCarId(s, null, 2);
+				if(flag && BCF.query_results.getMaxScore()>3000)
+					mode = -1;
+			}
 			if(mode==0){
 				//是上一个平行进口车的配置、备注信息
 				if(last_standard_name==-1){
@@ -568,9 +575,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		//resourceMessageProcessor.setMessages("k3\n 968白优惠24500");
-		//resourceMessageProcessor.setMessages("1⃣️0⃣️17款美规GLS450 黑/水晶银 1666#");
-		//TODO token是MODEL_STYLE时，既不往model里放也不往STYLE里放是不是不太合适
+		resourceMessageProcessor.setMessages("17款揽运HSE版汽油 白黑3台 \n 2229# 8513# 7855# 滑动天窗19轮 真皮方向盘 16项座椅电动调节 后视镜自动防眩目 前挡风加热 前雾灯 LED氙灯带大灯清洗 车道偏离警示 电尾 倒影 倒车助手 前后侧身隔热防噪音玻璃 现车90万");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

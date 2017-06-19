@@ -81,6 +81,6 @@ public class ParallelResourceVinClassifier {
 	}
 	
 	public static void main(String[] args){
-		System.out.println(ParallelResourceVinClassifier.predict(new StringBuilder("#1705 黑/咖 P01 全景 拖钩")));
+		System.out.println(ParallelResourceVinClassifier.predict(new StringBuilder("17款揽运HSE版汽油 白黑3台 7830# 8513# 7855# 滑动天窗19轮 真皮方向盘 16项座椅电动调节 后视镜自动防眩目 前挡风加热 前雾灯 LED氙灯带大灯清洗 车道偏离警示 电尾 倒影 倒车助手 前后侧身隔热防噪音玻璃 现车90万")));
 	}
 }

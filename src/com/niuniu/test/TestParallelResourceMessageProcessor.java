@@ -69,6 +69,24 @@ public class TestParallelResourceMessageProcessor {
 					"配置:天窗 并道辅助 真皮座椅加热 通风 USB蓝牙 大屏 JBL音响 倒影 雷达 巡航 防侧滑 多功能方向盘 后视镜加热 LED日行灯 大灯高度调节 桃木内饰 字标扶手箱 后货箱内衬 20寸轮毂 主副驾驶电动调节 后挡风玻璃自动升降 自动恒温空调 电动折叠后视镜\n现车手续齐\n电话:15822736077",
 					cr.getRemark());
 		}
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"1⃣️2⃣️ 17款加版GLS450 #6621 黑/黑 金属漆 豪华包 运动包 灯光包 驾驶员辅助包 脚踏板 行李架 6月底交车131万");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("奔驰", cr.getBrand_name());
+			Assert.assertEquals("加版", cr.getStandard_name());
+			Assert.assertEquals("GLS450", cr.getCar_model_name());
+			//Assert.assertEquals("[黑#棕色]", cr.getColors());
+			Assert.assertEquals("期货", cr.getResource_type());
+			Assert.assertEquals( "131.0", cr.getDiscount_content());
+			Assert.assertEquals(
+					"金属漆 豪华包 运动包 灯光包 驾驶员辅助包 脚踏板 行李架 6月底交车131万",
+					cr.getRemark());
+		}
 	}
 	
 	@Test
@@ -126,6 +144,28 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("今天现车 43万", cr.getRemark());
 			Assert.assertEquals("38706", cr.getId());
 			Assert.assertTrue(cr.getStyle_name().contains("黎巴嫩"));
+		}
+	}
+	
+	@Test
+	public void testResourceImplicitStandard(){
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款揽运HSE版汽油 白黑3台 \n 7830# 8513# 7855# 滑动天窗19轮 真皮方向盘 16项座椅电动调节 后视镜自动防眩目 前挡风加热 前雾灯 LED氙灯带大灯清洗 车道偏离警示 电尾 倒影 倒车助手 前后侧身隔热防噪音玻璃 现车90万");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("欧版", cr.getStandard_name());
+			Assert.assertEquals(2, cr.getStandard());
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("揽胜运动3.0汽油", cr.getCar_model_name());
+			Assert.assertEquals("8513", cr.getVin());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("90.0", cr.getDiscount_content());
+			Assert.assertEquals("3台\n7830  7855# 滑动天窗19轮 真皮方向盘 16项座椅电动调节 后视镜自动防眩目 前挡风加热 前雾灯 LED氙灯带大灯清洗 车道偏离警示 电尾 倒影 倒车助手 前后侧身隔热防噪音玻璃 现车90万", cr.getRemark());
 		}
 	}
 	
