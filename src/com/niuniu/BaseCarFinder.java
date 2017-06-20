@@ -236,12 +236,15 @@ public class BaseCarFinder {
 	
 	private int parse(ArrayList<String> tokens, String message, int standard) {
 		boolean price_status = false;
-		for (int i = 0; i < tokens.size(); i++) {
+		int i=0;
+		for (; i < tokens.size(); i++) {
 			String s = tokens.get(i);
 			int start = NumberUtils.toInt(s.substring(0, s.indexOf('-')));
 			if (start > 0 && isVinWithSpace(start, message, standard)) {
 				return i;
 			}
+			backup_index = Math.max(start,
+					backup_index);
 			if (s.endsWith("#OTHERS") || s.endsWith("#COLOR") || s.endsWith("AREA")) {
 				
 				backup_index = Math.max(NumberUtils.createInteger(s.substring(0, s.indexOf('-'))),
@@ -331,6 +334,12 @@ public class BaseCarFinder {
 				}
 			}
 		}
+		if(i==tokens.size()){
+			String str = tokens.get(i-1);
+			backup_index = Math.max(NumberUtils.createInteger(str.substring(str.indexOf('-')+1, str.indexOf('|'))),
+					backup_index);
+		}
+			
 		return tokens.size();
 	}
 

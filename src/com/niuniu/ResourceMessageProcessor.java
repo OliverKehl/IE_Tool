@@ -294,8 +294,10 @@ public class ResourceMessageProcessor {
 				price = price.substring(0,  price.length()-1);
 			}
 			float p = NumberUtils.toFloat(price);
-			cr.setDiscount_way("4");
-			cr.setDiscount_content(Float.toString(p));
+			if(p<500){
+				cr.setDiscount_way("4");
+				cr.setDiscount_content(Float.toString(p));
+			}
 		}
 	}
 	
@@ -575,7 +577,8 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("17款揽运HSE版汽油 白黑3台 \n 2229# 8513# 7855# 滑动天窗19轮 真皮方向盘 16项座椅电动调节 后视镜自动防眩目 前挡风加热 前雾灯 LED氙灯带大灯清洗 车道偏离警示 电尾 倒影 倒车助手 前后侧身隔热防噪音玻璃 现车90万");
+		resourceMessageProcessor.setMessages("17款美规奔驰GLS450 \n颜色：黑/咖（9498）\n配置：P01，全景，灯光包，外观包，停车辅助包，方向盘加热，二排电动，哈曼音响，桉木内饰\n天津现车    远方宏达库\n价格：113.88万\n");
+		//resourceMessageProcessor.setMessages("大众朗逸1249");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

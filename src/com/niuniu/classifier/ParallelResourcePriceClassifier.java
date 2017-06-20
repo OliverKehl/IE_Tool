@@ -27,7 +27,7 @@ public class ParallelResourcePriceClassifier {
 		InputStream is = null;
         BufferedReader reader = null; 
         patterns = new ArrayList<Pattern>();
-        price_pattern = Pattern.compile("\\d{1,3}(\\.\\d)?");
+        price_pattern = Pattern.compile("\\d{1,3}(\\.\\d{1,2})?");
 		try{
 			is = Utils.openResource(this.getClass().getClassLoader(), NiuniuBatchConfig.getParallelPriceModel());
 			if(is == null){
@@ -70,6 +70,6 @@ public class ParallelResourcePriceClassifier {
 		return null;
 	}
 	public static void main(String[] args){
-		System.out.println(ParallelResourcePriceClassifier.predict("#1705 黑/咖"));
+		System.out.println(ParallelResourcePriceClassifier.predict("价格：141.88"));
 	}
 }

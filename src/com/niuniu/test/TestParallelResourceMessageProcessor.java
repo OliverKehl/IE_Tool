@@ -170,19 +170,19 @@ public class TestParallelResourceMessageProcessor {
 	}
 	
 	@Test
-	public void testResourceRemark() {
+	public void testResourcePrice() {
 		ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 		rmp.setMessages(
-				"16款神行408粽金黑优惠8.8万（16年12月产）");
+				"17款美规奔驰GLS450 \n颜色：黑/咖（9498）\n配置：P01，全景，灯光包，外观包，停车辅助包，方向盘加热，二排电动，哈曼音响，桉木内饰\n天津现车    远方宏达库\n价格：113.88万\n");
 		rmp.process();
 		CarResourceGroup crg = rmp.getCarResourceGroup();
 		Assert.assertEquals(1, crg.getResult().size());
 		CarResource cr = crg.getResult().get(0);
-		Assert.assertEquals("路虎", cr.getBrand_name());
-		Assert.assertEquals(2016, cr.getYear());
-		Assert.assertEquals("40.8", cr.getGuiding_price());
+		Assert.assertEquals("奔驰", cr.getBrand_name());
+		Assert.assertEquals(2017, cr.getYear());
+		Assert.assertEquals("113.88", cr.getDiscount_content());
 		Assert.assertEquals(
-				"16年12月产)",
+				"颜色:黑/咖(9498)\n配置:P01,全景,灯光包,外观包,停车辅助包,方向盘加热,二排电动,哈曼音响,桉木内饰\n天津现车 远方宏达库\n价格:113.88万",
 				cr.getRemark());
 	}
 }

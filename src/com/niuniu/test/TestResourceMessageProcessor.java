@@ -68,6 +68,19 @@ public class TestResourceMessageProcessor {
 					"16年12月产)",
 					cr.getRemark());
 		}
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"大众朗逸1249");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("大众", cr.getBrand_name());
+			Assert.assertEquals("12.49", cr.getGuiding_price());
+			Assert.assertEquals(
+					"",
+					cr.getRemark());
+		}
 	}
 	
 	@Test
