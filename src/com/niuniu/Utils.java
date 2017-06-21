@@ -129,6 +129,8 @@ public class Utils {
 				String line = null;
 				while ((line = reader.readLine()) != null) {
 					line = line.trim();
+					if(line.isEmpty())
+						continue;
 					String[] arrs = line.split("\t");
 					sources.add(arrs[0]);
 					if(arrs.length==1)
@@ -439,6 +441,10 @@ public class Utils {
 		BigDecimal bdBigDecimal = new BigDecimal(value);
 		bdBigDecimal = bdBigDecimal.setScale(scale, BigDecimal.ROUND_HALF_UP);
 		return bdBigDecimal.floatValue();
+	}
+	
+	public static String removeDuplicateSpace(String str){
+		return str.replaceAll(" +", " ");
 	}
 	
 	public static void main(String[] args){
