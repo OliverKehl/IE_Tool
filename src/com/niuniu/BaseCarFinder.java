@@ -533,7 +533,8 @@ public class BaseCarFinder {
 			String color = colors.get(0);
 			if (color.length() != 2) {
 				// 外饰
-				result_colors.add(matchStandardColor(color, 0) + "#");
+				String outer_standard = matchStandardColor(color, 0);
+				result_colors.add(fetchValidColor(outer_standard, color) + "#");
 			} else {
 				// 只有外饰
 				int status = validDualColors(color);

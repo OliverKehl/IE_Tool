@@ -116,5 +116,18 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("5", cr.getDiscount_way());
 			Assert.assertEquals("[黑色#红色]", cr.getColors());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"A4 2998 白15下500");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("奥迪", cr.getBrand_name());
+			Assert.assertEquals("29.98", cr.getGuiding_price());
+			Assert.assertEquals("[白#]", cr.getColors());
+		}
 	}
 }
