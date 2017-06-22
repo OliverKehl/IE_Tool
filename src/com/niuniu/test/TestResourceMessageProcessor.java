@@ -102,6 +102,33 @@ public class TestResourceMessageProcessor {
 	}
 	
 	@Test
+	public void testResourceMultiDigitalToken() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"118 256 白黑 下15000");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("宝马", cr.getBrand_name());
+			Assert.assertEquals("25.6", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("1.5", cr.getDiscount_content());
+			Assert.assertTrue(cr.getStyle_name().contains("118"));
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"朗逸1249 1269 下25000");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(0, crg.getResult().size());
+		}
+	}
+	
+	@Test
 	public void testResourceColor() {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();

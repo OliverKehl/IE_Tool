@@ -220,7 +220,7 @@ public class BaseCarFinder {
 		return false;
 	}
 	
-	private boolean isVinWithSpace(int idx, String message, int standard){
+	private boolean isFrontVinWithSpace(int idx, String message, int standard){
 		if(standard==1)
 			return false;
 		while(idx>0){
@@ -234,13 +234,27 @@ public class BaseCarFinder {
 		return false;
 	}
 	
+	private boolean isBehindVinWithSpace(int idx, String message, int standard){
+		if(standard==1)
+			return false;
+		while(idx<message.length()){
+			if(message.charAt(idx)==' ')
+				idx++;
+			else if(message.charAt(idx)=='#')
+				return true;
+			else 
+				break;
+		}
+		return false;
+	}
+	
 	private int parse(ArrayList<String> tokens, String message, int standard) {
 		boolean price_status = false;
 		int i=0;
 		for (; i < tokens.size(); i++) {
 			String s = tokens.get(i);
 			int start = NumberUtils.toInt(s.substring(0, s.indexOf('-')));
-			if (start > 0 && isVinWithSpace(start, message, standard)) {
+			if (start > 0 && isFrontVinWithSpace(start, message, standard)) {
 				return i;
 			}
 			backup_index = Math.max(start,
@@ -304,8 +318,14 @@ public class BaseCarFinder {
 				if(isQuantOrBehave(i) || priceSuffix(i)){
 					return i;
 				}
-				if (price_status)
+				if (price_status){
+					String content = s.substring(s.lastIndexOf("|") + 1, s.indexOf("#"));
+					int head = NumberUtils.toInt(s.substring(0, s.indexOf("-")));
+					int tail = NumberUtils.toInt(s.substring(s.indexOf("-") + 1, s.indexOf("|")));
+					if((content.startsWith("0")&& content.length()==4) || isFrontVinWithSpace(head, message, standard) || isBehindVinWithSpace(tail, message, standard))
+						return i;
 					return Math.min(i + 1, tokens.size());
+				}
 				
 				//扫到指导价
 				if(colorBeforePrice && standard!=2){

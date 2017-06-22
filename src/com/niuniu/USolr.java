@@ -591,6 +591,20 @@ public class USolr {
 		}
 	}
 	
+	public boolean setSearchLevel(String search_level){
+		if (solrquery == null || search_level == null)
+			return false;
+		else {
+			try {
+				solrquery.set("search_level", search_level);
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+	}
+	
 	public boolean process(){
 		try{
 			selectIndex("staging");

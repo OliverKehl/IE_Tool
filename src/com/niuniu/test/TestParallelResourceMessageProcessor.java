@@ -87,6 +87,57 @@ public class TestParallelResourceMessageProcessor {
 					"金属漆 豪华包 运动包 灯光包 驾驶员辅助包 脚踏板 行李架 6月底交车131万",
 					cr.getRemark());
 		}
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"坦途1794 6548# 蓝 /棕 手续齐 （新航库、）45.5");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals("坦途", cr.getCar_model_name());
+			Assert.assertTrue(cr.getStyle_name().contains("1794"));
+			Assert.assertEquals("6548", cr.getVin());
+		}
+	}
+	
+	@Test
+	/*
+	 * 平行进口车理论上不存在一定要命中的style，所以在search时要指定search_level=low
+	 */
+	public void testParallelResourceStyle(){
+		/*
+		 * style miss
+		 */
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款霸道2700 天窗底挂 白米 现车 37.8\n");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals("霸道2700", cr.getCar_model_name());
+			Assert.assertFalse(cr.getStyle_name().contains("天窗"));
+		}
+		
+		/*
+		 * style hit
+		 */
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"坦途1794 #6548 蓝 /棕 手续齐 （新航库、）45.5");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals("坦途", cr.getCar_model_name());
+			Assert.assertTrue(cr.getStyle_name().contains("1794"));
+		}
 	}
 	
 	@Test

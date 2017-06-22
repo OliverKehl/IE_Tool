@@ -582,8 +582,8 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("17款美规奔驰GLS450 \n颜色：黑/咖（9498）\n配置：P01，全景，灯光包，外观包，停车辅助包，方向盘加热，二排电动，哈曼音响，桉木内饰\n天津现车    远方宏达库\n价格：113.88万\n");
-		//TODO resourceMessageProcessor.setMessages("普瑞维亚 \n 61红下22000出现车（新款");
+		//TODO
+		resourceMessageProcessor.setMessages("普瑞维亚 \n 61红下22000出现车（新款");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

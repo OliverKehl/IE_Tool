@@ -267,6 +267,9 @@ public class Utils {
 		solr.setDefType("niuniuparser");
 		solr.setQuery(query);
 		solr.addFilter("standard:" + Integer.toString(standard));//国产、中规
+		if(standard>1){
+			solr.setSearchLevel("low");
+		}
 		//TODO
 		//需要把后续的所有tag是STYLE的内容加入到搜索条件中
 		solr.addSortField("score", false);// 按年份降序排列
