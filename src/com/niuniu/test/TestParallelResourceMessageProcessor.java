@@ -41,7 +41,7 @@ public class TestParallelResourceMessageProcessor {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
-					"17款中东gle400，九速 全景 灯光包 停车辅助包（自动泊车、前后电眼、车道偏离预警）前排电动座椅➕记忆➕4项腰部支撑 自动防炫目内外后视镜 主动刹车辅助 遮阳帘 温控杯架 吸烟包 自动折叠后视镜 倒影 自动空调 发光迎宾脚踏 镀铬内饰 脚踏 大屏 氛围灯 电尾门 智能卡 一键启动 双排气管 19轮 多路况模式 LOGO地射灯\n\n☎️：15822736077");
+					"17款中东gle400，九速 全景 灯光包 停车辅助包（自动泊车、前后电眼、车道偏离预警）前排电动座椅➕记忆➕4项腰部支撑 自动防炫目内外后视镜 主动刹车辅助 遮阳帘 温控杯架 吸烟包 自动折叠后视镜 倒影 自动空调 发光迎宾脚踏 镀铬内饰 脚踏 大屏 氛围灯 电尾门 智能卡 一键启动 双排气管 19轮 多路况模式 LOGO地射灯\\n\\n☎️：15822736077");
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(1, crg.getResult().size());
@@ -55,7 +55,7 @@ public class TestParallelResourceMessageProcessor {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
-					"17款加版坦途1794 黑棕 \n配置：天窗 并道辅助 真皮座椅加热 通风 USB蓝牙 大屏 JBL音响 倒影 雷达 巡航 防侧滑 多功能方向盘 后视镜加热 LED日行灯 大灯高度调节 桃木内饰 字标扶手箱 后货箱内衬 20寸轮毂 主副驾驶电动调节 后挡风玻璃自动升降 自动恒温空调 电动折叠后视镜\n现车手续齐\n电话：15822736077\n");
+					"17款加版坦途1794 黑棕 \\n配置：天窗 并道辅助 真皮座椅加热 通风 USB蓝牙 大屏 JBL音响 倒影 雷达 巡航 防侧滑 多功能方向盘 后视镜加热 LED日行灯 大灯高度调节 桃木内饰 字标扶手箱 后货箱内衬 20寸轮毂 主副驾驶电动调节 后挡风玻璃自动升降 自动恒温空调 电动折叠后视镜\\n现车手续齐\\n电话：15822736077\\n");
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(1, crg.getResult().size());
@@ -113,7 +113,7 @@ public class TestParallelResourceMessageProcessor {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
-					"17款霸道2700 天窗底挂 白米 现车 37.8\n");
+					"17款霸道2700 天窗底挂 白米 现车 37.8\\n");
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(1, crg.getResult().size());
@@ -203,7 +203,7 @@ public class TestParallelResourceMessageProcessor {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
-					"17款揽运HSE版汽油 白黑3台 \n 7830# 8513# 7855# 滑动天窗19轮 真皮方向盘 16项座椅电动调节 后视镜自动防眩目 前挡风加热 前雾灯 LED氙灯带大灯清洗 车道偏离警示 电尾 倒影 倒车助手 前后侧身隔热防噪音玻璃 现车90万");
+					"17款揽运HSE版汽油 白黑3台 \\n 7830# 8513# 7855# 滑动天窗19轮 真皮方向盘 16项座椅电动调节 后视镜自动防眩目 前挡风加热 前雾灯 LED氙灯带大灯清洗 车道偏离警示 电尾 倒影 倒车助手 前后侧身隔热防噪音玻璃 现车90万");
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(1, crg.getResult().size());
@@ -224,7 +224,7 @@ public class TestParallelResourceMessageProcessor {
 	public void testResourcePrice() {
 		ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 		rmp.setMessages(
-				"17款美规奔驰GLS450 \n颜色：黑/咖（9498）\n配置：P01，全景，灯光包，外观包，停车辅助包，方向盘加热，二排电动，哈曼音响，桉木内饰\n天津现车    远方宏达库\n价格：113.88万\n");
+				"17款美规奔驰GLS450 \\n颜色：黑/咖（9498）\\n配置：P01，全景，灯光包，外观包，停车辅助包，方向盘加热，二排电动，哈曼音响，桉木内饰\\n天津现车    远方宏达库\\n价格：113.88万\\n");
 		rmp.process();
 		CarResourceGroup crg = rmp.getCarResourceGroup();
 		Assert.assertEquals(1, crg.getResult().size());

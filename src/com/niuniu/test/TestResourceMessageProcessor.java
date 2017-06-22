@@ -41,7 +41,7 @@ public class TestResourceMessageProcessor {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
-					"k3 \n 968白优惠24500");
+					"k3 \\n 968白优惠24500");
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(1, crg.getResult().size());
@@ -125,6 +125,57 @@ public class TestResourceMessageProcessor {
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(0, crg.getResult().size());
+		}
+	}
+	
+	@Test
+	/*
+	 * 测试特殊指导价的车型，例如只有2位数指导价的车，普瑞维亚
+	 */
+	public void testResourceSpecialGuidingPrice() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"普瑞维亚 \\n 61红下22000出现车（新款");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals("普瑞维亚", cr.getCar_model_name());
+			Assert.assertEquals("61.0", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("2.2", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"普瑞维亚 61红下22000出现车（新款");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals("普瑞维亚", cr.getCar_model_name());
+			Assert.assertEquals("61.0", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("2.2", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"轩逸 15红下12000 呵呵哒");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals("普瑞维亚", cr.getCar_model_name());
+			Assert.assertEquals("61.0", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("2.2", cr.getDiscount_content());
 		}
 	}
 	

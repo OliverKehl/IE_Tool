@@ -268,6 +268,12 @@ public class SimpleMessageClassifier {
 				return -1;
 			}
 		}
+		
+		StringBuilder sb = new StringBuilder(message);
+		String vin = ParallelResourceVinClassifier.predict(sb);
+		if(vin!=null)
+			return -1;
+		
 		if (real_prices.size() > 1 || fake_prices.size() > 2)
 			return 0;
 		if (latent_prices.size() >= 3)

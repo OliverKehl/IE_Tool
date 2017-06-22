@@ -582,8 +582,13 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		//TODO
-		resourceMessageProcessor.setMessages("普瑞维亚 \n 61红下22000出现车（新款");
+		//DONE
+		//resourceMessageProcessor.setMessages("普瑞维亚 \\n 61红下22000出现车（新款");
+		//DONE 如果文本中没有显式的规格，但是有车架号，那么也应该在分类的时候分为平行进口车
+		//resourceMessageProcessor.setMessages("17款GLS450 黑/黑 #6738 P01全景 方向盘加热 哈曼 二排电动 照明脚踏 后娱预留 停车辅助 驾驶员辅助 雷测 现车手续齐 111");
+		//DONE 平行进口车音箱配置被误识别成价格，数值较大 
+		//resourceMessageProcessor.setMessages("16款美规揽胜行政3.0 白/白。0816 HSE 、视觉辅助包、驾驶员辅助包、825W豪华音响包、保护包、可加热方向盘 皓月库现车 138");
+		resourceMessageProcessor.setMessages("2016款美规路虎发现4（汽油）黑/黑 #3720");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

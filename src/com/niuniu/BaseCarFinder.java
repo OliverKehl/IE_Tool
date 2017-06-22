@@ -402,7 +402,8 @@ public class BaseCarFinder {
 			sub_query = pre_info + " " + sub_query;
 		boolean shit = isOldStyleQuery();
 		query_results = Utils.select(sub_query, solr, shit);
-		if (query_results == null || (sub_query.length()<3 && brands.isEmpty() && models.isEmpty() && styles.isEmpty())) {
+		//if (query_results == null || (sub_query.length()<3 && brands.isEmpty() && models.isEmpty() && styles.isEmpty())) {
+		if (query_results == null) {
 			// 1. 空行
 			// 2. 把颜色放指导价前面了
 			// TODO
@@ -947,8 +948,10 @@ public class BaseCarFinder {
 				continue;
 			}
 			String fc = element.substring(element.lastIndexOf("|") + 1, element.indexOf("#"));
+			if(fc.startsWith("0"))//车架号
+				continue;
 			float p = NumberUtils.toFloat(fc);
-			if (p < 20 || p >= 1000 || fc.matches("[0-9]{4,6}$"))// 平行进口车的价格不会落在这个区间外
+			if (p < 20 || p >= 500 || fc.matches("[0-9]{4,6}$"))// 平行进口车的价格不会落在这个区间外
 				continue;
 
 			if (i > 0) {
