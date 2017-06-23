@@ -1,4 +1,4 @@
-package com.niuniu.test;
+package test.com.niuniu;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -143,7 +143,7 @@ public class TestResourceMessageProcessor {
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("丰田", cr.getBrand_name());
 			Assert.assertEquals("普瑞维亚", cr.getCar_model_name());
-			Assert.assertEquals("61.0", cr.getGuiding_price());
+			Assert.assertEquals("61", cr.getGuiding_price());
 			Assert.assertEquals("2", cr.getDiscount_way());
 			Assert.assertEquals("2.2", cr.getDiscount_content());
 		}
@@ -158,7 +158,7 @@ public class TestResourceMessageProcessor {
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("丰田", cr.getBrand_name());
 			Assert.assertEquals("普瑞维亚", cr.getCar_model_name());
-			Assert.assertEquals("61.0", cr.getGuiding_price());
+			Assert.assertEquals("61", cr.getGuiding_price());
 			Assert.assertEquals("2", cr.getDiscount_way());
 			Assert.assertEquals("2.2", cr.getDiscount_content());
 		}
@@ -171,11 +171,26 @@ public class TestResourceMessageProcessor {
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(1, crg.getResult().size());
 			CarResource cr = crg.getResult().get(0);
-			Assert.assertEquals("丰田", cr.getBrand_name());
-			Assert.assertEquals("普瑞维亚", cr.getCar_model_name());
-			Assert.assertEquals("61.0", cr.getGuiding_price());
+			Assert.assertEquals("日产", cr.getBrand_name());
+			Assert.assertEquals("轩逸", cr.getCar_model_name());
+			Assert.assertEquals("15", cr.getGuiding_price());
 			Assert.assertEquals("2", cr.getDiscount_way());
-			Assert.assertEquals("2.2", cr.getDiscount_content());
+			Assert.assertEquals("1.2", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"轩逸 \\n 15红下12000 呵呵哒");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("日产", cr.getBrand_name());
+			Assert.assertEquals("轩逸", cr.getCar_model_name());
+			Assert.assertEquals("15", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("1.2", cr.getDiscount_content());
 		}
 	}
 	
@@ -206,6 +221,46 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("奥迪", cr.getBrand_name());
 			Assert.assertEquals("29.98", cr.getGuiding_price());
 			Assert.assertEquals("[白#]", cr.getColors());
+		}
+	}
+
+	@Test
+	/*
+	 * 在进行规格判定时，我们把一些特殊的token，例如公羊，1500，4500，2700等信息作为平行进口车的佐证
+	 * 但是这里没有考虑到下1500或者加4500的情况，所以要额外做处理，把这些特殊数字前有价格相关的信息给过滤掉，
+	 * 即如果是下4500，那么这个车不能作为平行进口车的佐证
+	 * 
+	 * 或者如果4500之前是颜色，即没有显式的指定是下多少钱或者多少点，但是在颜色后的数字基本都是下多少或者加多少钱
+	 */
+	public void testResourceSpecialStandardInfo() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"汉兰达2878白黑 下4500");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals("汉兰达", cr.getCar_model_name());
+			Assert.assertEquals("28.78", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("0.45", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"汉兰达2878白黑4500");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals("汉兰达", cr.getCar_model_name());
+			Assert.assertEquals("28.78", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("0.45", cr.getDiscount_content());
 		}
 	}
 }

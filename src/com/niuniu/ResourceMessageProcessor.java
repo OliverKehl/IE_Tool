@@ -588,7 +588,7 @@ public class ResourceMessageProcessor {
 		//resourceMessageProcessor.setMessages("17款GLS450 黑/黑 #6738 P01全景 方向盘加热 哈曼 二排电动 照明脚踏 后娱预留 停车辅助 驾驶员辅助 雷测 现车手续齐 111");
 		//DONE 平行进口车音箱配置被误识别成价格，数值较大 
 		//resourceMessageProcessor.setMessages("16款美规揽胜行政3.0 白/白。0816 HSE 、视觉辅助包、驾驶员辅助包、825W豪华音响包、保护包、可加热方向盘 皓月库现车 138");
-		resourceMessageProcessor.setMessages("2016款美规路虎发现4（汽油）黑/黑 #3720");
+		resourceMessageProcessor.setMessages("轩逸 15红下12000 呵呵哒");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

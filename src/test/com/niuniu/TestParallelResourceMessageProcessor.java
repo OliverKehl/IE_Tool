@@ -1,4 +1,4 @@
-package com.niuniu.test;
+package test.com.niuniu;
 
 import static org.junit.Assert.assertFalse;
 
@@ -218,22 +218,77 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("90.0", cr.getDiscount_content());
 			Assert.assertEquals("3台\n7830  7855# 滑动天窗19轮 真皮方向盘 16项座椅电动调节 后视镜自动防眩目 前挡风加热 前雾灯 LED氙灯带大灯清洗 车道偏离警示 电尾 倒影 倒车助手 前后侧身隔热防噪音玻璃 现车90万", cr.getRemark());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款GLS450 黑/黑 #6738 P01全景 方向盘加热 哈曼 二排电动 照明脚踏 后娱预留 停车辅助 驾驶员辅助 雷测 现车手续齐 111");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals(2, cr.getStandard());
+			Assert.assertEquals("奔驰", cr.getBrand_name());
+			Assert.assertEquals("GLS450", cr.getCar_model_name());
+			Assert.assertEquals("6738", cr.getVin());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("111.0", cr.getDiscount_content());
+			Assert.assertEquals("P01全景 方向盘加热 哈曼 二排电动 照明脚踏 后娱预留 停车辅助 驾驶员辅助 雷测 现车手续齐 111", cr.getRemark());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款GLS450 黑/黑 6738  # P01全景 方向盘加热 哈曼 二排电动 照明脚踏 后娱预留 停车辅助 驾驶员辅助 雷测 现车手续齐 111");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals(2, cr.getStandard());
+			Assert.assertEquals("奔驰", cr.getBrand_name());
+			Assert.assertEquals("GLS450", cr.getCar_model_name());
+			Assert.assertEquals("6738", cr.getVin());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("111.0", cr.getDiscount_content());
+			Assert.assertEquals("P01全景 方向盘加热 哈曼 二排电动 照明脚踏 后娱预留 停车辅助 驾驶员辅助 雷测 现车手续齐 111", cr.getRemark());
+		}
 	}
 	
 	@Test
 	public void testResourcePrice() {
-		ResourceMessageProcessor rmp = new ResourceMessageProcessor();
-		rmp.setMessages(
-				"17款美规奔驰GLS450 \\n颜色：黑/咖（9498）\\n配置：P01，全景，灯光包，外观包，停车辅助包，方向盘加热，二排电动，哈曼音响，桉木内饰\\n天津现车    远方宏达库\\n价格：113.88万\\n");
-		rmp.process();
-		CarResourceGroup crg = rmp.getCarResourceGroup();
-		Assert.assertEquals(1, crg.getResult().size());
-		CarResource cr = crg.getResult().get(0);
-		Assert.assertEquals("奔驰", cr.getBrand_name());
-		Assert.assertEquals(2017, cr.getYear());
-		Assert.assertEquals("113.88", cr.getDiscount_content());
-		Assert.assertEquals(
-				"颜色:黑/咖(9498)\n配置:P01,全景,灯光包,外观包,停车辅助包,方向盘加热,二排电动,哈曼音响,桉木内饰\n天津现车 远方宏达库\n价格:113.88万",
-				cr.getRemark());
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款美规奔驰GLS450 \\n颜色：黑/咖（9498）\\n配置：P01，全景，灯光包，外观包，停车辅助包，方向盘加热，二排电动，哈曼音响，桉木内饰\\n天津现车    远方宏达库\\n价格：113.88万\\n");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("奔驰", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("113.88", cr.getDiscount_content());
+			Assert.assertEquals(
+					"颜色:黑/咖(9498)\n配置:P01,全景,灯光包,外观包,停车辅助包,方向盘加热,二排电动,哈曼音响,桉木内饰\n天津现车 远方宏达库\n价格:113.88万",
+					cr.getRemark());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"16款美规揽胜行政3.0 白/白。0816 HSE 、视觉辅助包、驾驶员辅助包、825W豪华音响包、保护包、可加热方向盘 皓月库现车 138");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals(2016, cr.getYear());
+			Assert.assertEquals("138.0", cr.getDiscount_content());
+			Assert.assertEquals("0816", cr.getVin());
+			Assert.assertEquals(
+					"HSE 、视觉辅助包、驾驶员辅助包、825W豪华音响包、保护包、可加热方向盘 皓月库现车 138",
+					cr.getRemark());
+		}
 	}
 }

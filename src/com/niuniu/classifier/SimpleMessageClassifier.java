@@ -257,8 +257,17 @@ public class SimpleMessageClassifier {
 		for(int i=0;i<tokens.size();i++){
 			String tmp = tokens.get(i);
 			tmp = tmp.substring(tmp.lastIndexOf("|") + 1, tmp.indexOf("#"));
-			if(tmp.equals("车架号") || parallelToken.contains(tmp))
+			if(tmp.equals("车架号"))
 				return -1;
+			if(parallelToken.contains(tmp)){
+				if(i>0){
+					String hehe = tokens.get(i-1);
+					String content = hehe.substring(hehe.lastIndexOf("|") + 1, hehe.lastIndexOf("#"));
+					if(content.equals("下") || content.equals("优惠") || content.equals("降") || content.equals("加") || hehe.endsWith("COLOR"))
+						continue;
+					return -1;
+				}
+			}
 		}
 		if(!standards.isEmpty()){
 			String cur_standard = standards.get(0);
