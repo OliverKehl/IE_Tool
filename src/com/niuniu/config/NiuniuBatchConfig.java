@@ -1,14 +1,19 @@
 package com.niuniu.config;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
 
 import org.apache.commons.lang.math.NumberUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NiuniuBatchConfig {
 
+	public final static Logger log = LoggerFactory.getLogger(NiuniuBatchConfig.class);
 	// 默认的配置文件路径
 	public final String TOKEN_REPLACE_FILE = "com/niuniu/config/token_replace_file";
 	
@@ -103,20 +108,55 @@ public class NiuniuBatchConfig {
 
 	private NiuniuBatchConfig() {
 		props = new Properties();
-		InputStream input = this.getClass().getClassLoader().getResourceAsStream(DEFAULT_PATH);
-		if (input != null) {
-			try {
-				props.loadFromXML(input);
-				String str = props.getProperty("enable_cache");
-				enable_cache = Boolean.parseBoolean(str);
-			} catch (InvalidPropertiesFormatException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
+		String separator = System.getProperty("file.separator");
+		String target = System.getProperty("catalina.base") + separator + "config.xml";
+		log.info(target);
+		try{
+			InputStream input = openResource(this.getClass().getClassLoader(), target);
+			if(input==null){
+				log.error("找不到批量发布的配置文件，使用默认配置文件...");
+				input = openResource(this.getClass().getClassLoader(), DEFAULT_PATH);
 			}
+			if (input != null) {
+				try {
+					props.loadFromXML(input);
+					String str = props.getProperty("enable_cache");
+					enable_cache = Boolean.parseBoolean(str);
+				} catch (InvalidPropertiesFormatException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}else{
+				log.error("找不到批量发布的配置文件，终止服务");
+				System.exit(1);
+			}
+		}catch (Exception e) {
+			log.warn("exception caught when initializing.");
 		}
 	}
-
+	
+	public InputStream openResource(ClassLoader classLoader, String resource) throws IOException {
+	    InputStream is=null;
+	    try {
+	      File f0 = new File(resource);
+	      File f = f0;
+	      if (f.isFile() && f.canRead()) {
+	        return new FileInputStream(f);
+	      } else if (f != f0) { // no success with $CWD/$configDir/$resource
+	        if (f0.isFile() && f0.canRead())
+	          return new FileInputStream(f0);
+	      }
+	      // delegate to the class loader (looking into $INSTANCE_DIR/lib jars)
+	      is = classLoader.getResourceAsStream(resource);
+	      if (is == null)
+	        return null;
+	    } catch (Exception e) {
+	      throw new IOException("Error opening " + resource, e);
+	    }
+	    return is;
+	  }
+	
 	public static void main(String[] args){
 		System.out.println(NiuniuBatchConfig.getResourceTypeModel());
 	}
