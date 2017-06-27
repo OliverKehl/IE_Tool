@@ -6,13 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.slf4j.*;
-import java.util.Map.Entry;
-
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -26,7 +21,6 @@ import org.apache.solr.client.solrj.response.TermsResponse;
 public class USolr {
 	private HttpSolrServer server = null;
 	private String server_url = "http://121.40.204.159:8080/solr/";
-	private String local_url = "http://localhost:8084/solr/";
 	private String url = server_url;
 	public SolrQuery solrquery = null;
 	private SolrDocumentList queryresult = null;
@@ -209,31 +203,11 @@ public class USolr {
 			}
 		}
 	}
-	public String[] getSortFields(){
-		if(solrquery==null)
-			return null;
-		return solrquery.getSortFields();
-	}
+
 	public String getSortField(){
 		if(solrquery==null)
 			return null;
 		return solrquery.getSortField();
-	}
-	public boolean removeSortField(String sortfield, boolean order) {
-		if (solrquery == null || sortfield == null)
-			return false;
-		else {
-			try {
-				if (order)
-					solrquery.removeSortField(sortfield, SolrQuery.ORDER.asc);
-				else
-					solrquery.removeSortField(sortfield, SolrQuery.ORDER.desc);
-				return true;
-			} catch (Exception e) {
-				e.printStackTrace();
-				return false;
-			}
-		}
 	}
 	
 	public boolean setChaos(boolean chaos){
@@ -537,24 +511,6 @@ public class USolr {
 		return docs2.size()>0;
 	}
 	
-	public void print() {
-		List<SolrDocument> docs2 = getQueryResult();// 得到结果集
-		int ik = 0;
-		for (SolrDocument doc : docs2) {// 遍历结果集
-			System.out.println(doc.getFieldValue("score"));
-			for (Iterator iter = doc.iterator(); iter.hasNext();) {
-				Map.Entry<String, Object> entry = (Entry<String, Object>) iter
-						.next();
-				System.out.print("Key :" + entry.getKey() + "  ");
-				System.out.println("Value :" + entry.getValue());
-				Object ob = new Object();
-
-			}
-			ik++;
-			System.out.println("----------------------------------");
-		}
-		System.out.println(ik);
-	}
 	public void printTerms(){
 		if(queryresponse != null ){  
             System.out.println("查询耗时（ms）：" + queryresponse.getQTime());  
@@ -645,45 +601,5 @@ public class USolr {
 			e.printStackTrace();
 		}
 		return false;
-	}
-	
-	public static void main(String[] args) throws Exception {
-		USolr solr = new USolr();
-		
-		solr.selectIndex("niuniu_basecars");
-		solr.setFields("*", "score");
-		solr.setStart(0);
-		solr.setRows(15);
-		//solr.setDismax(true);
-		//solr.addFilter("area1","上海市");
-		//solr.addFilter("{!geofilt}&sfield=position&pt=31.298528645833333,121.50142795138889&d=5&sort=geodist() asc");
-		//solr.setDismaxField("BigTag");
-		String query = "*:*";
-		solr.clear();
-		solr.selectIndex("niuniu_basecars");
-		solr.setFields("*", "score");
-		solr.setStart(0);
-		solr.setRows(10);
-		solr.setDefType("niuniuparser");
-		solr.setQuery(query);
-		solr.addFilter("standard:\\" + Integer.toString(2));//国产、中规
-		//solr.setNiuniuParser(true);
-		
-		// solr.setDebugQuery(true);
-		System.out.println(solr.solrquery);
-		//solr.addSortField("frequency", false);
-		long t1 = System.currentTimeMillis();
-		try {
-			solr.ExecuteQuery();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		System.out.println(System.currentTimeMillis() - t1);
-		solr.print();
-		solr.close();
-	}
-	public static void main2(String[] args) throws Exception {
-		USolr solr = new USolr();
-		solr.process();
 	}
 }

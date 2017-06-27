@@ -228,7 +228,7 @@ public class Utils {
 		return "";
 	}
 	
-	public static SolrDocumentList select(String query, USolr solr, boolean popularity){
+	public static SolrDocumentList select(String query, USolr solr){
 		if(solr==null || query==null || query.isEmpty())
 			return null;
 		SolrDocumentList query_results = null;
@@ -237,15 +237,13 @@ public class Utils {
 		solr.setFields("*", "score");
 		solr.setStart(0);
 		solr.setRows(100);
-		solr.setDefType("niuniuparser");
+		solr.setDefType("basecarparser");
 		solr.setQuery(query);
 		//TODO
 		//需要把后续的所有tag是STYLE的内容加入到搜索条件中
 		solr.addSortField("score", false);// 按年份降序排列
-		if(popularity){
-			solr.addSortField("popularity", false);// 按资源热度降序排列
-		}
 		solr.addSortField("year", false);// 按年份降序排列
+		solr.addSortField("popularity", false);// 按资源热度降序排列
 		try {
 			solr.ExecuteQuery();
 			query_results = solr.getQueryResult();
@@ -255,7 +253,7 @@ public class Utils {
 		return query_results;
 	}
 	
-	public static SolrDocumentList select(String query, USolr solr, int standard, boolean popularity){
+	public static SolrDocumentList select(String query, USolr solr, int standard){
 		if(solr==null || query==null || query.isEmpty())
 			return null;
 		SolrDocumentList query_results = null;
@@ -264,7 +262,7 @@ public class Utils {
 		solr.setFields("*", "score");
 		solr.setStart(0);
 		solr.setRows(100);
-		solr.setDefType("niuniuparser");
+		solr.setDefType("basecarparser");
 		solr.setQuery(query);
 		solr.addFilter("standard:" + Integer.toString(standard));//国产、中规
 		if(standard>1){
@@ -273,10 +271,8 @@ public class Utils {
 		//TODO
 		//需要把后续的所有tag是STYLE的内容加入到搜索条件中
 		solr.addSortField("score", false);// 按年份降序排列
-		if(popularity){
-			solr.addSortField("popularity", false);// 按资源热度降序排列
-		}
 		solr.addSortField("year", false);// 按年份降序排列
+		solr.addSortField("popularity", false);// 按资源热度降序排列
 		try {
 			solr.ExecuteQuery();
 			query_results = solr.getQueryResult();
@@ -297,7 +293,6 @@ public class Utils {
 		params.set("qt", "/tokenize");
 		params.set("start", "0");
 		params.set("rows", "10");
-		params.set("defType", "niuniuparser");
 		params.set("q", s);
 		//params.set("fl", "id,score");
 		params.set("field", mode);
@@ -455,7 +450,7 @@ public class Utils {
 		String line = "1⃣️2⃣️17款加版GLS450 #6621 黑/黑 金属漆 豪华包 运动包 灯光包 驾驶员辅助包 脚踏板 行李架 6月底交车131万";
 		//System.out.println(Utils.normalizePrice("宝马320是   -10.5"));
 		System.out.println(Utils.removeHeader(Utils.preProcess(line)));
-		//System.out.println(clean(line, solr));
+		System.out.println(clean(line, solr));
 	}
 	
 }

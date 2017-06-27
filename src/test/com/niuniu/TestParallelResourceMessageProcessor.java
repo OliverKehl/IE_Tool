@@ -1,7 +1,5 @@
 package test.com.niuniu;
 
-import static org.junit.Assert.assertFalse;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -12,7 +10,6 @@ import com.niuniu.CarResource;
 import com.niuniu.CarResourceGroup;
 import com.niuniu.ResourceMessageProcessor;
 import com.niuniu.USolr;
-import com.niuniu.config.NiuniuBatchConfig;
 
 import junit.framework.Assert;
 

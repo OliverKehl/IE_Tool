@@ -379,15 +379,6 @@ public class BaseCarFinder {
 		String sub_query = message.substring(0, stop).trim();
 		return sub_query;
 	}
-
-	private boolean isOldStyleQuery(){
-		for(String s:styles){
-			if("老".equals(s) || "老款".equals(s)){
-				return true;
-			}
-		}
-		return false;
-	}
 	
 	public boolean generateBaseCarId(String message, String pre_info) {
 		if (message.isEmpty())
@@ -400,8 +391,7 @@ public class BaseCarFinder {
 		String sub_query = parseMessage(solr, message, 1);
 		if (pre_info != null)
 			sub_query = pre_info + " " + sub_query;
-		boolean shit = isOldStyleQuery();
-		query_results = Utils.select(sub_query, solr, shit);
+		query_results = Utils.select(sub_query, solr);
 		//if (query_results == null || (sub_query.length()<3 && brands.isEmpty() && models.isEmpty() && styles.isEmpty())) {
 		if (query_results == null) {
 			// 1. 空行
@@ -425,17 +415,8 @@ public class BaseCarFinder {
 		String sub_query = parseMessage(solr, message, standard);
 		if (pre_info != null)
 			sub_query = pre_info + " " + sub_query;
-		boolean shit = false;
-		if(pre_info!=null && !pre_info.isEmpty()){
-			String[] tmp_arr = pre_info.split(" ");
-			for(String tmp:tmp_arr){
-				tmp = tmp.trim();
-				if("老".equals(tmp) || "老款".equals(tmp))
-					shit = true;
-			}
-		}
 		 
-		query_results = Utils.select(sub_query, solr, standard, shit);
+		query_results = Utils.select(sub_query, solr, standard);
 		if (query_results == null) {
 			// 1. 空行
 			// 2. 把颜色放指导价前面了
@@ -960,9 +941,6 @@ public class BaseCarFinder {
 				if ("特价".equals(kfc) || "现价".equals(kfc)) {
 					discount_content = p;
 					discount_way = 4;
-					String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
-					int thehe = NumberUtils.toInt(hehe);
-					//backup_index = Math.max(backup_index, thehe);
 					return true;
 				}
 			}
@@ -972,9 +950,6 @@ public class BaseCarFinder {
 			if ((head >= 1 && this.original_message.charAt(head - 1) == '价')) {
 				discount_content = p;
 				discount_way = 4;
-				String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
-				int thehe = NumberUtils.toInt(hehe);
-				//backup_index = Math.max(backup_index, thehe);
 				return true;
 			}
 
@@ -984,9 +959,6 @@ public class BaseCarFinder {
 				if ("万".equals(kfc) || "w".equals(kfc)) {
 					discount_content = p;
 					discount_way = 4;
-					String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
-					int thehe = NumberUtils.toInt(hehe) + 1;
-					//backup_index = Math.max(backup_index, thehe);
 					return true;
 				}
 			}
@@ -1001,9 +973,6 @@ public class BaseCarFinder {
 					&& (this.original_message.charAt(tail) == '万' || this.original_message.charAt(tail) == 'w')) {
 				discount_content = p;
 				discount_way = 4;
-				String hehe = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
-				int thehe = NumberUtils.toInt(hehe) + 1;
-				//backup_index = Math.max(backup_index, thehe);
 				return true;
 			}
 		}

@@ -343,7 +343,7 @@ public class ResourceMessageProcessor {
 			if(mode==0){//有可能是隐式的平行进口车,可以再抢救一下
 				BaseCarFinder BCF = new BaseCarFinder(solr_client, last_brand_name);
 				boolean flag = BCF.generateBaseCarId(s, null, 2);
-				if(flag && BCF.query_results.getMaxScore()>3000)
+				if(flag && BCF.query_results.getMaxScore()>5000)
 					mode = -1;
 			}
 			if(mode==0){
@@ -376,7 +376,7 @@ public class ResourceMessageProcessor {
 				status = baseCarFinder.generateBaseCarId(s, null);
 			}
 			
-			if(!status || (baseCarFinder.query_results.size()>=40 && baseCarFinder.query_results.getMaxScore()<2500) || baseCarFinder.query_results.getMaxScore()<2600){
+			if(!status || (baseCarFinder.query_results.size()>=40 && baseCarFinder.query_results.getMaxScore()<3000) || baseCarFinder.query_results.getMaxScore()<3000){
 				status = false;
 			}
 			
@@ -456,7 +456,7 @@ public class ResourceMessageProcessor {
 					}
 					
 					
-					if(baseCarFinder.query_results.size()>=3 || baseCarFinder.query_results.getMaxScore()<2500 || (baseCarFinder.query_results.size()<=4 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
+					if(baseCarFinder.query_results.size()>=3 || baseCarFinder.query_results.getMaxScore()<3000 || (baseCarFinder.query_results.size()<=4 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
 						String prefix = rebuildQueryPrefix(baseCarFinder,1);
 						if(!prefix.isEmpty()){
 							BaseCarFinder baseCarFinder_new = new BaseCarFinder(solr_client, last_brand_name);
@@ -491,7 +491,7 @@ public class ResourceMessageProcessor {
 							}
 						}
 					}
-					if(baseCarFinder.query_results.getMaxScore()<2500  || (baseCarFinder.query_results.size()<=5 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
+					if(baseCarFinder.query_results.getMaxScore()<3000  || (baseCarFinder.query_results.size()<=5 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
 						// 置信度较低，查找结果的分数低于某个阈值
 						writeInvalidInfo(concatWithSpace(s));
 						continue;
@@ -539,7 +539,7 @@ public class ResourceMessageProcessor {
 					writeInvalidInfo(concatWithSpace(s));
 					continue;
 				}
-				if(baseCarFinder.query_results.getMaxScore()<2500){
+				if(baseCarFinder.query_results.getMaxScore()<3000){
 					String prefix = rebuildQueryPrefix(baseCarFinder,0);
 					if(!prefix.isEmpty()){
 						baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
@@ -582,13 +582,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		//DONE
-		//resourceMessageProcessor.setMessages("普瑞维亚 \\n 61红下22000出现车（新款");
-		//DONE 如果文本中没有显式的规格，但是有车架号，那么也应该在分类的时候分为平行进口车
-		//resourceMessageProcessor.setMessages("17款GLS450 黑/黑 #6738 P01全景 方向盘加热 哈曼 二排电动 照明脚踏 后娱预留 停车辅助 驾驶员辅助 雷测 现车手续齐 111");
-		//DONE 平行进口车音箱配置被误识别成价格，数值较大 
-		//resourceMessageProcessor.setMessages("16款美规揽胜行政3.0 白/白。0816 HSE 、视觉辅助包、驾驶员辅助包、825W豪华音响包、保护包、可加热方向盘 皓月库现车 138");
-		resourceMessageProcessor.setMessages("轩逸 15红下12000 呵呵哒");
+		resourceMessageProcessor.setMessages("野帝\\n1498 白褐 29000（17年）\\n1598 白褐 27000");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

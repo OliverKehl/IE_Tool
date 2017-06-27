@@ -6,9 +6,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.niuniu.CarResource;
-import com.niuniu.CarResourceGroup;
-import com.niuniu.ResourceMessageProcessor;
 import com.niuniu.USolr;
 import com.niuniu.Utils;
 import com.niuniu.classifier.SimpleMessageClassifier;

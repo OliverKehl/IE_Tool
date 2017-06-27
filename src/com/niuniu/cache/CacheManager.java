@@ -9,7 +9,6 @@ public class CacheManager {
 	private static String url;
 	private static int port;
 	private static int db;
-	private static String password;
 	private static int ttl;
 	
 	static{
@@ -17,7 +16,6 @@ public class CacheManager {
 		port = NiuniuBatchConfig.getRedisPort();
 		db = NiuniuBatchConfig.getRedisIndex();
 		ttl = NiuniuBatchConfig.getExpiredSeconds();
-		password = NiuniuBatchConfig.getRedisPassword();
 	}
 	
 	public static Jedis before(){
