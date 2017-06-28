@@ -407,7 +407,7 @@ public class Utils {
 	}
 	
 	public static String cleanDate(String str){
-		String eL = "^[0-9]{1,2}[月-][0-9]{2}号?";
+		String eL = "^[0-9]{1,2}[月-][0-9]{2}[号日]?";
 		Pattern p = Pattern.compile(eL);
 		Matcher m = p.matcher(str);
 		String line = m.replaceAll("").trim();

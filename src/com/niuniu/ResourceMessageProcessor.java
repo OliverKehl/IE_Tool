@@ -350,6 +350,7 @@ public class ResourceMessageProcessor {
 				//是上一个平行进口车的配置、备注信息
 				if(last_standard_name==-1){
 					CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
+					s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
 					s = reExtractVinFromConfiguration(tmpCR, s);
 					if(tmpCR.getResource_type()==null){
 						String resource_type = ResourceTypeClassifier.predict(s);
@@ -390,6 +391,7 @@ public class ResourceMessageProcessor {
 			if(!status){
 				if(last_standard_name==-1){
 					CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
+					s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
 					s = reExtractVinFromConfiguration(tmpCR, s);
 					if(tmpCR.getResource_type()==null){
 						String resource_type = ResourceTypeClassifier.predict(s);
@@ -525,6 +527,7 @@ public class ResourceMessageProcessor {
 				if(!tmp_status){
 					if(last_standard_name==-1){
 						CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
+						s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
 						s = reExtractVinFromConfiguration(tmpCR, s);
 						if(tmpCR.getResource_type()==null){
 							String resource_type = ResourceTypeClassifier.predict(s);
@@ -582,7 +585,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("野帝\\n1498 白褐 29000（17年）\\n1598 白褐 27000");
+		resourceMessageProcessor.setMessages("17款柴油3.0加长创世，黑黄鹤，0835#，22钻石轮，雷达测距，抬显，4座，前冰箱，大号清洗液，镀铬脚踏，盲点检测，双触屏，数字广播，小备胎，全景滑动天窗，后排10.2");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

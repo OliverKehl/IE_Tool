@@ -939,8 +939,7 @@ public class BaseCarFinder {
 				String tmp = ele_arr.get(i - 1);
 				String kfc = tmp.substring(tmp.lastIndexOf("|") + 1, tmp.indexOf("#"));
 				if ("特价".equals(kfc) || "现价".equals(kfc)) {
-					discount_content = p;
-					discount_way = 4;
+					setParallelPrice(p);
 					return true;
 				}
 			}
@@ -948,8 +947,7 @@ public class BaseCarFinder {
 			String head_str = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
 			int head = NumberUtils.toInt(head_str);
 			if ((head >= 1 && this.original_message.charAt(head - 1) == '价')) {
-				discount_content = p;
-				discount_way = 4;
+				setParallelPrice(p);
 				return true;
 			}
 
@@ -957,22 +955,19 @@ public class BaseCarFinder {
 				String tmp = ele_arr.get(i + 1);
 				String kfc = tmp.substring(tmp.lastIndexOf("|") + 1, tmp.indexOf("#"));
 				if ("万".equals(kfc) || "w".equals(kfc)) {
-					discount_content = p;
-					discount_way = 4;
+					setParallelPrice(p);
 					return true;
 				}
 			}
 			if((i+1)==ele_arr.size() && p>15){
-				discount_content = p;
-				discount_way = 4;
+				setParallelPrice(p);
 				return true;
 			}
 			String tail_str = element.substring(element.indexOf("-") + 1, element.indexOf("|"));
 			int tail = NumberUtils.toInt(tail_str);
 			if (tail < this.original_message.length()
 					&& (this.original_message.charAt(tail) == '万' || this.original_message.charAt(tail) == 'w')) {
-				discount_content = p;
-				discount_way = 4;
+				setParallelPrice(p);
 				return true;
 			}
 		}
@@ -982,8 +977,7 @@ public class BaseCarFinder {
 				String content = token.substring(token.lastIndexOf("|") + 1, token.indexOf("#"));
 				float f = NumberUtils.toFloat(content, 0f);
 				if(f!=0 && f<1000 && !content.matches("[0-9]{4,6}$")){
-					discount_content = f;
-					discount_way=4;
+					setParallelPrice(f);
 					return true;
 				}
 			}else{
@@ -993,8 +987,7 @@ public class BaseCarFinder {
 						String token2 = ele_arr.get(ele_arr.size()-2);
 						float f2 = NumberUtils.toFloat(token2.substring(token2.lastIndexOf("|") + 1, token2.indexOf("#")), 0f);
 						if(f2!=0){
-							discount_content = f2;
-							discount_way=4;
+							setParallelPrice(f2);
 							return true;
 						}
 					}
@@ -1004,6 +997,12 @@ public class BaseCarFinder {
 		return false;
 	}
 
+	private void setParallelPrice(float f){
+		if(f<20)
+			return;
+		discount_way = 4;
+		discount_content = f;
+	}
 	/*
 	 * 提取车架号
 	 */
