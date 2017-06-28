@@ -287,5 +287,22 @@ public class TestParallelResourceMessageProcessor {
 					"HSE 、视觉辅助包、驾驶员辅助包、825W豪华音响包、保护包、可加热方向盘 皓月库现车 138",
 					cr.getRemark());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款柴油3.0加长创世，黑黄鹤，0835#，22钻石轮，雷达测距，抬显，4座，前冰箱，大号清洗液，镀铬脚踏，盲点检测，双触屏，数字广播，小备胎，全景滑动天窗，后排10.2 \\n 7月15日交车 165w");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("165.0", cr.getDiscount_content());
+			Assert.assertEquals("0835", cr.getVin());
+			Assert.assertEquals("期货", cr.getResource_type());
+			Assert.assertEquals(
+					"22钻石轮,雷达测距,抬显,4座,前冰箱,大号清洗液,镀铬脚踏,盲点检测,双触屏,数字广播,小备胎,全景滑动天窗,后排10.2\n7月15日交车 165w",
+					cr.getRemark());
+		}
 	}
 }
