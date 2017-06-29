@@ -97,7 +97,7 @@ public class Utils {
 		eL = "^\\d\\.\\d";
 		headerPricePattern = Pattern.compile(eL);
 		
-		eL = "^\\d{1,2}[\\.;\\s、]";
+		eL = "^\\d{1,2}[\\.:;\\s、]";
 		headerOrderPattern = Pattern.compile(eL);
 		
 		InputStream is = null;

@@ -263,4 +263,22 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("0.45", cr.getDiscount_content());
 		}
 	}
+	
+	@Test
+	public void testResourceSpecialHeader() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"5：帕萨特指导价211900元↓46100");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("大众", cr.getBrand_name());
+			Assert.assertEquals("帕萨特", cr.getCar_model_name());
+			Assert.assertEquals("21.19", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("4.61", cr.getDiscount_content());
+		}
+	}
 }
