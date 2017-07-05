@@ -170,6 +170,21 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("[金#米色]", cr.getColors());
 			Assert.assertEquals("手续齐", cr.getRemark());
 		}
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款美规 路虎揽胜行政 白/黑 133W\\n车架号：3382\\n配置：3.0T 汽油 乌木顶  HSE包(380马力 14项座椅调节 座椅记忆 20寸轮  可开启全景天窗 自动防眩目车内车外后视镜 打孔牛津真皮座椅 前排座椅通风/加热 后排座椅加热 方向盘加热 前档加热 巡航定速 前后雷达 倒车影像 车道偏离预警 TFT全液晶仪表盘 10英寸中控触摸屏 电吸门 胎压监测 小尺寸备胎 智能卡 脚感应电尾 Meridian 380音响  后隐私玻璃 氛围灯 氙灯Led 感应雨刷) 路虎保护包 现车\\n齐航男：15320100188");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("美规", cr.getStandard_name());
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("3382", cr.getVin());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("133.0", cr.getDiscount_content());
+			Assert.assertEquals("[白#黑色]", cr.getColors());
+		}
 	}
 	
 	@Test
