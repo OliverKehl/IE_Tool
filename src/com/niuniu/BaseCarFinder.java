@@ -370,7 +370,8 @@ public class BaseCarFinder {
 		vital_info_index = parse(ele_arr, message, standard);
 		int stop = 0;
 		if (vital_info_index == ele_arr.size()) {
-			stop = message.length();
+			String tmp = ele_arr.get(vital_info_index-1);
+			stop = NumberUtils.toInt(tmp.substring(tmp.indexOf("-") + 1, tmp.indexOf("|")));
 		} else {
 			String tmp = ele_arr.get(vital_info_index);
 			stop = NumberUtils.createInteger(tmp.substring(0, tmp.indexOf("-")));
