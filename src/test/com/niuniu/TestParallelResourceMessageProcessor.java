@@ -60,7 +60,7 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("丰田", cr.getBrand_name());
 			Assert.assertEquals("加版", cr.getStandard_name());
 			Assert.assertEquals("坦途", cr.getCar_model_name());
-			Assert.assertEquals("[黑#棕色]", cr.getColors());
+			Assert.assertEquals("[黑色#棕色]", cr.getColors());
 			Assert.assertTrue(cr.getStyle_name().contains("1794"));
 			Assert.assertEquals(
 					"配置:天窗 并道辅助 真皮座椅加热 通风 USB蓝牙 大屏 JBL音响 倒影 雷达 巡航 防侧滑 多功能方向盘 后视镜加热 LED日行灯 大灯高度调节 桃木内饰 字标扶手箱 后货箱内衬 20寸轮毂 主副驾驶电动调节 后挡风玻璃自动升降 自动恒温空调 电动折叠后视镜\n现车手续齐\n电话:15822736077",
@@ -183,7 +183,7 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("3382", cr.getVin());
 			Assert.assertEquals("4", cr.getDiscount_way());
 			Assert.assertEquals("133.0", cr.getDiscount_content());
-			Assert.assertEquals("[白#黑色]", cr.getColors());
+			Assert.assertEquals("[白色#黑色]", cr.getColors());
 		}
 	}
 	
@@ -203,7 +203,7 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("", cr.getVin());
 			Assert.assertEquals("4", cr.getDiscount_way());
 			Assert.assertEquals("43.0", cr.getDiscount_content());
-			Assert.assertEquals("[白#米色]", cr.getColors());
+			Assert.assertEquals("[白色#米色]", cr.getColors());
 			Assert.assertEquals("今天现车 43万", cr.getRemark());
 			Assert.assertEquals("38706", cr.getId());
 			Assert.assertTrue(cr.getStyle_name().contains("黎巴嫩"));
@@ -318,6 +318,70 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals(
 					"22钻石轮,雷达测距,抬显,4座,前冰箱,大号清洗液,镀铬脚踏,盲点检测,双触屏,数字广播,小备胎,全景滑动天窗,后排10.2\n7月15日交车 165w",
 					cr.getRemark());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"1	飞驰 17款 4.0T V8 S	冰川白/红	279.00	欧版-现车,打税放\\n配置：17款 欧规 宾利飞驰 V8S 4.0T 白红 3081 5座 20轮 前加热 前后电动座椅 智能卡 一键启动 红卡钳 倒影 天窗 电尾 前后 电眼 氙灯 LED\\n备注：车架号：3081");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("宾利", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("279.0", cr.getDiscount_content());
+			Assert.assertEquals("3081", cr.getVin());
+		}
+	}
+	
+	/*
+	 * 平行进口车在搜索时用的search_level=low，所以会出来大量的搜索结果，但是命中term的数量相差较多，所以需要截断搜索结果
+	 * 以两个style的term命中为gap
+	 * 即以2000分为gap
+	 * 但是考虑到浮点数带来的精度影响，以1999分为gap
+	 * 如果结果的分数小于(maxScore-gap)
+	 * 则结束，返回满足条件的结果
+	 */
+	@Test
+	public void testPruningQueryResult() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"16款 欧版路虎 SV 3.0柴油混动加长创世 黑/黄(6407)");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals(2016, cr.getYear());
+			Assert.assertEquals("欧版", cr.getStandard_name());
+			Assert.assertEquals("6407", cr.getVin());
+		}
+	}
+	
+	/*
+	 * 有的批量信息，内容中并没有显式的规格信息，也没有隐式的规格信息，例如"车架号"等关键字眼
+	 * "16款 路虎 \\n SV 3.0柴油混动加长创世 黑/黄(6407)"
+	 * 所以，该条信息会被用于搜索中规国产车
+	 * 所以这个case就会被用于搜索指导价为6407的16款路虎。。
+	 * 显然是错误的
+	 * 所以如果我们判断规格错误导致车型识别失败，就要退化到平行进口车中去找，这样6407就会被当做车架号无视掉，不会干扰车型检索
+	 * 
+	 */
+	@Test
+	public void testStandardNotHitResource() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款 路虎 \\n SV 3.0柴油混动加长创世 黑/黄(6407)");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("6407", cr.getVin());
 		}
 	}
 }

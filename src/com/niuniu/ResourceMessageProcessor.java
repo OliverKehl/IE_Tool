@@ -389,22 +389,30 @@ public class ResourceMessageProcessor {
 			}
 			
 			if(!status){
-				if(last_standard_name==-1){
-					CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
-					s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
-					s = reExtractVinFromConfiguration(tmpCR, s);
-					if(tmpCR.getResource_type()==null){
-						String resource_type = ResourceTypeClassifier.predict(s);
-						if(resource_type!=null)
-							tmpCR.setResource_type(resource_type);
-					}
-					if(tmpCR.getDiscount_way().equals("5")){
-						reExtractPriceFromConfiguration(tmpCR, s);
-					}
-					tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
+				
+				//有可能是平行进口车被误识别成中规国产车，导致有可能把车架号代入到搜索阶段
+				if(mode==1){
+					baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
+					status = baseCarFinder.generateBaseCarId(s, null, 2);
 				}
-				writeInvalidInfo(concatWithSpace(s));
-				continue;
+				if(!status){
+					if(last_standard_name==-1){
+						CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
+						s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
+						s = reExtractVinFromConfiguration(tmpCR, s);
+						if(tmpCR.getResource_type()==null){
+							String resource_type = ResourceTypeClassifier.predict(s);
+							if(resource_type!=null)
+								tmpCR.setResource_type(resource_type);
+						}
+						if(tmpCR.getDiscount_way().equals("5")){
+							reExtractPriceFromConfiguration(tmpCR, s);
+						}
+						tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
+					}
+					writeInvalidInfo(concatWithSpace(s));
+					continue;
+				}
 			}
 			//头部信息，例如 【宝马】 老朗逸等
 			if(baseCarFinder.isHeader()){
@@ -585,7 +593,8 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("17款柴油3.0加长创世，黑黄鹤，0835#，22钻石轮，雷达测距，抬显，4座，前冰箱，大号清洗液，镀铬脚踏，盲点检测，双触屏，数字广播，小备胎，全景滑动天窗，后排10.2");
+		//resourceMessageProcessor.setMessages("1	飞驰 17款 4.0T V8 S	冰川白/红	279.00	欧版-现车,打税放\\n配置：17款 欧规 宾利飞驰 V8S 4.0T 白红 3081 5座 20轮 前加热 前后电动座椅 智能卡 一键启动 红卡钳 倒影 天窗 电尾 前后 电眼 氙灯 LED\\n备注：车架号：3081");
+		resourceMessageProcessor.setMessages("16款柴油vogue 3206# 黑黑 黑曜版 21黑曜轮 二代地形 前冰箱 隐私玻璃 智能卡 滑动全景 环影 电吸 脚感电尾门 氙灯Led 7月11日发船 120\\n16款柴油vogue 1546# 黑黑 20轮 二代地形 前雾灯 隐私玻璃 智能卡 氙灯Led 前冰箱 方向盘加热 前后座椅加热 前排座椅通风 滑动全景 环影 电吸 脚感电尾门 14项座椅调节 牛津打孔真皮座椅 胎压监测 7月11日发船 118\\n晴川众合 赵永盛 15822539319");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

@@ -405,6 +405,23 @@ public class BaseCarFinder {
 		return base_car_info.size() > 0;
 	}
 
+	SolrDocumentList filterQueryResult(SolrDocumentList qrs){
+		float gap = 1999;
+		float max_score = qrs.getMaxScore();
+		float entry_score = max_score - gap;
+		SolrDocumentList ans = new SolrDocumentList();
+		for(SolrDocument doc:qrs){
+			float f = (float)doc.getFieldValue("score");
+			if(f<entry_score)
+				break;
+			ans.add(doc);
+		}
+		ans.setNumFound(ans.size());
+		ans.setMaxScore(max_score);
+		ans.setStart(0);
+		return ans;
+	}
+	
 	public boolean generateBaseCarId(String message, String pre_info, int standard) {
 		if (message.isEmpty())
 			return false;
@@ -423,6 +440,10 @@ public class BaseCarFinder {
 			// 2. 把颜色放指导价前面了
 			// TODO
 			return false;
+		}
+		//平行进口车使用的是search_level=low，所以需要进行截断,分数定在2000以内，即1999，为了规避浮点数带来的干扰
+		if(standard==2){
+			query_results = filterQueryResult(query_results);
 		}
 		fillBaseCarIds(base_car_info, this.query_results);
 		solr.clear();
@@ -935,7 +956,12 @@ public class BaseCarFinder {
 			float p = NumberUtils.toFloat(fc);
 			if (p < 20 || p >= 500 || fc.matches("[0-9]{4,6}$"))// 平行进口车的价格不会落在这个区间外
 				continue;
-
+			
+			if(fc.endsWith(".00") || fc.endsWith(".0")){
+				setParallelPrice(p);
+				return true;
+			}
+			
 			if (i > 0) {
 				String tmp = ele_arr.get(i - 1);
 				String kfc = tmp.substring(tmp.lastIndexOf("|") + 1, tmp.indexOf("#"));
