@@ -390,21 +390,23 @@ public class TestParallelResourceMessageProcessor {
 	 * 例如“17加版雷克萨斯”
 	 * 这个肯定对应的是LX570
 	 * 而17款LX570也就有2个款式，所以我们可以认为是OK的
-	 * 但是LX570下的20轮没有资源，是否要剔除干扰呢？？？
+	 * 但是LX570下的20轮没有资源，是否要剔除干扰呢？？？(已剔除“八座20轮带来的干扰”)
 	 */
 	@Test
 	public void testSpecialBaseCar() {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
-					"17款 路虎 \\n SV 3.0柴油混动加长创世 黑/黄(6407)");
+					"17加版雷克萨斯");
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(1, crg.getResult().size());
 			CarResource cr = crg.getResult().get(0);
-			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("雷克萨斯", cr.getBrand_name());
 			Assert.assertEquals(2017, cr.getYear());
-			Assert.assertEquals("6407", cr.getVin());
+			Assert.assertEquals("加版", cr.getStandard_name());
+			Assert.assertEquals("LX570", cr.getCar_model_name());
+			Assert.assertEquals("17款 八座21轮", cr.getStyle_name());
 		}
 	}
 }
