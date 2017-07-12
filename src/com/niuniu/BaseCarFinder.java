@@ -345,7 +345,13 @@ public class BaseCarFinder {
 					}
 				} else {
 					String hehe = s.substring(s.lastIndexOf("|") + 1, s.indexOf("#"));
-					if(standard==1 || hehe.length()<4 || (standard==2 && specialDigitalToken.contains(hehe))){
+					boolean flag = false;
+					if(i>0){
+						String t = tokens.get(i-1);
+						if(t.endsWith("COLOR") || t.endsWith("OTHERS"))
+							flag = true;
+					}
+					if(standard==1 || (!flag && hehe.length()<4) || (standard==2 && specialDigitalToken.contains(hehe))){
 						prices.add(hehe);
 						price_status = price_status | isStandardPrice(s);
 					}else{
