@@ -56,4 +56,37 @@ public class TestResourceMessageProcessorRetry {
 			Assert.assertEquals("138.0", cr.getDiscount_content());
 		}
 	}
+	
+	/*
+	 * 
+	 */
+	@Test
+	public void testDualLine() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款宝马中东X5黑黑 \\n 17款，19寸M轮毂，黑色真皮内饰");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("宝马", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("X5", cr.getCar_model_name());
+			Assert.assertEquals("中东", cr.getStandard_name());
+		}
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"宝马320 3259 下25000 \\n 17款，19寸M轮毂，黑色真皮内饰");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("宝马", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("3系", cr.getCar_model_name());
+			Assert.assertEquals("32.59", cr.getGuiding_price());
+		}
+	}
 }

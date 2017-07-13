@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.solr.common.SolrDocumentList;
@@ -42,6 +44,9 @@ public class ResourceMessageProcessor {
 	ArrayList<String> res_discount_way;
 	ArrayList<String> res_discount_content;
 	ArrayList<String> res_remark;
+	
+	String year_regex = "(20)?\\d{2}款";
+	Pattern yearPattern = null;
 	
 	boolean disableCache = false;
 	
@@ -86,6 +91,7 @@ public class ResourceMessageProcessor {
 		res_discount_way = new ArrayList<String>();
 		res_discount_content = new ArrayList<String>();
 		res_remark = new ArrayList<String>();
+		yearPattern = Pattern.compile(this.year_regex);
 	}
 	
 	public String resultToJson(){
@@ -311,6 +317,11 @@ public class ResourceMessageProcessor {
 		return new String(sb);
 	}
 	
+	private boolean isYearInfo(String str) {
+		Matcher matcher = yearPattern.matcher(str);
+		return matcher.matches();
+	}
+	
 	public boolean process(){
 		long t1 = System.currentTimeMillis();
 		for(String s : message_arr){
@@ -394,6 +405,7 @@ public class ResourceMessageProcessor {
 				if(mode==1){
 					baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
 					status = baseCarFinder.generateBaseCarId(s, null, 2);
+					mode = -1;
 				}
 				if(!status){
 					if(last_standard_name==-1){
@@ -527,7 +539,13 @@ public class ResourceMessageProcessor {
 				//如果是平行进口车
 				baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
 				boolean tmp_status = baseCarFinder.generateBaseCarId(s, null, 2);
-				if(baseCarFinder.query_results.size()>=3 && baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty()){
+				ArrayList<String> style_not_year = new ArrayList<String>();
+				for(String ts:baseCarFinder.styles){
+					if(!isYearInfo(ts)){
+						style_not_year.add(ts);
+					}
+				}
+				if(baseCarFinder.query_results.size()>=3 && baseCarFinder.models.isEmpty() && style_not_year.isEmpty()){
 					status = false;
 					writeInvalidInfo(concatWithSpace(s));
 					continue;
@@ -593,7 +611,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("1	飞驰 17款 4.0T V8 S	冰川白/红	279.00	欧版-现车,打税放\\n配置：17款 欧规 宾利飞驰 V8S 4.0T 白红 3081 5座 20轮 前加热 前后电动座椅 智能卡 一键启动 红卡钳 倒影 天窗 电尾 前后 电眼 氙灯 LED\\n备注：车架号：3081");
+		resourceMessageProcessor.setMessages("17款宝马中东X5黑黑 \\n 17款，19寸M轮毂，黑色真皮内饰");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));
