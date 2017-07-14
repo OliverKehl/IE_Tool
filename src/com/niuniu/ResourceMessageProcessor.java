@@ -300,7 +300,7 @@ public class ResourceMessageProcessor {
 				price = price.substring(0,  price.length()-1);
 			}
 			float p = NumberUtils.toFloat(price);
-			if(p<500){
+			if(p<500 && p!=380 && p!=825){
 				cr.setDiscount_way("4");
 				cr.setDiscount_content(Float.toString(p));
 			}
@@ -611,7 +611,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("17款宝马中东X5黑黑 \\n 17款，19寸M轮毂，黑色真皮内饰");
+		resourceMessageProcessor.setMessages("17欧版汽油揽运S版\\n白黑，20轮，全景，Led 氙灯，雾灯，全尺寸备胎，泊车预热82.5");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

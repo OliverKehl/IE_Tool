@@ -333,6 +333,35 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("279.0", cr.getDiscount_content());
 			Assert.assertEquals("3081", cr.getVin());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"16款欧规3.0汽油 奥迪q7 \\n黑棕 配置:液晶仪表 真皮座椅 全景天窗 7座 Led日间行车灯 一键启动前排电动座椅带加热 停车辅助 电尾门 倒影 外后视镜电动调节/加热/折叠 真皮多功能方向盘 定速巡航 胎压监测\\n☎18920621369 小颖");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("奥迪", cr.getBrand_name());
+			Assert.assertEquals(2016, cr.getYear());
+			Assert.assertEquals("5", cr.getDiscount_way());
+			Assert.assertEquals("0.0", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"💝揽胜行政 17款 3.0 柴油 白/黑10台\\n8月2日到港预计8月20日交车\\n配置:V6 HSE版 全景天窗 智能卡 电尾门 二代地形 电吸门 LED氙气大灯 雾灯 19轮 8速 导航 蓝牙 380W音响\\n☎️1522253841");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("揽胜行政3.0柴油", cr.getCar_model_name());
+			Assert.assertEquals("5", cr.getDiscount_way());
+			Assert.assertEquals("0.0", cr.getDiscount_content());
+		}
 	}
 	
 	/*

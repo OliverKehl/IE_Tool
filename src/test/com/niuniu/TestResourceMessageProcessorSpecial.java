@@ -13,7 +13,7 @@ import com.niuniu.USolr;
 
 import junit.framework.Assert;
 
-public class TestResourceMessageProcessorRetry {
+public class TestResourceMessageProcessorSpecial {
 
 	USolr solr_client;
 
@@ -75,6 +75,7 @@ public class TestResourceMessageProcessorRetry {
 			Assert.assertEquals("X5", cr.getCar_model_name());
 			Assert.assertEquals("中东", cr.getStandard_name());
 		}
+		
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
@@ -87,6 +88,21 @@ public class TestResourceMessageProcessorRetry {
 			Assert.assertEquals(2017, cr.getYear());
 			Assert.assertEquals("3系", cr.getCar_model_name());
 			Assert.assertEquals("32.59", cr.getGuiding_price());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17欧版汽油揽运S版\\n白黑，20轮，全景，Led 氙灯，雾灯，全尺寸备胎，泊车预热82.5");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("揽胜运动3.0汽油", cr.getCar_model_name());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("82.5", cr.getDiscount_content());
 		}
 	}
 }
