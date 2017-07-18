@@ -211,6 +211,23 @@ public class TestParallelResourceMessageProcessor {
 	}
 	
 	@Test
+	public void testResourceColor(){
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					" XC90 高配 灰/黑 白/琥珀 20轮 7座 智能卡 电动座椅记忆调节 真皮加热座椅通风 腿托 前后电眼 泊车辅助 液晶仪表盘 大屏导航 雷测 全景天窗 氙灯 LED 电尾门 大灯清洗 四驱空调 NAPPA真皮 后加热 环影 换挡拨片 抬头显示 电动折叠后视镜 桃木内饰 后遮阳帘 并道 真皮仪表台 底盘升降 多轮廓座椅及腰部支撑 全车包围 青铜/琥珀 白/黑 黑黑 ");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("沃尔沃", cr.getBrand_name());
+			Assert.assertEquals("XC90", cr.getCar_model_name());
+			Assert.assertEquals("5", cr.getDiscount_way());
+			Assert.assertEquals("[白色#琥珀, 灰色#黑色]", cr.getColors());
+		}
+	}
+	
+	@Test
 	public void testResourceImplicitStandard(){
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();

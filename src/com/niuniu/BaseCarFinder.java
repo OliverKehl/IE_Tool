@@ -20,6 +20,8 @@ import com.niuniu.cache.CacheManager;
 import com.niuniu.classifier.TokenTagClassifier;
 import com.niuniu.config.NiuniuBatchConfig;
 
+import sun.security.util.Length;
+
 public class BaseCarFinder {
 
 	public final static Logger log = LoggerFactory.getLogger(BaseCarFinder.class);
@@ -437,6 +439,8 @@ public class BaseCarFinder {
 		if (solr == null)
 			return false;
 		String sub_query = parseMessage(solr, message, standard);
+		if(sub_query.length()<2)
+			return false;
 		if (pre_info != null)
 			sub_query = pre_info + " " + sub_query;
 		 
@@ -641,7 +645,7 @@ public class BaseCarFinder {
 						} else {
 							String outer = colors.get(i);
 							String inner = colors.get(i + 1);
-							if (isAdjacentColor(indexes.get(i), indexes.get(i + 1)) && isValidInnerColor(inner)) {
+							if (isAdjacentColor(indexes.get(i), indexes.get(i + 1)) && (isValidInnerColor(inner) || mode==-1)) {
 								String outer_standard = matchStandardColor(outer, 0);
 								String inner_standard = matchStandardColor(inner, 1);
 								result_colors.add(buildColorString(outer, inner, outer_standard, inner_standard));
