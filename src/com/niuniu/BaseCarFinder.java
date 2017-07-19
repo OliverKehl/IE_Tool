@@ -423,6 +423,8 @@ public class BaseCarFinder {
 			if(f<entry_score)
 				break;
 			ans.add(doc);
+			if(ans.size()>=20)
+				break;
 		}
 		ans.setNumFound(ans.size());
 		ans.setMaxScore(max_score);
@@ -1276,7 +1278,7 @@ public class BaseCarFinder {
 			CarResource cr = new CarResource(base_car_id, result_colors.toString(), Integer.toString(discount_way),
 					Float.toString(discount_content),
 					Utils.removeRemarkIllegalHeader(postProcessRemark(this.original_message.substring(backup_index))),
-					brand_name, car_model_name, mode, VIN, year, style_name, standard_name, resource_type, guiding_price);
+					brand_name, car_model_name, mode, VIN, year, style_name, standard_name, resource_type, guiding_price, query_results);
 			if (carResourceGroup == null)
 				carResourceGroup = new CarResourceGroup();
 			carResourceGroup.getResult().add(cr);

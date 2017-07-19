@@ -28,6 +28,7 @@ public class Utils {
 	public static Map<Integer, Float> PRICE_GUIDE_25 = new HashMap<Integer, Float>();
 	public static Map<Integer, Float> PRICE_GUIDE_50 = new HashMap<Integer, Float>();
 	public static Map<Integer, Float> PRICE_GUIDE_75 = new HashMap<Integer, Float>();
+	public static Map<Integer, Float> PARALLEL_PRICE_GUIDE = new HashMap<Integer, Float>();
 	
 	private static final String regEx;
 	private static Pattern specialCharPattern;
@@ -144,6 +145,22 @@ public class Utils {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		
+		try{
+			is = openResource(Utils.class.getClassLoader(), NiuniuBatchConfig.getParallelPriceReferenceModel());
+			if(is!=null){
+				reader = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+				String line = null;
+				while ((line = reader.readLine()) != null) {
+					line = line.trim();
+					String[] arrs = line.split("\t");
+					PARALLEL_PRICE_GUIDE.put(NumberUtils.createInteger(arrs[0]), NumberUtils.createFloat(arrs[1]));
+				}
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
 	}
 	
 	public static String removeRemarkIllegalHeader(String remark){

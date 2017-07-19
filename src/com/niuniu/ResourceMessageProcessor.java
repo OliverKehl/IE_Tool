@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,14 +95,80 @@ public class ResourceMessageProcessor {
 		yearPattern = Pattern.compile(this.year_regex);
 	}
 	
+	public void resetParallelResourceBasedOnPrice(CarResource cr){
+		int standard = cr.getStandard();
+		if(standard!=2)
+			return;
+		SolrDocumentList qrs = cr.getQuery_result();
+		if(qrs==null)
+			return;
+		String target_base_car_id = null;
+		float gap = Float.MAX_VALUE;
+		float score = NumberUtils.toFloat(cr.getQuery_result().get(0).getFieldValue("score").toString());
+		int step = 0;
+		SolrDocument target_doc = null;
+		for ( SolrDocument doc: qrs ) {
+			String base_car_id = doc.get("id").toString();
+			float median_price = 0.0f;
+			if(Utils.PRICE_GUIDE_50.containsKey(NumberUtils.toInt(base_car_id)))
+				median_price = Utils.PRICE_GUIDE_50.get(NumberUtils.toInt(base_car_id));
+			if(median_price==0.0 && Utils.PARALLEL_PRICE_GUIDE.containsKey(NumberUtils.toInt(base_car_id)))
+				median_price = Utils.PARALLEL_PRICE_GUIDE.get(NumberUtils.toInt(base_car_id));
+			float real_price = NumberUtils.toFloat(cr.getDiscount_content());
+			if(step==0){
+				if(median_price==0.0){
+					return;
+				}
+				gap = Utils.round(Math.abs(real_price - median_price) / median_price, 2);
+				target_base_car_id = base_car_id;
+				target_doc = doc;
+				step++;
+				continue;
+			}
+			step++;
+			if(median_price==0.0){
+				continue;
+			}
+			
+			float tmp_score = NumberUtils.toFloat(doc.getFieldValue("score").toString());
+			if(tmp_score<score)
+				break;
+			float t_gap = Utils.round(Math.abs(real_price - median_price) / median_price, 2);
+			if(t_gap>gap)
+				continue;
+			gap = t_gap;
+			target_base_car_id = base_car_id;
+			target_doc = doc;
+		}
+		if(target_base_car_id!=null && !target_base_car_id.equals(cr.getId())){
+			//重新构建结果
+			String brand_name = target_doc.get("brand_name").toString();
+			String car_model_name = target_doc.get("car_model_name").toString();
+			String base_car_id = target_doc.get("id").toString();
+			int year = NumberUtils.toInt(target_doc.get("year").toString());
+			String style_name = target_doc.get("base_car_style").toString();
+			String standard_name = target_doc.get("standard_name").toString();
+			cr.setId(base_car_id);
+			cr.setBrand_name(brand_name);
+			cr.setCar_model_name(car_model_name);
+			cr.setStyle_name(style_name);
+			cr.setYear(year);
+			cr.setStandard_name(standard_name);
+			cr.setQuery_result(null);
+		}
+	}
+	
 	public String resultToJson(){
 		if(carResourceGroup==null)
 			carResourceGroup = new CarResourceGroup();
 		for(CarResource cr : carResourceGroup.result){
-			if(cr.getDiscount_way()==null || cr.getDiscount_way().equals("0"))
+			if(cr.getDiscount_way()==null || cr.getDiscount_way().equals("0")){
+				cr.setQuery_result(null);
 				continue;
+			}
 			if(cr.getDiscount_way().equals("4")){
 				cr.setReal_price(cr.getDiscount_content());
+				resetParallelResourceBasedOnPrice(cr);
 			}else{
 				String guiding_price = cr.getGuiding_price();
 				if(guiding_price!=null && !guiding_price.equals("0.0")){
@@ -116,6 +183,7 @@ public class ResourceMessageProcessor {
 					}
 				}
 			}
+			cr.setQuery_result(null);
 		}
 		return JSON.toJSON(carResourceGroup).toString();
 	}
@@ -611,7 +679,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("途乐Xe17款白黑小北现车50.3\\n丐酷冰箱电座小北现车手续齐59.7手续齐");
+		resourceMessageProcessor.setMessages("揽胜行政3.0柴油 黑黑 125");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

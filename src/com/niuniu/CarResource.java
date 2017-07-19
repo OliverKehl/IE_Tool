@@ -1,5 +1,7 @@
 package com.niuniu;
 
+import org.apache.solr.common.SolrDocumentList;
+
 import com.alibaba.fastjson.JSON;
 
 public class CarResource {
@@ -18,7 +20,16 @@ public class CarResource {
 	private String resource_type;
 	private String guiding_price;
 	private String real_price;
-	
+	private SolrDocumentList query_result;
+
+	public SolrDocumentList getQuery_result() {
+		return query_result;
+	}
+
+	public void setQuery_result(SolrDocumentList query_result) {
+		this.query_result = query_result;
+	}
+
 	public String getReal_price() {
 		return real_price;
 	}
@@ -108,7 +119,8 @@ public class CarResource {
 					   String remark, String brand_name, 
 					   String car_model_name, int standard,
 					   String vin, int year, String style_name, String standard_name, 
-					   String resource_type, String guiding_price) {
+					   String resource_type, String guiding_price, 
+					   SolrDocumentList query_result) {
 		this.id = id;
 		this.colors = colors;
 		this.discount_way = discount_way;
@@ -130,6 +142,7 @@ public class CarResource {
 		this.resource_type = resource_type;
 		this.guiding_price = guiding_price;
 		this.real_price = null;
+		this.query_result = query_result;
 	}
 
 	public String getId() {
@@ -173,7 +186,7 @@ public class CarResource {
 	}
 
 	public static void main(String[] args) {
-		CarResource cr = new CarResource("1234", "['珍珠白#黑色', '炫晶黑#黑色']", "2", "3.5", "欢迎来电","宝马","X1", 1, "12345", 2017, "终极版", "加版", "现车", "12.5");
+		CarResource cr = new CarResource("1234", "['珍珠白#黑色', '炫晶黑#黑色']", "2", "3.5", "欢迎来电","宝马","X1", 1, "12345", 2017, "终极版", "加版", "现车", "12.5", null);
 		cr.setResource_type("期货");
 		String res = JSON.toJSON(cr).toString();
 		System.out.println(res);

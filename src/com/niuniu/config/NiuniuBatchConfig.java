@@ -28,6 +28,8 @@ public class NiuniuBatchConfig {
 	public final String PARALLEL_PRICE_PATTERN = "com/niuniu/config/parallel_price.pattern";
 	
 	public final String PRICE_REFERENCE_MODEL = "com/niuniu/config/base_car_price_reference";
+	
+	public final String PARALLEL_PRICE_REFERENCE_MODEL = "com/niuniu/config/parallel_base_car_price";
 
 	private static final NiuniuBatchConfig NIUNIU_BATCH_CONFIG;
 
@@ -101,6 +103,11 @@ public class NiuniuBatchConfig {
 	public static String getTokenReplaceFile(){
 		return NIUNIU_BATCH_CONFIG.props.getProperty("token_replace_file", NIUNIU_BATCH_CONFIG.TOKEN_REPLACE_FILE);
 	}
+	
+	public static String getParallelPriceReferenceModel(){
+		return NIUNIU_BATCH_CONFIG.props.getProperty("parallel_base_car_price", NIUNIU_BATCH_CONFIG.PARALLEL_PRICE_REFERENCE_MODEL);
+	}
+
 
 	static {
 		NIUNIU_BATCH_CONFIG = new NiuniuBatchConfig();
