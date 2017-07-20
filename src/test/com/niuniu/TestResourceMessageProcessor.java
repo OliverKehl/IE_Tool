@@ -49,6 +49,18 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("起亚", cr.getBrand_name());
 			Assert.assertEquals("9.68", cr.getGuiding_price());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"博越\\n1088 优惠 7000 白色");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("吉利汽车", cr.getBrand_name());
+			Assert.assertEquals("10.88", cr.getGuiding_price());
+		}
 	}
 	
 	@Test

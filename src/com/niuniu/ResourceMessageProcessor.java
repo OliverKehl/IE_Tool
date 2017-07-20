@@ -336,12 +336,14 @@ public class ResourceMessageProcessor {
 	}
 	
 	private boolean isInvalidInfo(BaseCarFinder baseCarFinder){
+		/*
 		if(baseCarFinder.query_results.size()>=40){
 			if(baseCarFinder.models.isEmpty() && baseCarFinder.prices.isEmpty())
 				return true;
 			if(baseCarFinder.prices.isEmpty() && baseCarFinder.styles.isEmpty())
 				return true;
 		}
+		*/
 		return false;
 	}
 	
@@ -711,7 +713,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("17款加版奔驰GLE43 Coupe 白/黑\\n高级驾驶驶辅助包 现车带关单！");
+		resourceMessageProcessor.setMessages("博越\\n1088 优惠 7000 白色");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));
