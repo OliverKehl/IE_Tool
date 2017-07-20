@@ -104,6 +104,21 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals("4", cr.getDiscount_way());
 			Assert.assertEquals("82.5", cr.getDiscount_content());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款美规汽油行政3.0 黑/咖，2448#\\nHSE (14项电动前排座椅、座椅记忆、牛津真皮打孔座椅、前后座椅加热、20寸铝合金轮毂、电动后视镜、全景天窗、LED氙灯、智能卡、前排座椅通风、电吸门 脚感电尾门) 现车手续齐 133万");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("揽胜行政3.0汽油", cr.getCar_model_name());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("133.0", cr.getDiscount_content());
+		}
 	}
 	
 	/*

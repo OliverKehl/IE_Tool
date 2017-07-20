@@ -395,8 +395,13 @@ public class BaseCarFinder {
 			String tmp = ele_arr.get(vital_info_index);
 			stop = NumberUtils.createInteger(tmp.substring(0, tmp.indexOf("-")));
 		}
-
 		String sub_query = message.substring(0, stop).trim();
+		if(standard==2 && vital_info_index==1){
+			String str = ele_arr.get(vital_info_index-1);
+			String content = str.substring(str.lastIndexOf("|") + 1, str.lastIndexOf("#"));
+			if(str.endsWith("STYLE") && content.length()<5)
+				sub_query = "";
+		}
 		return sub_query;
 	}
 	
