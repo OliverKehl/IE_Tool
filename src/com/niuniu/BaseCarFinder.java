@@ -353,13 +353,18 @@ public class BaseCarFinder {
 					}
 				} else {
 					String hehe = s.substring(s.lastIndexOf("|") + 1, s.indexOf("#"));
+					int i_hehe = NumberUtils.toInt(hehe);
+					if(i_hehe%100==0 && i_hehe>300){
+						models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+						continue;
+					}
 					boolean flag = false;
 					if(i>0){
 						String t = tokens.get(i-1);
 						if(t.endsWith("COLOR") || t.endsWith("OTHERS"))
 							flag = true;
 					}
-					if(standard==1 || (!flag && hehe.length()<4) || (standard==2 && specialDigitalToken.contains(hehe))){
+					if(standard==1 || (standard==1 && !flag && hehe.length()<4) || (standard==2 && specialDigitalToken.contains(hehe))){
 						prices.add(hehe);
 						price_status = price_status | isStandardPrice(s);
 					}else{
@@ -957,7 +962,7 @@ public class BaseCarFinder {
 		if(cur==0){
 			String content = ele_arr.get(cur);
 			content = content.substring(content.lastIndexOf("|") + 1, content.indexOf("#"));
-			content = content.replaceAll("(20)\\d{2}", "");
+			content = content.replaceAll("(20)?\\d{2}", "");
 			if(content.isEmpty())
 				return true;
 		}

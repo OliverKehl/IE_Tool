@@ -392,6 +392,21 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("5", cr.getDiscount_way());
 			Assert.assertEquals("0.0", cr.getDiscount_content());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款酷路泽5700 黑棕 顶配 140");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("酷路泽5700", cr.getCar_model_name());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("140.0", cr.getDiscount_content());
+		}
 	}
 	
 	/*
