@@ -320,6 +320,12 @@ public class BaseCarFinder {
 				if(isQuantOrBehave(i) || priceSuffix(i)){
 					return i;
 				}
+				
+				if(isYearToken(i)){
+					styles.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+					continue;
+				}
+				
 				if (price_status){
 					String content = s.substring(s.lastIndexOf("|") + 1, s.indexOf("#"));
 					int head = NumberUtils.toInt(s.substring(0, s.indexOf("-")));
@@ -944,6 +950,17 @@ public class BaseCarFinder {
 				return true;
 		}
 
+		return false;
+	}
+	
+	private boolean isYearToken(int cur) {
+		if(cur==0){
+			String content = ele_arr.get(cur);
+			content = content.substring(content.lastIndexOf("|") + 1, content.indexOf("#"));
+			content = content.replaceAll("(20)\\d{2}", "");
+			if(content.isEmpty())
+				return true;
+		}
 		return false;
 	}
 

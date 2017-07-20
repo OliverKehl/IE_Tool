@@ -390,6 +390,24 @@ public class ResourceMessageProcessor {
 		return matcher.matches();
 	}
 	
+	private void postProcessInvalidLine(String s, String reserve_s){
+		if(last_standard_name==-1){
+			CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
+			s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
+			s = reExtractVinFromConfiguration(tmpCR, s);
+			if(tmpCR.getResource_type()==null){
+				String resource_type = ResourceTypeClassifier.predict(s);
+				if(resource_type!=null)
+					tmpCR.setResource_type(resource_type);
+			}
+			if(tmpCR.getDiscount_way().equals("5")){
+				reExtractPriceFromConfiguration(tmpCR, s);
+			}
+			tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
+		}
+		writeInvalidInfo(concatWithSpace(s));
+	}
+	
 	public boolean process(){
 		long t1 = System.currentTimeMillis();
 		for(String s : message_arr){
@@ -642,6 +660,13 @@ public class ResourceMessageProcessor {
 						baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
 						status = baseCarFinder.generateBaseCarId(s, prefix, 2);
 						if(baseCarFinder.query_results.size()==0){
+							postProcessInvalidLine(s, reserve_s);
+							continue;
+						}
+						BaseCarFinder temp_baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
+						boolean temp_status = temp_baseCarFinder.generateBaseCarId(prefix, null, 2);
+						if(temp_status && baseCarFinder.query_results.getMaxScore().compareTo(temp_baseCarFinder.query_results.getMaxScore())==0){
+							postProcessInvalidLine(s, reserve_s);
 							continue;
 						}
 						
@@ -651,6 +676,13 @@ public class ResourceMessageProcessor {
 								baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
 								status = baseCarFinder.generateBaseCarId(s, all_prefix, 2);
 								if(baseCarFinder.query_results.size()==0){
+									postProcessInvalidLine(s, reserve_s);
+									continue;
+								}
+								temp_baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
+								temp_status = temp_baseCarFinder.generateBaseCarId(prefix, null, 2);
+								if(temp_status && baseCarFinder.query_results.getMaxScore()==temp_baseCarFinder.query_results.getMaxScore()){
+									postProcessInvalidLine(s, reserve_s);
 									continue;
 								}
 							}
@@ -679,7 +711,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("揽胜行政3.0柴油 黑黑 125");
+		resourceMessageProcessor.setMessages("17款加版奔驰GLE43 Coupe 白/黑\\n高级驾驶驶辅助包 现车带关单！");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

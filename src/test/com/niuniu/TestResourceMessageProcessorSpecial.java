@@ -105,4 +105,32 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals("82.5", cr.getDiscount_content());
 		}
 	}
+	
+	/*
+	 * 平行进口车一般会包含多行内容，例如：
+	 * "17款加版奔驰GLE43 Coupe 白/黑\\n高级驾驶驶辅助包 现车带关单！"
+	 * 这2行内容明显应该对应于一条资源，但是我们这里的逻辑有一定的问题
+	 * 第一行识别得到结果以后，把该结果对应的品牌和车型记了下来
+	 * 遍历到第二行时，"高级"被识别为MODEL_STYLE，返回结果较多，所以要回溯
+	 * 拿到头一行的奔驰和GLE级，再加上高级去进行检索，平行进口车style降级后，就返回了奔驰GLE级的第一条结果，因为没有"高级"对应的信息
+	 * 所以这里做处理，如果带过来上一条资源的信息辅助检索，需要判断检索的结果
+	 * 例如检索pre_info + query和检索 pre_info的分数相同，则代表该行信息没有生效
+	 * 所以不能作为一条资源
+	 */
+	@Test
+	public void testDuallineSpecialCase() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款加版奔驰GLE43 Coupe 白/黑\\n高级驾驶驶辅助包 现车带关单！");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("奔驰", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("GLE43", cr.getCar_model_name());
+			Assert.assertEquals("高级驾驶驶辅助包 现车带关单!", cr.getRemark());
+		}
+	}
 }

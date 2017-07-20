@@ -208,6 +208,19 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("38706", cr.getId());
 			Assert.assertTrue(cr.getStyle_name().contains("黎巴嫩"));
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"2017揽胜行政3.0柴油 黑黑 125");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("揽胜行政3.0柴油", cr.getCar_model_name());
+			Assert.assertEquals("[黑色#黑色]", cr.getColors());
+		}
 	}
 	
 	@Test
