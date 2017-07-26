@@ -107,7 +107,7 @@ public class SimpleMessageClassifier {
 		}
 		String pre_ele = tokens.get(cur - 1);
 		String pre_val = pre_ele.substring(pre_ele.lastIndexOf("|") + 1, pre_ele.indexOf("#"));
-		if (pre_val.equals("下") || pre_val.equals("优惠") || pre_val.equals("加") || pre_val.equals("降")) {
+		if (pre_val.equals("下") || pre_val.equals("优惠") || pre_val.equals("加") || pre_val.equals("降") || pre_val.equals("特价")) {
 			return -1;
 		}
 		// 不是指导价
@@ -263,7 +263,7 @@ public class SimpleMessageClassifier {
 				if(i>0){
 					String hehe = tokens.get(i-1);
 					String content = hehe.substring(hehe.lastIndexOf("|") + 1, hehe.lastIndexOf("#"));
-					if(content.equals("下") || content.equals("优惠") || content.equals("降") || content.equals("加") || hehe.endsWith("COLOR"))
+					if(content.equals("下") || content.equals("优惠") || content.equals("降") || content.equals("加") || content.equals("特价") || hehe.endsWith("COLOR"))
 						continue;
 					return -1;
 				}

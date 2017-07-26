@@ -190,6 +190,21 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("1.2", cr.getDiscount_content());
 		}
 		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"玛莎拉蒂-总裁 146蓝棕，特价116万");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("玛莎拉蒂", cr.getBrand_name());
+			Assert.assertEquals("总裁", cr.getCar_model_name());
+			Assert.assertEquals("146", cr.getGuiding_price());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("116.0", cr.getDiscount_content());
+		}
+		
 		/*
 		 * 轩逸15万这个指导价实在太过特殊了，为了解决更常见的模式，先把这个扔一边
 		 * 后续对这个case额外特殊处理

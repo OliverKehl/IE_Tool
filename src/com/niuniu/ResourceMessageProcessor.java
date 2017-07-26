@@ -713,7 +713,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("博越\\n1088 优惠 7000 白色");
+		resourceMessageProcessor.setMessages("玛莎拉蒂-总裁 146蓝棕，特价116万");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));
