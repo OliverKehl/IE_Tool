@@ -354,7 +354,7 @@ public class BaseCarFinder {
 				} else {
 					String hehe = s.substring(s.lastIndexOf("|") + 1, s.indexOf("#"));
 					int i_hehe = NumberUtils.toInt(hehe);
-					if(i_hehe%100==0 && i_hehe>300){
+					if((i_hehe%100==0 && i_hehe>300) || (i_hehe%10==0 &&i_hehe>300 && i_hehe!=380)){
 						models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 						continue;
 					}

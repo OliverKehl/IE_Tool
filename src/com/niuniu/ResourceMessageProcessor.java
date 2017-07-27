@@ -119,7 +119,7 @@ public class ResourceMessageProcessor {
 				if(median_price==0.0){
 					return;
 				}
-				gap = Utils.round(Math.abs(real_price - median_price) / median_price, 2);
+				gap = Utils.round(Math.abs(real_price - median_price), 3);
 				target_base_car_id = base_car_id;
 				target_doc = doc;
 				step++;
@@ -133,8 +133,8 @@ public class ResourceMessageProcessor {
 			float tmp_score = NumberUtils.toFloat(doc.getFieldValue("score").toString());
 			if(tmp_score<score)
 				break;
-			float t_gap = Utils.round(Math.abs(real_price - median_price) / median_price, 2);
-			if(t_gap>gap)
+			float t_gap = Utils.round(Math.abs(real_price - median_price), 3);
+			if(t_gap>=gap)
 				continue;
 			gap = t_gap;
 			target_base_car_id = base_car_id;
@@ -713,7 +713,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("玛莎拉蒂-总裁 146蓝棕，特价116万");
+		resourceMessageProcessor.setMessages("17款GLS450黑黑，通体黑\\nP01，全景，方向盘加热，拖钩，哈曼卡顿音响，二排电动，后预留，发光星标，轮毂锁，灯光包，停车辅助包，360度环车影像，自动泊车，电眼，外观包（10副轮毂），发光脚踏板，镀铬套件，手动遮阳帘，冷热杯架，二排座椅加热，现车，手续齐，111\\n☎️15313009876");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

@@ -296,6 +296,22 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("111.0", cr.getDiscount_content());
 			Assert.assertEquals("P01全景 方向盘加热 哈曼 二排电动 照明脚踏 后娱预留 停车辅助 驾驶员辅助 雷测 现车手续齐 111", cr.getRemark());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款GLS450黑黑，通体黑\\nP01，全景，方向盘加热，拖钩，哈曼卡顿音响，二排电动，后预留，发光星标，轮毂锁，灯光包，停车辅助包，360度环车影像，自动泊车，电眼，外观包（10副轮毂），发光脚踏板，镀铬套件，手动遮阳帘，冷热杯架，二排座椅加热，现车，手续齐，111\\n☎️15313009876");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals(2, cr.getStandard());
+			Assert.assertEquals("奔驰", cr.getBrand_name());
+			Assert.assertEquals("GLS450", cr.getCar_model_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("111.0", cr.getDiscount_content());
+		}
 	}
 	
 	@Test
