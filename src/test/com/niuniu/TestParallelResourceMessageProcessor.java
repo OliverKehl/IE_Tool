@@ -473,6 +473,18 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals(2017, cr.getYear());
 			Assert.assertEquals("6407", cr.getVin());
 		}
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"2017款莱万特S，白/红 标配（430匹马力 3.0T发动机 8速变速箱 空气悬挂 氙灯 LED日行灯 LED尾灯 真皮电动座椅带记忆一键启动 后排隐私玻璃 巡航定速 倒车影像 刹车辅助 玛莎车身稳定系统 19轮）黑卡钳 加热风挡 氙灯 运动踏板 不锈钢门槛+红色豪华座椅 皓岳库。手续齐全113.8万");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("玛莎拉蒂", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("113.8", cr.getDiscount_content());
+		}
 	}
 	
 	/*
