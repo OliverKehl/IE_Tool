@@ -203,7 +203,6 @@ public class BaseCarFinder {
 	 */
 	private String judgeRealTag(String token) {
 		String real_tag = null;
-
 		if (!brands.isEmpty()) {
 			real_tag = TokenTagClassifier.predict(token, brands.get(0));
 		} else {
@@ -211,6 +210,19 @@ public class BaseCarFinder {
 		}
 		return real_tag;
 	}
+	
+	private String judgeRealTagByLocalContext(String token, String local_context) {
+		if(local_context==null || local_context.isEmpty())
+			return null;
+		if(!local_context.contains("MODEL") && !local_context.contains("BRAND")){
+			return null;
+		}
+		String real_tag = null;
+		String sub_key = local_context.substring(local_context.lastIndexOf("|") + 1, local_context.indexOf("#"));
+		real_tag = TokenTagClassifier.predict(token, sub_key);
+		return real_tag;
+	}
+	
 
 	private boolean priceSuffix(int cur){
 		if((cur+1)>=ele_arr.size())
@@ -297,7 +309,16 @@ public class BaseCarFinder {
 				}
 				styles.add(tmp);
 			} else if (s.endsWith("MODEL_STYLE")) {
-				String real_tag = judgeRealTag(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+				String real_tag = null;
+				String content = s.substring(s.lastIndexOf("|") + 1, s.indexOf("#"));
+				real_tag = judgeRealTag(content);
+				if(real_tag==null){
+					for(int j=i-1;j>=0;j--){
+						real_tag = judgeRealTagByLocalContext(content, tokens.get(j));
+						if(real_tag!=null)
+							break;
+					}
+				}
 				if (real_tag != null) {
 					if (real_tag.equals("MODEL")) {
 						models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
@@ -316,8 +337,9 @@ public class BaseCarFinder {
 				}
 			} else if (s.endsWith("#STYLE_PRICE") || s.endsWith("#FPRICE") || s.endsWith("MODEL_PRICE")
 					|| s.endsWith("MODEL_STYLE_PRICE")) {
+				String content = s.substring(s.lastIndexOf("|") + 1, s.indexOf("#"));
 				//TODO
-				if(isQuantOrBehave(i) || priceSuffix(i)){
+				if(isQuantOrBehave(i) || priceSuffix(i) || (price_status && content.endsWith("000") && !content.equals("4000"))){
 					return i;
 				}
 				
@@ -327,7 +349,6 @@ public class BaseCarFinder {
 				}
 				
 				if (price_status){
-					String content = s.substring(s.lastIndexOf("|") + 1, s.indexOf("#"));
 					int head = NumberUtils.toInt(s.substring(0, s.indexOf("-")));
 					int tail = NumberUtils.toInt(s.substring(s.indexOf("-") + 1, s.indexOf("|")));
 					if((content.startsWith("0")&& content.length()==4) || isFrontVinWithSpace(head, message, standard) || isBehindVinWithSpace(tail, message, standard))
@@ -341,8 +362,15 @@ public class BaseCarFinder {
 					price_status = price_status | isStandardPrice(s);
 					return Math.min(i + 1, tokens.size());
 				}
-				
-				String real_tag = judgeRealTag(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+				String real_tag = null;
+				real_tag = judgeRealTag(content);
+				if(real_tag==null){
+					for(int j=i-1;j>=0;j--){
+						real_tag = judgeRealTagByLocalContext(content, tokens.get(j));
+						if(real_tag!=null)
+							break;
+					}
+				}
 				if (real_tag != null) {
 					if (real_tag.equals("MODEL")) {
 						models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
