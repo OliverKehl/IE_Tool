@@ -111,6 +111,35 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("1", cr.getDiscount_way());
 			Assert.assertEquals("23.0", cr.getDiscount_content());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"瑞虎7 115900 红 橙 21000\\n123900 蓝 橙 21000\\n16款艾瑞泽5 69900 红 12500");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(3, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("奇瑞", cr.getBrand_name());
+			Assert.assertEquals("瑞虎7", cr.getCar_model_name());
+			Assert.assertEquals("11.59", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("2.1", cr.getDiscount_content());
+			
+			cr = crg.getResult().get(1);
+			Assert.assertEquals("奇瑞", cr.getBrand_name());
+			Assert.assertEquals("瑞虎7", cr.getCar_model_name());
+			Assert.assertEquals("12.39", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("2.1", cr.getDiscount_content());
+			
+			cr = crg.getResult().get(2);
+			Assert.assertEquals("奇瑞", cr.getBrand_name());
+			Assert.assertEquals("艾瑞泽5", cr.getCar_model_name());
+			Assert.assertEquals("6.99", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("1.25", cr.getDiscount_content());
+		}
 	}
 	
 	@Test

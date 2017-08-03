@@ -713,7 +713,8 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("17款GLS450黑黑，通体黑\\nP01，全景，方向盘加热，拖钩，哈曼卡顿音响，二排电动，后预留，发光星标，轮毂锁，灯光包，停车辅助包，360度环车影像，自动泊车，电眼，外观包（10副轮毂），发光脚踏板，镀铬套件，手动遮阳帘，冷热杯架，二排座椅加热，现车，手续齐，111\\n☎️15313009876");
+		//resourceMessageProcessor.setMessages("全新奇骏\\n1968白，黑23000\\n新轩逸\\n1350白，黑30000");
+		resourceMessageProcessor.setMessages("瑞虎7 115900 红 橙 21000\\n123900 蓝 橙 21000\\n16款艾瑞泽5 69900 红 12500");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));
