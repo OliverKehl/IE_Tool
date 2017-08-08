@@ -61,6 +61,31 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("吉利汽车", cr.getBrand_name());
 			Assert.assertEquals("10.88", cr.getGuiding_price());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"凯美瑞\\n2058黑下3.1w出现车\\n2598白下4.9w出现车\\n2598黑下4.9w出现车");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(3, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals("凯美瑞", cr.getCar_model_name());
+			Assert.assertEquals("20.58", cr.getGuiding_price());
+			
+			cr = crg.getResult().get(1);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals("凯美瑞", cr.getCar_model_name());
+			Assert.assertEquals("25.98", cr.getGuiding_price());
+			
+			cr = crg.getResult().get(2);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals("凯美瑞", cr.getCar_model_name());
+			Assert.assertEquals("25.98", cr.getGuiding_price());
+			
+			
+		}
 	}
 	
 	@Test
@@ -281,6 +306,20 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("奥迪", cr.getBrand_name());
 			Assert.assertEquals("29.98", cr.getGuiding_price());
 			Assert.assertEquals("[白#]", cr.getColors());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"16款艾瑞泽5 69900 下12500红");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("奇瑞", cr.getBrand_name());
+			Assert.assertEquals("6.99", cr.getGuiding_price());
+			Assert.assertEquals("1.25", cr.getDiscount_content());
+			Assert.assertEquals("[魅影红#]", cr.getColors());
 		}
 	}
 

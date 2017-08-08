@@ -558,7 +558,7 @@ public class BaseCarFinder {
 	 * 金黑#COLOR 那么就可以结合上下文的颜色情况来确定这里的棕黑和金黑是不是也要拆分
 	 * 
 	 */
-	public void generateColors(int mode) {
+	public void generateColors(int mode, int phase) {
 		int idx = 0;
 		int start_index = 0;
 		if(!colorBeforePrice){
@@ -570,9 +570,11 @@ public class BaseCarFinder {
 				if (s.endsWith("#COLOR")) {
 					indexes.add(idx);
 					colors.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
-				} else if (mode==1 && (s.endsWith("STYLE") || s.endsWith("PRICE"))) {
+				} else if (mode==1 && (s.endsWith("STYLE") || s.endsWith("PRICE")) && phase==1) {
 					idx--;
 					break;
+				}else if(mode==1 && (s.endsWith("STYLE") || s.endsWith("PRICE")) && phase==2){
+					continue;
 				}else if(mode==-1){
 					if(colors.size()!=0){
 						idx--;

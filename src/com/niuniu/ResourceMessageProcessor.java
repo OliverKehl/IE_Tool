@@ -264,7 +264,7 @@ public class ResourceMessageProcessor {
 			if(baseCarFinder.models.size()==0 && last_model_name !=null && !last_model_name.isEmpty()){
 				return last_model_name;
 			}
-			if(baseCarFinder.styles.size()==0 && last_style_name !=null && !last_style_name.isEmpty()){
+			if(baseCarFinder.styles.size()==0 && last_style_name !=null && !last_style_name.isEmpty() && !last_style_name.matches("\\d\\d\\d\\d") && !last_style_name.matches("\\d\\d")){
 				return last_style_name;
 			}
 		}else{
@@ -278,7 +278,7 @@ public class ResourceMessageProcessor {
 				standard_query += " " + last_model_name;
 			}
 			
-			if(baseCarFinder.styles.size()==0 && last_style_name !=null && !last_style_name.isEmpty()){
+			if(baseCarFinder.styles.size()==0 && last_style_name !=null && !last_style_name.isEmpty() && !last_style_name.matches("\\d\\d\\d\\d") && !last_style_name.matches("\\d\\d")){
 				standard_query += " " + last_style_name;
 			}
 		}
@@ -616,8 +616,14 @@ public class ResourceMessageProcessor {
 						}
 					}
 					
-					baseCarFinder.generateColors(mode);
+					baseCarFinder.generateColors(mode,1);
 					baseCarFinder.generateRealPrice();
+					//TODO 
+					//这里如果颜色是空，就重新跑颜色的生成模块
+					if(baseCarFinder.result_colors.isEmpty()){
+						baseCarFinder.generateColors(mode,2);
+					}
+					
 					baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, null, "现车", disableCache);
 					baseCarFinder.printParsingResult(writer);
 					fillHeaderRecord(baseCarFinder, mode);
@@ -696,7 +702,7 @@ public class ResourceMessageProcessor {
 					writeInvalidInfo(concatWithSpace(s));
 					continue;
 				}
-				baseCarFinder.generateColors(mode);
+				baseCarFinder.generateColors(mode, 1);
 				String VIN = baseCarFinder.extractVIN();
 				baseCarFinder.generarteParellelPrice();
 				String resource_type = ResourceTypeClassifier.predict(s);
@@ -713,8 +719,8 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		//resourceMessageProcessor.setMessages("全新奇骏\\n1968白，黑23000\\n新轩逸\\n1350白，黑30000");
-		resourceMessageProcessor.setMessages("瑞虎7 115900 红 橙 21000\\n123900 蓝 橙 21000\\n16款艾瑞泽5 69900 红 12500");
+		//resourceMessageProcessor.setMessages("全新奇骏\\n1968白，黑23000\\n轩逸\\n1350白，黑30000");
+		resourceMessageProcessor.setMessages("16款艾瑞泽5 69900 下12500红 ");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));
