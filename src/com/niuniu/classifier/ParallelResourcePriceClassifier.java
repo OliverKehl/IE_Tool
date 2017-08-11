@@ -27,7 +27,7 @@ public class ParallelResourcePriceClassifier {
 		InputStream is = null;
         BufferedReader reader = null; 
         patterns = new ArrayList<Pattern>();
-        price_pattern = Pattern.compile("\\d{1,3}(\\.\\d{1,2})?");
+        price_pattern = Pattern.compile("\\d{2,3}(\\.\\d{1,2})?");
 		try{
 			is = Utils.openResource(this.getClass().getClassLoader(), NiuniuBatchConfig.getParallelPriceModel());
 			if(is == null){
@@ -53,7 +53,7 @@ public class ParallelResourcePriceClassifier {
 	public static String predict(String clue){
 		for(Pattern p: singleton.patterns){
 			Matcher m = p.matcher(clue);
-			if(m.find()){
+			while(m.find()){
 				int start = m.start();
 				int end = m.end();
 				if(clue.charAt(start)<'0' || clue.charAt(start)>'9')
@@ -61,6 +61,8 @@ public class ParallelResourcePriceClassifier {
 				if(clue.charAt(start)=='0')
 					return null;
 				String tmp = clue.substring(start, end);
+				if(tmp.startsWith("825") || tmp.startsWith("380"))
+					continue;
 				Matcher m2 = singleton.price_pattern.matcher(tmp);
 				if(m2.find())
 					return tmp.substring(m2.start(), m2.end());

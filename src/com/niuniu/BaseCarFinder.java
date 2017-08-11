@@ -727,17 +727,21 @@ public class BaseCarFinder {
 		}
 		if(outer_flag && colors.size()%2==1)
 			return 0;
-		outer_flag = true;
+		outer_flag = false;
 		for(int i=0;i<colors.size()-1;i++){
 			String cur = colors.get(i);
 			String next = colors.get(i + 1);
-			if(cur.length()==1 && next.length()==1 && isAdjacentColor(indexes.get(i), indexes.get(i+1)))
+			if(cur.length()==1 && next.length()==1 && isAdjacentColor(indexes.get(i), indexes.get(i+1))){
+				i+=1;
 				continue;
-			else
-				outer_flag = false;
+			}else if(isAdjacentColor(indexes.get(i), indexes.get(i+1))){
+				i+=1;
+				continue;
+			}else
+				outer_flag = true;
 		}
-		if(outer_flag)//全是外饰
-			return 0;
+		if(!outer_flag)//内+外
+			return 1;
 		
 		// 内外都有
 		for (int i = 0; i < indexes.size(); i++) {

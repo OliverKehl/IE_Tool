@@ -238,6 +238,19 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("5", cr.getDiscount_way());
 			Assert.assertEquals("[白色#琥珀, 灰色#黑色]", cr.getColors());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款3.0柴油创世短轴 白／黄鹤 黑／黄鹤\\n配置：商务4座，滑动全景天窗，智能卡，氙灯LED，脚感电尾门，电吸门，二代全地形反馈，鹿皮顶，黑色钢琴漆内饰，钢琴漆多功能方向盘带加热，换挡拨片，内外自动防眩目后视镜，牛津打孔真皮座椅，前后排座椅电动调节、加热、通风、按摩带记忆【前排18项，后排14项】，前后飞翼头枕，前后冰箱，大屏导航，液晶仪表盘，四区空调，后娱10.2寸，发光迎宾踏板，多彩氛围灯，825W高级音响19扬声器，外后视镜电动调节带加热、记忆、折叠及倒车自动照地功能，车道偏离预警，并道辅助，前雾灯，大灯清洗，360环影，前后电眼，定速巡航，胎压监测，21轮，全尺寸备胎 143.5万（谈！谈！谈！） \\n免消费税的17款揽胜5.0四座，创世加长版黑/黄鹤（谈！谈！谈！！！！）\\n22轮，4座， 创世包（前后排座椅 通风加热按摩 前冰箱 爱马仕缝制顶棚 创世套件）半苯胺拓展真皮 二代地形反馈 盲点提醒 环车影像 四区空调 26项前排座椅调节 后排电动座椅 前后飞翼头枕 10.2后排娱乐 电吸门脚感尾门 HUD抬头显示 825高级音响，雷达测距系统。现车手续齐 246 大谈");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("揽胜行政3.0柴油", cr.getCar_model_name());
+			Assert.assertEquals("[黑色#黄鹤, 白色#黄鹤]", cr.getColors());
+		}
 	}
 	
 	@Test
@@ -422,6 +435,20 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("酷路泽5700", cr.getCar_model_name());
 			Assert.assertEquals("4", cr.getDiscount_way());
 			Assert.assertEquals("140.0", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款3.0柴油创世短轴 白／黄鹤 黑／黄鹤\\n配置：商务4座，滑动全景天窗，智能卡，氙灯LED，脚感电尾门，电吸门，二代全地形反馈，鹿皮顶，黑色钢琴漆内饰，钢琴漆多功能方向盘带加热，换挡拨片，内外自动防眩目后视镜，牛津打孔真皮座椅，前后排座椅电动调节、加热、通风、按摩带记忆【前排18项，后排14项】，前后飞翼头枕，前后冰箱，大屏导航，液晶仪表盘，四区空调，后娱10.2寸，发光迎宾踏板，多彩氛围灯，825W高级音响19扬声器，外后视镜电动调节带加热、记忆、折叠及倒车自动照地功能，车道偏离预警，并道辅助，前雾灯，大灯清洗，360环影，前后电眼，定速巡航，胎压监测，21轮，全尺寸备胎 143.5万（谈！谈！谈！） \\n免消费税的17款揽胜5.0四座，创世加长版黑/黄鹤（谈！谈！谈！！！！）\\n22轮，4座， 创世包（前后排座椅 通风加热按摩 前冰箱 爱马仕缝制顶棚 创世套件）半苯胺拓展真皮 二代地形反馈 盲点提醒 环车影像 四区空调 26项前排座椅调节 后排电动座椅 前后飞翼头枕 10.2后排娱乐 电吸门脚感尾门 HUD抬头显示 825高级音响，雷达测距系统。现车手续齐 246 大谈");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("揽胜行政3.0柴油", cr.getCar_model_name());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("143.5", cr.getDiscount_content());
 		}
 	}
 	
