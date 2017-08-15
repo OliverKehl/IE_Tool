@@ -381,6 +381,11 @@ public class BaseCarFinder {
 					}
 				} else {
 					String hehe = s.substring(s.lastIndexOf("|") + 1, s.indexOf("#"));
+					int head = NumberUtils.toInt(s.substring(0, s.indexOf("-")));
+					int tail = NumberUtils.toInt(s.substring(s.indexOf("-") + 1, s.indexOf("|")));
+					if(standard==2 && ((content.startsWith("0")&& content.length()==4) || isFrontVinWithSpace(head, message, standard) || isBehindVinWithSpace(tail, message, standard)))
+						return i;
+					
 					int i_hehe = (int)(NumberUtils.toFloat(hehe));
 					if(i_hehe<10 || (i_hehe%100==0 && i_hehe>300 && i_hehe<10000) || (i_hehe%10==0 &&i_hehe>300 && i_hehe!=380 && i_hehe<10000)){
 						models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));

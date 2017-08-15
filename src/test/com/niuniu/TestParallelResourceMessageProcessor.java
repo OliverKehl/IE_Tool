@@ -185,6 +185,21 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("133.0", cr.getDiscount_content());
 			Assert.assertEquals("[白色#黑色]", cr.getColors());
 		}
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款奔驰GLS450 黑/咖 1900#\\n配置：P01 全景 灯光包 外观包 二排进入 无烟煤杨木内饰 轮毂锁 后娱预留。\\n9.20合同，108.5w\\n18617587777\\n18617587777");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("奔驰", cr.getBrand_name());
+			Assert.assertEquals("GLS450", cr.getCar_model_name());
+			Assert.assertEquals("1900", cr.getVin());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("108.5", cr.getDiscount_content());
+			Assert.assertEquals("期货", cr.getResource_type());
+		}
 	}
 	
 	@Test
