@@ -83,8 +83,28 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("丰田", cr.getBrand_name());
 			Assert.assertEquals("凯美瑞", cr.getCar_model_name());
 			Assert.assertEquals("25.98", cr.getGuiding_price());
-			
-			
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"759白米+33 9月中旬");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(0, crg.getResult().size());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"埃尔法 \\n 759白米+33 9月中旬");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals("埃尔法", cr.getCar_model_name());
+			Assert.assertEquals("75.9", cr.getGuiding_price());
 		}
 	}
 	

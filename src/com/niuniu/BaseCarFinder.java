@@ -353,6 +353,7 @@ public class BaseCarFinder {
 					int tail = NumberUtils.toInt(s.substring(s.indexOf("-") + 1, s.indexOf("|")));
 					if((content.startsWith("0")&& content.length()==4) || isFrontVinWithSpace(head, message, standard) || isBehindVinWithSpace(tail, message, standard))
 						return i;
+					prices.add(content);
 					return Math.min(i + 1, tokens.size());
 				}
 				
@@ -360,6 +361,7 @@ public class BaseCarFinder {
 				if(colorBeforePrice && standard!=2){
 					prices.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 					price_status = price_status | isStandardPrice(s);
+					prices.add(content);
 					return Math.min(i + 1, tokens.size());
 				}
 				String real_tag = null;

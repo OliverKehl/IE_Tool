@@ -558,10 +558,12 @@ public class ResourceMessageProcessor {
 						/*
 						 * 可能有歧义，例如 730 928 既有宝骏又有宝马
 						 */
-						BaseCarFinder baseCarFinder2 = new BaseCarFinder(solr_client, last_brand_name);
-						boolean status2 = baseCarFinder2.generateBaseCarId(s, last_brand_name,mode);
-						if(status2){
-							baseCarFinder = baseCarFinder2;
+						if(last_brand_name!=null){
+							BaseCarFinder baseCarFinder2 = new BaseCarFinder(solr_client, last_brand_name);
+							boolean status2 = baseCarFinder2.generateBaseCarId(s, last_brand_name,mode);
+							if(status2){
+								baseCarFinder = baseCarFinder2;
+							}
 						}
 					}
 					
@@ -614,6 +616,12 @@ public class ResourceMessageProcessor {
 							writeInvalidInfo(concatWithSpace(s));
 							continue;
 						}
+					}
+					
+					//如果有效的搜索信息只有prices里的一个token，而且即使把之前的信息带过来也只有价格本身的分数，即只有3000，这行信息就不该被识别为正常的资源
+					if(baseCarFinder.query_results.getMaxScore()<4000 && !baseCarFinder.prices.isEmpty() && baseCarFinder.prices.size()==1 && baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty()){
+						writeInvalidInfo(concatWithSpace(s));
+						continue;
 					}
 					
 					baseCarFinder.generateColors(mode,1);
