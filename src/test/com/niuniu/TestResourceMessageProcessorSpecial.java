@@ -148,4 +148,24 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals("高级驾驶驶辅助包 现车带关单!", cr.getRemark());
 		}
 	}
+	
+	/*
+	 * 有的用户在编辑批量资源的内容时，会使用各种各样奇葩的分隔符，例如：
+	 * "x6.838黑棕20.5出"
+	 * 我们显然能看出来这是想找指导价为838的X6
+	 * 但是分词器把它分为x和6.838
+	 * 6.838被当做指导价进入下一阶段
+	 * 而显然不可能有3位小数位的指导价，所以在判断token的属性时，添加判断小数是不是合法小数的分支
+	 */
+	@Test
+	public void testInvalidLine() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"x6.838黑棕20.5出");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(0, crg.getResult().size());
+		}
+	}
 }

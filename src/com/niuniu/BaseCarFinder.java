@@ -387,10 +387,18 @@ public class BaseCarFinder {
 					int tail = NumberUtils.toInt(s.substring(s.indexOf("-") + 1, s.indexOf("|")));
 					if(standard==2 && ((content.startsWith("0")&& content.length()==4) || isFrontVinWithSpace(head, message, standard) || isBehindVinWithSpace(tail, message, standard)))
 						return i;
-					
-					int i_hehe = (int)(NumberUtils.toFloat(hehe));
+					if(hehe.indexOf('.')>0 && hehe.length() - hehe.indexOf('.')>3){
+						return i;
+					}
+					float f_hehe = NumberUtils.toFloat(hehe);
+					int i_hehe = (int)f_hehe;
 					if(i_hehe<10 || (i_hehe%100==0 && i_hehe>300 && i_hehe<10000) || (i_hehe%10==0 &&i_hehe>300 && i_hehe!=380 && i_hehe<10000)){
-						models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+						if(f_hehe==i_hehe){
+							models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+						}else{
+							prices.add(hehe);
+							price_status = price_status | isStandardPrice(s);
+						}
 						continue;
 					}
 					boolean flag = false;
