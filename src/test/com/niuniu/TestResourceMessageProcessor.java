@@ -185,6 +185,21 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("2", cr.getDiscount_way());
 			Assert.assertEquals("1.25", cr.getDiscount_content());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"猛禽5488蓝色  红色  银色 加价10万  现车手续齐");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("福特", cr.getBrand_name());
+			Assert.assertEquals("F150", cr.getCar_model_name());
+			Assert.assertEquals("54.88", cr.getGuiding_price());
+			Assert.assertEquals("3", cr.getDiscount_way());
+			Assert.assertEquals("10.0", cr.getDiscount_content());
+		}
 	}
 	
 	@Test
@@ -378,7 +393,7 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("丰田", cr.getBrand_name());
 			Assert.assertEquals("汉兰达", cr.getCar_model_name());
 			Assert.assertEquals("28.78", cr.getGuiding_price());
-			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("3", cr.getDiscount_way());
 			Assert.assertEquals("0.45", cr.getDiscount_content());
 		}
 	}
@@ -398,6 +413,36 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("21.19", cr.getGuiding_price());
 			Assert.assertEquals("2", cr.getDiscount_way());
 			Assert.assertEquals("4.61", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"5）帕萨特指导价211900元↓46100");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("大众", cr.getBrand_name());
+			Assert.assertEquals("帕萨特", cr.getCar_model_name());
+			Assert.assertEquals("21.19", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("4.61", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"朗逸\\n12.49 13款黑黑 下25000");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("大众", cr.getBrand_name());
+			Assert.assertEquals("朗逸", cr.getCar_model_name());
+			Assert.assertEquals("12.49", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("2.5", cr.getDiscount_content());
 		}
 	}
 }

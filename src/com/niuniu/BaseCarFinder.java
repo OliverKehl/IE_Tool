@@ -20,8 +20,6 @@ import com.niuniu.cache.CacheManager;
 import com.niuniu.classifier.TokenTagClassifier;
 import com.niuniu.config.NiuniuBatchConfig;
 
-import sun.security.util.Length;
-
 public class BaseCarFinder {
 
 	public final static Logger log = LoggerFactory.getLogger(BaseCarFinder.class);
@@ -356,7 +354,9 @@ public class BaseCarFinder {
 					prices.add(content);
 					return Math.min(i + 1, tokens.size());
 				}
-				
+				int price_int = NumberUtils.toInt(content,0);
+				if(price_int!=0 && price_int<100000 && (price_int%1000==0 || price_int%10000==0))
+					return i;
 				//扫到指导价
 				if(colorBeforePrice && standard!=2){
 					prices.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
@@ -602,7 +602,10 @@ public class BaseCarFinder {
 				backup_index = Math.max(NumberUtils.createInteger(temp.substring(temp.indexOf("-") + 1, temp.indexOf("|"))),
 						backup_index);
 			} else if(!colors.isEmpty()){
-				backup_index = Math.max(original_message.length(), backup_index);
+				String temp = ele_arr.get(idx-1);
+				backup_index = Math.max(NumberUtils.createInteger(temp.substring(temp.indexOf("-") + 1, temp.indexOf("|"))),
+						backup_index);
+				//backup_index = Math.max(original_message.length(), backup_index);
 			}
 		}else{
 			for (idx = 0; idx < vital_info_index; idx++) {
@@ -913,7 +916,7 @@ public class BaseCarFinder {
 	}
 
 	/*
-	 * 有的人的车直接写价格，而不是下点或者下万，如果找到某个地方是万，但是数字前面没有明确的下，优惠等关键词，就judge
+	 * 有的人的车直接写价格，而不是下点或者下万，如果找到某个地方是万，但是数字前面没有明确的下，优惠,加价等关键词，就judge
 	 */
 	private void judgeMarketingPriceByW(float coupon) {
 		Object guiding_price = query_results.get(0).get("guiding_price_s");
@@ -928,14 +931,22 @@ public class BaseCarFinder {
 		float bias2 = calcPriceBias(id, price2);
 		float price3 = coupon;
 		float bias3 = calcPriceBias(id, price3);
-		// 下xx万
-		if (bias2 < bias3) {
+		float price4 = price + coupon;
+		float bias4 = calcPriceBias(id, price4);
+		
+		float mini = Math.min(Math.min(bias2, bias3), bias4);
+		if(bias2==mini){
 			discount_way = 2;
 			discount_content = coupon;
 		}
-		// 直接报价
-		if (bias3 < bias2) {
+		// 下xxx万
+		if (bias3 == mini) {
 			discount_way = 4;
+			discount_content = coupon;
+		}
+		// 直接报价
+		if (bias4 == mini) {
+			discount_way = 3;
 			discount_content = coupon;
 		}
 	}

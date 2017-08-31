@@ -439,7 +439,7 @@ public class ResourceMessageProcessor {
 			 */
 			SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(s, solr_client);
 			int mode = simpleMessageClassifier.predict();
-			if(mode==0){//有可能是隐式的平行进口车,可以再抢救一下
+			if(mode==0 && !s.isEmpty()){//有可能是隐式的平行进口车,可以再抢救一下
 				BaseCarFinder BCF = new BaseCarFinder(solr_client, last_brand_name);
 				boolean flag = BCF.generateBaseCarId(s, null, 2);
 				if(flag && BCF.query_results.getMaxScore()>5000)
@@ -449,7 +449,10 @@ public class ResourceMessageProcessor {
 				//是上一个平行进口车的配置、备注信息
 				if(last_standard_name==-1){
 					CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
-					s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
+					if(s.isEmpty())
+						s = reserve_s;
+					else
+						s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
 					s = reExtractVinFromConfiguration(tmpCR, s);
 					if(tmpCR.getResource_type()==null){
 						String resource_type = ResourceTypeClassifier.predict(s);
@@ -647,7 +650,7 @@ public class ResourceMessageProcessor {
 						style_not_year.add(ts);
 					}
 				}
-				if(baseCarFinder.query_results.size()>=3 && baseCarFinder.models.isEmpty() && style_not_year.isEmpty()){
+				if(tmp_status && baseCarFinder.query_results.size()>=3 && baseCarFinder.models.isEmpty() && style_not_year.isEmpty()){
 					status = false;
 					writeInvalidInfo(concatWithSpace(s));
 					continue;
@@ -727,8 +730,11 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		//resourceMessageProcessor.setMessages("全新奇骏\\n1968白，黑23000\\n轩逸\\n1350白，黑30000");
-		resourceMessageProcessor.setMessages("16款艾瑞泽5 69900 下12500红 ");
+		//resourceMessageProcessor.setMessages("轩逸\\n1350白，黑30000");
+		//resourceMessageProcessor.setMessages("猛禽5488蓝色  红色  银色 加价10万  现车手续齐");
+		//resourceMessageProcessor.setMessages("2）GLS450，黑黑，8358，p01，全景，外观包，停车辅助包，哈曼音响，二排电动，拖钩，三区空调，后排娱乐，现车手续齐109");
+		resourceMessageProcessor.setMessages("17款加版坦途1794 黑棕 \\n配置：天窗 并道辅助 真皮座椅加热 通风 USB蓝牙 大屏 JBL音响 倒影 雷达 巡航 防侧滑 多功能方向盘 后视镜加热 LED日行灯 大灯高度调节 桃木内饰 字标扶手箱 后货箱内衬 20寸轮毂 主副驾驶电动调节 后挡风玻璃自动升降 自动恒温空调 电动折叠后视镜\\n现车手续齐\\n电话：15822736077\\n");
+		//resourceMessageProcessor.setMessages("牧马人\\n3.0撒哈拉四门 4599 黑 红 白 紫 银\\n3.6罗宾汉两门 4899 黑色 红色 银色\\n3.6罗宾汉四门 5399 黑色 红色 \\n克莱斯勒\\n300c超越 3999 黑色 白色[玫瑰][玫瑰]\\n大捷龙 \\n3.6豪华 4968 黑色 白色 [玫瑰][玫瑰]\\n新款 4968 现接受预定[玫瑰][玫瑰]\\n\\n17款大切 \\n3.0舒享导航 5799 黑色 白色 \\n3.0精英导航 6099 黑色 \\n3.6精英导航 6499 黑色\\n3.6豪华导航 7099 黑色\\nsrt8 120.49 黑\\n粉尘大切 6099 6759 6899 7799 价好\\n\\n梅梅15921468046\\n");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

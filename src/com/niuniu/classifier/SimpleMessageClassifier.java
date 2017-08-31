@@ -293,6 +293,8 @@ public class SimpleMessageClassifier {
 	}
 
 	public int predict() {
+		if(message.isEmpty())
+			return 0;
 		prepare();
 		return isValidLine();
 	}
