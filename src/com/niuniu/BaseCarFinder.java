@@ -1233,7 +1233,10 @@ public class BaseCarFinder {
 								}
 							} else {
 								// 不确定是下xx点还是下xx万，使用行情价判定
-								judgeMarketingPrice(f);
+								if(way==0)
+									judgeMarketingPrice(f);
+								else
+									judgeMarketingPriceWithDiscount(f);
 							}
 						}
 					} else {

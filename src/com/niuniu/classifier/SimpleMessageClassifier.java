@@ -208,7 +208,10 @@ public class SimpleMessageClassifier {
 						;
 					}
 					if (suf == null || !(suf.equals("点") || suf.equals("w") || suf.equals("万"))) {
-						real_prices.add(ele);
+						if(f<5)
+							fake_prices.add(ele);
+						else
+							real_prices.add(ele);
 						continue;
 					} else if (suf != null && (suf.equals("点") || suf.equals("w") || suf.equals("万"))) {
 						// 有后缀信息的一般都不是指导价
@@ -242,7 +245,7 @@ public class SimpleMessageClassifier {
 			}
 		}
 	}
-
+	
 	public void prepare() {
 		if (solr == null)
 			return;

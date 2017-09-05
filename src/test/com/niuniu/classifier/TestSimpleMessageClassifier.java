@@ -112,6 +112,22 @@ public class TestSimpleMessageClassifier {
 			int mode = simpleMessageClassifier.predict();
 			Assert.assertEquals(-1, mode);
 		}
+		
+		{
+			String message = "指南者\\n1698白 黑4.25";
+			message = Utils.normalizePrice(Utils.cleanDate(Utils.clean(Utils.normalize(message), solr)));
+			SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(message, solr);
+			int mode = simpleMessageClassifier.predict();
+			Assert.assertEquals(1, mode);
+		}
+		
+		{
+			String message = "指南者\\n1698白 黑5.25";
+			message = Utils.normalizePrice(Utils.cleanDate(Utils.clean(Utils.normalize(message), solr)));
+			SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(message, solr);
+			int mode = simpleMessageClassifier.predict();
+			Assert.assertEquals(0, mode);
+		}
 	}
 	
 }
