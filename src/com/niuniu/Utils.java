@@ -370,6 +370,7 @@ public class Utils {
 		*/
 		message = message.replaceAll(" \\.", " ");
 		message = message.replaceAll("\\. ", " ");
+		message = message.replaceAll("^(\\[|\\(|【)?\\d{1,2}(\\]|\\)|】)", " ");
 		message = escapeDash(message);
 		message = Converter.SIMPLIFIED.convert(message);
 		return message.trim();

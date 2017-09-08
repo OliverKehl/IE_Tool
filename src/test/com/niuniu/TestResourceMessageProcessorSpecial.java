@@ -168,4 +168,98 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals(0, crg.getResult().size());
 		}
 	}
+	
+	/*
+	 * 
+	 */
+	@Test
+	public void testSpecialStopWords() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages("特价星脉\\n868硅谷银1.6万配置加2？有户来谈（可以后票）[色][色][色]");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("揽胜星脉", cr.getCar_model_name());
+			Assert.assertEquals("86.8", cr.getGuiding_price());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages("13款朗逸1249 特价9.89w");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("大众", cr.getBrand_name());
+			Assert.assertEquals(2013, cr.getYear());
+			Assert.assertEquals("朗逸", cr.getCar_model_name());
+			Assert.assertEquals("12.49", cr.getGuiding_price());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("9.89", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages("13款朗逸1249 特价9.89");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("大众", cr.getBrand_name());
+			Assert.assertEquals(2013, cr.getYear());
+			Assert.assertEquals("朗逸", cr.getCar_model_name());
+			Assert.assertEquals("12.49", cr.getGuiding_price());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("9.89", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages("13款朗逸1249 特价98900");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("大众", cr.getBrand_name());
+			Assert.assertEquals(2013, cr.getYear());
+			Assert.assertEquals("朗逸", cr.getCar_model_name());
+			Assert.assertEquals("12.49", cr.getGuiding_price());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("9.89", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages("17款中东版酷路泽 特价69.5");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("中东", cr.getStandard_name());
+			Assert.assertEquals("酷路泽4000", cr.getCar_model_name());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("69.5", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages("17款中东版特价酷路泽 69.5");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("中东", cr.getStandard_name());
+			Assert.assertEquals("酷路泽4000", cr.getCar_model_name());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("69.5", cr.getDiscount_content());
+		}
+	}
 }

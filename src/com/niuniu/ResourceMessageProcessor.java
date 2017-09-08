@@ -730,10 +730,13 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		//resourceMessageProcessor.setMessages("轩逸\\n1350白，黑30000");
+		//resourceMessageProcessor.setMessages("轩逸1350指导价10.5w白，黑");
+		//resourceMessageProcessor.setMessages("17款公羊1500皮卡6545# 6548# 蓝 /棕 手续齐 （新航库、）45.5");
+		resourceMessageProcessor.setMessages("揽胜行政 17款 3.0 汽油 HSE/白米/138现车");
 		//resourceMessageProcessor.setMessages("猛禽5488蓝色  红色  银色 加价10万  现车手续齐");
 		//resourceMessageProcessor.setMessages("2）GLS450，黑黑，8358，p01，全景，外观包，停车辅助包，哈曼音响，二排电动，拖钩，三区空调，后排娱乐，现车手续齐109");
-		resourceMessageProcessor.setMessages("17款加版坦途1794 黑棕 \\n配置：天窗 并道辅助 真皮座椅加热 通风 USB蓝牙 大屏 JBL音响 倒影 雷达 巡航 防侧滑 多功能方向盘 后视镜加热 LED日行灯 大灯高度调节 桃木内饰 字标扶手箱 后货箱内衬 20寸轮毂 主副驾驶电动调节 后挡风玻璃自动升降 自动恒温空调 电动折叠后视镜\\n现车手续齐\\n电话：15822736077\\n");
+		//resourceMessageProcessor.setMessages("17款加版坦途1794 黑棕 \\n配置：天窗 并道辅助 真皮座椅加热 通风 USB蓝牙 大屏 JBL音响 倒影 雷达 巡航 防侧滑 多功能方向盘 后视镜加热 LED日行灯 大灯高度调节 桃木内饰 字标扶手箱 后货箱内衬 20寸轮毂 主副驾驶电动调节 后挡风玻璃自动升降 自动恒温空调 电动折叠后视镜\\n现车手续齐\\n电话：15822736077\\n");
+		//resourceMessageProcessor.setMessages("急出星脉\\n868硅谷银1.6万配置加2？有户来谈（可以后票）[色][色][色]\\n17款398白黑优惠10.8出\\n17款398焰火蓝优惠10万出\\n436剧院红黑优惠9.1\\n436黑棕优惠8.8");
 		//resourceMessageProcessor.setMessages("牧马人\\n3.0撒哈拉四门 4599 黑 红 白 紫 银\\n3.6罗宾汉两门 4899 黑色 红色 银色\\n3.6罗宾汉四门 5399 黑色 红色 \\n克莱斯勒\\n300c超越 3999 黑色 白色[玫瑰][玫瑰]\\n大捷龙 \\n3.6豪华 4968 黑色 白色 [玫瑰][玫瑰]\\n新款 4968 现接受预定[玫瑰][玫瑰]\\n\\n17款大切 \\n3.0舒享导航 5799 黑色 白色 \\n3.0精英导航 6099 黑色 \\n3.6精英导航 6499 黑色\\n3.6豪华导航 7099 黑色\\nsrt8 120.49 黑\\n粉尘大切 6099 6759 6899 7799 价好\\n\\n梅梅15921468046\\n");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;

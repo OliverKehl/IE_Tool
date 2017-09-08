@@ -271,6 +271,24 @@ public class BaseCarFinder {
 			}
 			backup_index = Math.max(start,
 					backup_index);
+			
+			if(s.endsWith("#STOP")){
+				if(s.contains("特价")){
+					if(i<tokens.size()-1){
+						String next = tokens.get(i+1);
+						String val = next.substring(next.lastIndexOf("|") + 1, next.indexOf("#"));
+						float f = NumberUtils.toFloat(val,0.0f);
+						if(f!=0.0){
+							return i;
+						}
+					}else{
+						//tokens.remove(i);
+					}
+				}else
+					//tokens.remove(i);
+				continue;
+			}
+			
 			if (s.endsWith("#OTHERS") || s.endsWith("#COLOR") || s.endsWith("AREA")) {
 				
 				backup_index = Math.max(NumberUtils.createInteger(s.substring(0, s.indexOf('-'))),
@@ -281,7 +299,7 @@ public class BaseCarFinder {
 					continue;
 				}
 				if (s.contains("指导价")) {
-					tokens.remove(i);
+					//tokens.remove(i);
 					continue;
 				}
 				if(standard==2 && s.endsWith("#COLOR"))
@@ -1081,6 +1099,17 @@ public class BaseCarFinder {
 				String tmp = ele_arr.get(i + 1);
 				String kfc = tmp.substring(tmp.lastIndexOf("|") + 1, tmp.indexOf("#"));
 				if ("万".equals(kfc) || "w".equals(kfc)) {
+					setParallelPrice(p);
+					return true;
+				}
+				boolean flag = true;
+				for(int j=i+1;j<ele_arr.size();j++){
+					if(!ele_arr.get(j).endsWith("#STOP")){
+						flag = false;
+						break;
+					}
+				}
+				if(flag){
 					setParallelPrice(p);
 					return true;
 				}

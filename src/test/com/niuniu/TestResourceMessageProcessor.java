@@ -444,5 +444,19 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("2", cr.getDiscount_way());
 			Assert.assertEquals("2.5", cr.getDiscount_content());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"【1】17款道奇挑战者SXT （黑/黑）8速自动档，赛道包（加大前卡钳，性能方向盘，运动悬挂，哑光20黑轮毂，拨片换挡），一键启动，加热方向盘，电眼，倒车影像，并到辅助，后视镜加热，多媒体显示屏，丝绒座椅，胎压监测，蓝牙，双尾排，埃尔派高级音响");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("道奇", cr.getBrand_name());
+			Assert.assertEquals("挑战者", cr.getCar_model_name());
+			Assert.assertEquals("加版", cr.getStandard_name());
+			Assert.assertEquals(2017, cr.getYear());
+		}
 	}
 }
