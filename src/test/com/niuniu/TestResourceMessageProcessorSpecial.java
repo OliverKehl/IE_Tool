@@ -242,7 +242,7 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals("丰田", cr.getBrand_name());
 			Assert.assertEquals(2017, cr.getYear());
 			Assert.assertEquals("中东", cr.getStandard_name());
-			Assert.assertEquals("酷路泽4000", cr.getCar_model_name());
+			Assert.assertTrue(cr.getCar_model_name().contains("酷路泽"));
 			Assert.assertEquals("4", cr.getDiscount_way());
 			Assert.assertEquals("69.5", cr.getDiscount_content());
 		}
@@ -257,7 +257,7 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals("丰田", cr.getBrand_name());
 			Assert.assertEquals(2017, cr.getYear());
 			Assert.assertEquals("中东", cr.getStandard_name());
-			Assert.assertEquals("酷路泽4000", cr.getCar_model_name());
+			Assert.assertTrue(cr.getCar_model_name().contains("酷路泽"));
 			Assert.assertEquals("4", cr.getDiscount_way());
 			Assert.assertEquals("69.5", cr.getDiscount_content());
 		}
