@@ -49,7 +49,7 @@ public class BaseCarFinder {
 
 	int backup_index = 0;
 
-	String[] suffix_quants = { "台", "轮", "度", "速", "天", "分钟", "小时", "秒", "辆", "年", "月", "寸", "月底", "号", "项", "匹", "缸"};
+	String[] suffix_quants = { "台", "轮", "度", "速", "天", "分钟", "小时", "秒", "辆", "年", "月", "寸", "月底", "号", "项", "匹", "缸", "气囊"};
 	String[] prefix_behave = { "送" };
 
 	Set<String> suffix_quants_set;
