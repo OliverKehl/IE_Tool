@@ -49,7 +49,7 @@ public class BaseCarFinder {
 
 	int backup_index = 0;
 
-	String[] suffix_quants = { "台", "轮", "度", "速", "天", "分钟", "小时", "秒", "辆", "年", "月", "寸", "月底", "号", "项", "匹"};
+	String[] suffix_quants = { "台", "轮", "度", "速", "天", "分钟", "小时", "秒", "辆", "年", "月", "寸", "月底", "号", "项", "匹", "缸"};
 	String[] prefix_behave = { "送" };
 
 	Set<String> suffix_quants_set;
@@ -598,7 +598,7 @@ public class BaseCarFinder {
 			if(mode!=-1){
 				start_index = vital_info_index;
 			}
-			for (idx = start_index; idx < ele_arr.size(); idx++) {
+			for (idx = start_index; idx < ele_arr.size() && idx<(start_index + 15); idx++) {
 				String s = ele_arr.get(idx);
 				if (s.endsWith("#COLOR")) {
 					indexes.add(idx);

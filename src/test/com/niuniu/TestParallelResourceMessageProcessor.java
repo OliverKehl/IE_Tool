@@ -266,6 +266,19 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("揽胜行政3.0柴油", cr.getCar_model_name());
 			Assert.assertEquals("[黑色#黄鹤, 白色#黄鹤]", cr.getColors());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"墨版XC90 T6/7座/2.0L/4缸/4驱/12.3寸数字仪表盘/空气净化系统/第三排折叠座椅/4区空调/私密玻璃/Nappa真皮座椅/前部电动调节座椅带腰部支撑带记忆/前排座椅加热/无钥匙进入/自动防炫目内后视镜/电尾门/可选择驾驶模式/倒影/感应雨刷/导航，全景天窗/LED大灯/LED日间行车灯（雷神之锤）/大灯清洗/银色车顶行李架/可伸缩电动外后视镜/双镀铬尾喉/20轮/巡航定速/雷达测距/碰撞保护系统/前后电眼/坡道起步辅助/陡坡缓降控制/胎压监测/Bowers&Wilkins高级音响/低音炮/360度环影/黑色顶棚/抬头显示\\n68万\\n☎️：13911910022 小伍");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("沃尔沃", cr.getBrand_name());
+			Assert.assertEquals("XC90", cr.getCar_model_name());
+			Assert.assertEquals("[]", cr.getColors());
+		}
 	}
 	
 	@Test
