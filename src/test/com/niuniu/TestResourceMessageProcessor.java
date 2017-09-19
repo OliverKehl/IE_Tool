@@ -200,6 +200,37 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("3", cr.getDiscount_way());
 			Assert.assertEquals("10.0", cr.getDiscount_content());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"途安\\n2198 蓝*5 下33000");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("大众", cr.getBrand_name());
+			Assert.assertEquals("途安", cr.getCar_model_name());
+			Assert.assertEquals("21.98", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("3.3", cr.getDiscount_content());
+			Assert.assertTrue(cr.getColors().contains("蓝"));
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"Lx570 白车红内1438现车一台");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("雷克萨斯", cr.getBrand_name());
+			Assert.assertEquals("LX", cr.getCar_model_name());
+			Assert.assertEquals("143.8", cr.getGuiding_price());
+			Assert.assertTrue(cr.getColors().contains("白"));
+			Assert.assertTrue(cr.getColors().contains("红"));
+		}
 	}
 	
 	@Test

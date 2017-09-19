@@ -1037,6 +1037,16 @@ public class BaseCarFinder {
 			if (suffix_quants_set.contains(content))
 				return true;
 		}
+		String element = ele_arr.get(cur);
+		String head_str = element.substring(0,element.indexOf("-"));
+		int head = NumberUtils.toInt(head_str);
+		
+		if(head>0 && cur>0){
+			char c = original_message.charAt(head-1);
+			String element2 = ele_arr.get(cur-1);
+			if(element2.endsWith("COLOR") && (c=='*' || c=='x' || c=='X'))
+				return true;
+		}
 
 		return false;
 	}
@@ -1225,7 +1235,7 @@ public class BaseCarFinder {
 				float cf = NumberUtils.toFloat(fc, 0.0f);
 				if (element.endsWith("PRICE") || (cf != 0.0f && cf < 10000000)) {
 					if (isQuantOrBehave(i))
-						break;
+						continue;
 					float f = NumberUtils
 							.createFloat(element.substring(element.lastIndexOf("|") + 1, element.indexOf("#")));
 					int way = 0;
@@ -1234,7 +1244,6 @@ public class BaseCarFinder {
 					}
 					// 找到实际价格
 					if (way != 0) {
-
 						if (f > 500) {// 例如下25000
 							discount_way = way <= 0 ? 2 : 3;
 							discount_content = f / 10000f;

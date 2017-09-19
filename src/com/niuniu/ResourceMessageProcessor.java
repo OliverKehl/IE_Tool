@@ -365,15 +365,29 @@ public class ResourceMessageProcessor {
 	private void reExtractPriceFromConfiguration(CarResource cr, String info){
 		String price = ParallelResourcePriceClassifier.predict(info);
 		//从price中提取数字部分
+		float p = 0.0f;
 		if( price != null){
 			if(price.matches("\\d{1,3}(\\.\\d)?(w|W|万)$")){
 				price = price.substring(0,  price.length()-1);
 			}
-			float p = NumberUtils.toFloat(price);
-			if(p<500 && p!=380 && p!=825){
-				cr.setDiscount_way("4");
-				cr.setDiscount_content(Float.toString(p));
+		}else{
+			ArrayList<String> tokens = Utils.tokenize(info, solr_client, "filter_word");
+			int i = tokens.size() - 1;
+			while(i>=0){
+				if(tokens.get(i).endsWith("STOP"))
+					i--;
+				else
+					break;
 			}
+			if(i>=0){
+				String content = tokens.get(i);
+				price = content.substring(content.lastIndexOf("|") + 1, content.lastIndexOf("#"));
+			}
+		}
+		p = NumberUtils.toFloat(price);
+		if(p>0 && p<500 && p!=380 && p!=825){
+			cr.setDiscount_way("4");
+			cr.setDiscount_content(Float.toString(p));
 		}
 	}
 	
