@@ -745,6 +745,11 @@ public class ResourceMessageProcessor {
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
 		resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
+		//resourceMessageProcessor.setMessages("加版GLS450 水硅钒钙石蓝 黄鹤 豪华 运动 通风 三区 小牛皮 #3919 报关中\\n18622251821 迟庆华	");
+		//resourceMessageProcessor.setMessages("揽运1198白黄鹤，黑黄鹤优惠13出");
+		
+		//TODO 颜色抽取，如果有多个颜色，需要优化处理方式，应该是迭代的去做，而不应该是指定模式统一处理
+		//resourceMessageProcessor.setMessages("揽胜2678黑红，黑黄，白黄鹤（撞黑顶现车）");
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

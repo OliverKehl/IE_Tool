@@ -219,9 +219,7 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("4", cr.getDiscount_way());
 			Assert.assertEquals("43.0", cr.getDiscount_content());
 			Assert.assertEquals("[白色#米色]", cr.getColors());
-			Assert.assertEquals("今天现车 43万", cr.getRemark());
-			Assert.assertEquals("38706", cr.getId());
-			Assert.assertTrue(cr.getStyle_name().contains("黎巴嫩"));
+			Assert.assertEquals("黎巴嫩版 今天现车 43万", cr.getRemark());
 		}
 		
 		{

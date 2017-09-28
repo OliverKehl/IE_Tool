@@ -302,8 +302,8 @@ public class BaseCarFinder {
 					//tokens.remove(i);
 					continue;
 				}
-				if(standard==2 && s.endsWith("#COLOR"))
-					continue;
+				//if(standard==2 && s.endsWith("#COLOR"))
+					//continue;
 				return i;
 				// stop = NumberUtils.createInteger(s.substring(0,
 				// s.indexOf("-")));
@@ -680,7 +680,7 @@ public class BaseCarFinder {
 		} else if (colors.size() == 2) {
 			String outer = colors.get(0);
 			String inner = colors.get(1);
-			if (isAdjacentColor(indexes.get(0), indexes.get(1)) && isValidInnerColor(inner)) {
+			if ((isAdjacentColor(indexes.get(0), indexes.get(1)) && isValidInnerColor(inner)) || inner.equals("黄鹤")) {
 				String outer_standard = matchStandardColor(outer, 0);
 				String inner_standard = matchStandardColor(inner, 1);
 				result_colors.add(buildColorString(outer, inner, outer_standard, inner_standard));
@@ -729,7 +729,7 @@ public class BaseCarFinder {
 						} else {
 							String outer = colors.get(i);
 							String inner = colors.get(i + 1);
-							if (isAdjacentColor(indexes.get(i), indexes.get(i + 1)) && (isValidInnerColor(inner) || mode==-1)) {
+							if ((isAdjacentColor(indexes.get(i), indexes.get(i + 1)) && (isValidInnerColor(inner) || mode==-1)) || (inner.equals("黄鹤"))) {
 								String outer_standard = matchStandardColor(outer, 0);
 								String inner_standard = matchStandardColor(inner, 1);
 								result_colors.add(buildColorString(outer, inner, outer_standard, inner_standard));
@@ -770,7 +770,7 @@ public class BaseCarFinder {
 			if(cur.length()==1 && next.length()==1 && isAdjacentColor(indexes.get(i), indexes.get(i+1))){
 				i+=1;
 				continue;
-			}else if(isAdjacentColor(indexes.get(i), indexes.get(i+1))){
+			}else if(isAdjacentColor(indexes.get(i), indexes.get(i+1)) || next.equals("黄鹤")){
 				i+=1;
 				continue;
 			}else
