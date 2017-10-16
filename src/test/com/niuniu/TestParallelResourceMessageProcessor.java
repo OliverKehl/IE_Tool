@@ -289,7 +289,7 @@ public class TestParallelResourceMessageProcessor {
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(1, crg.getResult().size());
 			CarResource cr = crg.getResult().get(0);
-			Assert.assertEquals("欧版", cr.getStandard_name());
+			Assert.assertEquals("加版", cr.getStandard_name());
 			Assert.assertEquals(2, cr.getStandard());
 			Assert.assertEquals("路虎", cr.getBrand_name());
 			Assert.assertEquals("揽胜运动3.0汽油", cr.getCar_model_name());

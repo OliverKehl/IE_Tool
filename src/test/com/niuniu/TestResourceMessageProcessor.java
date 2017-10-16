@@ -106,6 +106,21 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("埃尔法", cr.getCar_model_name());
 			Assert.assertEquals("75.9", cr.getGuiding_price());
 		}
+		
+		// 显式的"指导价"
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"16款SVR路虎5.0V8指导价229.8万，橙黑，，现特价180万，店车店票，裸车，走全国，全新车，正常公里数.17538358260");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("229.8", cr.getGuiding_price());
+			Assert.assertTrue(cr.getStyle_name().contains("SVR"));
+			Assert.assertEquals("180.0", cr.getDiscount_content());
+		}
 	}
 	
 	@Test

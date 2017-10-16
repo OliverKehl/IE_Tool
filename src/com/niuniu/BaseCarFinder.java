@@ -355,6 +355,10 @@ public class BaseCarFinder {
 					|| s.endsWith("MODEL_STYLE_PRICE")) {
 				String content = s.substring(s.lastIndexOf("|") + 1, s.indexOf("#"));
 				//TODO
+				if(i>0 && ele_arr.get(i-1).contains("指导价")){
+					return Math.min(i + 1, tokens.size());
+				}
+				
 				if(isQuantOrBehave(i) || priceSuffix(i) || (price_status && content.endsWith("000") && !content.equals("4000"))){
 					return i;
 				}

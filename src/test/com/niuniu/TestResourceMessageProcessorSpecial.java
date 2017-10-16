@@ -85,7 +85,7 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals(1, crg.getResult().size());
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("宝马", cr.getBrand_name());
-			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals(2018, cr.getYear());
 			Assert.assertEquals("3系", cr.getCar_model_name());
 			Assert.assertEquals("32.59", cr.getGuiding_price());
 		}
