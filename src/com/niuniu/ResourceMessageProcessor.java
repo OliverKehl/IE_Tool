@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 import com.niuniu.cache.CacheManager;
+import com.niuniu.classifier.MessageStandardClassifier;
 import com.niuniu.classifier.ParallelResourcePriceClassifier;
 import com.niuniu.classifier.ParallelResourceVinClassifier;
 import com.niuniu.classifier.ResourceTypeClassifier;
@@ -363,19 +364,26 @@ public class ResourceMessageProcessor {
 	}
 	
 	// 在搜索结果数量较少，例如只有3998这个指导价的情况下，需要判定搜索结果里的品牌个数，如果有多个，则需要向上回溯，找到正确的品牌
-		private boolean hasMultiModels(SolrDocumentList queryResult){
-			Set<String> models_counter = new HashSet<String>();
-			if(queryResult.size()==0)
-				return false;
-			float maxScore = NumberUtils.toFloat(queryResult.get(0).get("score").toString());
-			for(int i=0;i<queryResult.size();i++){
-				float score = NumberUtils.toFloat(queryResult.get(i).get("score").toString());
-				if(score<maxScore)
-					break;
-				models_counter.add(queryResult.get(i).get("car_model_name").toString());
-			}
-			return models_counter.size()>1;
+	private boolean hasMultiModels(SolrDocumentList queryResult){
+		Set<String> models_counter = new HashSet<String>();
+		if(queryResult.size()==0)
+			return false;
+		float maxScore = NumberUtils.toFloat(queryResult.get(0).get("score").toString());
+		for(int i=0;i<queryResult.size();i++){
+			float score = NumberUtils.toFloat(queryResult.get(i).get("score").toString());
+			if(score<maxScore)
+				break;
+			models_counter.add(queryResult.get(i).get("car_model_name").toString());
 		}
+		return models_counter.size()>1;
+	}
+	
+	//
+	private boolean isLatentParallel(BaseCarFinder bcf, String line){
+		if(MessageStandardClassifier.predict(line)==1)
+			return false;
+		return true;
+	}
 	
 	private void reExtractPriceFromConfiguration(CarResource cr, String info){
 		String price = ParallelResourcePriceClassifier.predict(info);
@@ -522,7 +530,7 @@ public class ResourceMessageProcessor {
 			if(!status){
 				
 				//有可能是平行进口车被误识别成中规国产车，导致有可能把车架号代入到搜索阶段
-				if(mode==1){
+				if(mode==1 && isLatentParallel(baseCarFinder, s)){
 					baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
 					status = baseCarFinder.generateBaseCarId(s, null, 2);
 					mode = -1;
@@ -763,6 +771,7 @@ public class ResourceMessageProcessor {
 		resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
 		//resourceMessageProcessor.setMessages("加版GLS450 水硅钒钙石蓝 黄鹤 豪华 运动 通风 三区 小牛皮 #3919 报关中\\n18622251821 迟庆华	");
 		//resourceMessageProcessor.setMessages("揽运1198白黄鹤，黑黄鹤优惠13出");
+		
 		
 		//TODO 颜色抽取，如果有多个颜色，需要优化处理方式，应该是迭代的去做，而不应该是指定模式统一处理
 		//resourceMessageProcessor.setMessages("揽胜2678黑红，黑黄，白黄鹤（撞黑顶现车）");

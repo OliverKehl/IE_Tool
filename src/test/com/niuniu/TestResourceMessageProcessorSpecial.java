@@ -262,4 +262,22 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals("69.5", cr.getDiscount_content());
 		}
 	}
+	
+	/*
+	 * 有的用户发资源会搞错指导价，或者厂商最近调整了某个车型的指导价，导致某个车型识别不出来
+	 * 以前的逻辑是二话不说就去平行进口车车型库里匹配一把，导致会有bad case出现
+	 * 例如 "Q7 9298黑棕 19点"
+	 * 因为Q7改了价，导致找不到9298的Q7，最终发出来了一个墨西哥版的Q7，这个逻辑硬伤很明显。。
+	 */
+	@Test
+	public void testWrongGuidingPrice() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"Q7 9298黑棕 19点");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(0, crg.getResult().size());
+		}
+	}
 }
