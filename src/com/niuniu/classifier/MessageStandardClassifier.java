@@ -21,7 +21,7 @@ import com.niuniu.config.NiuniuBatchConfig;
  *  	
  */
 public class MessageStandardClassifier {
-	public final static Logger log = LoggerFactory.getLogger(ResourceTypeClassifier.class);
+	public final static Logger log = LoggerFactory.getLogger(MessageStandardClassifier.class);
 	private ArrayList<Pattern> patterns;
 	
 	private static final MessageStandardClassifier singleton;
@@ -38,7 +38,7 @@ public class MessageStandardClassifier {
 		try{
 			is = Utils.openResource(this.getClass().getClassLoader(), NiuniuBatchConfig.getStandardModel());
 			if(is == null){
-				log.error("[batch_processor]\t {} \t车源类型正则文件不存在", NiuniuBatchConfig.getStandardModel());
+				log.error("[batch_processor]\t {} \t规格正则表达文件不存在", NiuniuBatchConfig.getStandardModel());
 				return;
 	        }
 			
@@ -51,7 +51,7 @@ public class MessageStandardClassifier {
 				Pattern pattern = Pattern.compile(line);
 				patterns.add(pattern);
 			}
-			log.info("[batch_processor]\t {} \t规格正则表达式初始化完成", NiuniuBatchConfig.getResourceTypeModel());
+			log.info("[batch_processor]\t {} \t规格正则表达式初始化完成", NiuniuBatchConfig.getStandardModel());
 		}catch(Exception e){
 			e.printStackTrace();
 		}
