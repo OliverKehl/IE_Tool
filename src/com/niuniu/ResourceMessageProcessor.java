@@ -264,23 +264,23 @@ public class ResourceMessageProcessor {
 			if(baseCarFinder.models.size()==0 && last_model_name !=null && !last_model_name.isEmpty()){
 				return last_model_name;
 			}
-			if(baseCarFinder.styles.size()==0 && last_style_name !=null && !last_style_name.isEmpty() && !last_style_name.matches("\\d\\d\\d\\d") && !last_style_name.matches("\\d\\d")){
-				return last_style_name;
-			}
+			//if(baseCarFinder.styles.size()==0 && last_style_name !=null && !last_style_name.isEmpty() && !last_style_name.matches("\\d\\d\\d\\d") && !last_style_name.matches("\\d\\d")){
+				//return last_style_name;
+			//}
 		}else{
 			if(baseCarFinder.brands.size()==0 && last_brand_name !=null && !last_brand_name.isEmpty()){
 				standard_query += " " + last_brand_name;
 			}
-			if(baseCarFinder.models.size()!=0 && !baseCarFinder.models.get(0).equals(last_model_name)){
+			if(baseCarFinder.models.size()!=0 && baseCarFinder.models.get(0).length()>1 && !baseCarFinder.models.get(0).equals(last_model_name)){
 				return standard_query;
 			}
-			if(baseCarFinder.models.size()==0 && last_model_name !=null && !last_model_name.isEmpty()){
+			if(last_model_name !=null && !last_model_name.isEmpty()){
 				standard_query += " " + last_model_name;
 			}
 			
-			if(baseCarFinder.styles.size()==0 && last_style_name !=null && !last_style_name.isEmpty() && !last_style_name.matches("\\d\\d\\d\\d") && !last_style_name.matches("\\d\\d")){
-				standard_query += " " + last_style_name;
-			}
+			//if(baseCarFinder.styles.size()==0 && last_style_name !=null && !last_style_name.isEmpty() && !last_style_name.matches("\\d\\d\\d\\d") && !last_style_name.matches("\\d\\d")){
+				//standard_query += " " + last_style_name;
+			//}
 		}
 		return standard_query.trim();
 	}
@@ -361,6 +361,21 @@ public class ResourceMessageProcessor {
 		}
 		return brands_counter.size()>1;
 	}
+	
+	// 在搜索结果数量较少，例如只有3998这个指导价的情况下，需要判定搜索结果里的品牌个数，如果有多个，则需要向上回溯，找到正确的品牌
+		private boolean hasMultiModels(SolrDocumentList queryResult){
+			Set<String> models_counter = new HashSet<String>();
+			if(queryResult.size()==0)
+				return false;
+			float maxScore = NumberUtils.toFloat(queryResult.get(0).get("score").toString());
+			for(int i=0;i<queryResult.size();i++){
+				float score = NumberUtils.toFloat(queryResult.get(i).get("score").toString());
+				if(score<maxScore)
+					break;
+				models_counter.add(queryResult.get(i).get("car_model_name").toString());
+			}
+			return models_counter.size()>1;
+		}
 	
 	private void reExtractPriceFromConfiguration(CarResource cr, String info){
 		String price = ParallelResourcePriceClassifier.predict(info);
@@ -592,7 +607,8 @@ public class ResourceMessageProcessor {
 							status = baseCarFinder_new.generateBaseCarId(s, prefix, mode);
 							if(status){
 								baseCarFinder = baseCarFinder_new;
-							}else{
+							}
+							if(status && hasMultiModels(baseCarFinder.query_results)){
 								String simple_prefix = rebuildQueryPrefix(baseCarFinder,0);
 								if(!simple_prefix.equals(prefix)){
 									baseCarFinder_new = new BaseCarFinder(solr_client, last_brand_name);

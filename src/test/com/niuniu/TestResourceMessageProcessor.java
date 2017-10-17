@@ -121,6 +121,47 @@ public class TestResourceMessageProcessor {
 			Assert.assertTrue(cr.getStyle_name().contains("SVR"));
 			Assert.assertEquals("180.0", cr.getDiscount_content());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"凯绅\\n1398白金下4000\\n1498（1.6T)白下4000");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(2, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("起亚", cr.getBrand_name());
+			Assert.assertEquals("凯绅", cr.getCar_model_name());
+			Assert.assertEquals("13.98", cr.getGuiding_price());
+			
+			cr = crg.getResult().get(1);
+			Assert.assertEquals("起亚", cr.getBrand_name());
+			Assert.assertEquals("凯绅", cr.getCar_model_name());
+			Assert.assertEquals("14.98", cr.getGuiding_price());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"一汽大众特价出 全部现车\\n[爱心][爱心][爱心]\\n宝来\\n1198手动白金银 下24000\\n1318白金 下24000\\n1418白 下24000\\n");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(3, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("大众", cr.getBrand_name());
+			Assert.assertEquals("宝来", cr.getCar_model_name());
+			Assert.assertEquals("11.98", cr.getGuiding_price());
+			
+			cr = crg.getResult().get(1);
+			Assert.assertEquals("大众", cr.getBrand_name());
+			Assert.assertEquals("宝来", cr.getCar_model_name());
+			Assert.assertEquals("13.18", cr.getGuiding_price());
+			
+			cr = crg.getResult().get(2);
+			Assert.assertEquals("大众", cr.getBrand_name());
+			Assert.assertEquals("宝来", cr.getCar_model_name());
+			Assert.assertEquals("14.18", cr.getGuiding_price());
+		}
 	}
 	
 	@Test
