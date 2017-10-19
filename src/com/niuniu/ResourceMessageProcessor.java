@@ -665,12 +665,13 @@ public class ResourceMessageProcessor {
 						continue;
 					}
 					
-					baseCarFinder.generateColors(mode,1);
+					//baseCarFinder.generateColors(mode,1);
+					baseCarFinder.newGenerateColors(mode, 1);
 					baseCarFinder.generateRealPrice();
 					//TODO 
 					//这里如果颜色是空，就重新跑颜色的生成模块
 					if(baseCarFinder.result_colors.isEmpty()){
-						baseCarFinder.generateColors(mode,2);
+						baseCarFinder.newGenerateColors(mode,2);
 					}
 					
 					baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, null, "现车", disableCache);
@@ -751,7 +752,7 @@ public class ResourceMessageProcessor {
 					writeInvalidInfo(concatWithSpace(s));
 					continue;
 				}
-				baseCarFinder.generateColors(mode, 1);
+				baseCarFinder.newGenerateColors(mode, 1);
 				String VIN = baseCarFinder.extractVIN();
 				baseCarFinder.generarteParellelPrice();
 				String resource_type = ResourceTypeClassifier.predict(s);
@@ -768,10 +769,9 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
-		//resourceMessageProcessor.setMessages("加版GLS450 水硅钒钙石蓝 黄鹤 豪华 运动 通风 三区 小牛皮 #3919 报关中\\n18622251821 迟庆华	");
-		//resourceMessageProcessor.setMessages("揽运1198白黄鹤，黑黄鹤优惠13出");
-		
+		//resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
+		resourceMessageProcessor.setMessages("极光458黑黑 白黑优惠11.3小期");
+		resourceMessageProcessor.setMessages("凯美瑞1958白黑 黑米 黑黑优惠2.3W");
 		
 		//TODO 颜色抽取，如果有多个颜色，需要优化处理方式，应该是迭代的去做，而不应该是指定模式统一处理
 		//resourceMessageProcessor.setMessages("揽胜2678黑红，黑黄，白黄鹤（撞黑顶现车）");

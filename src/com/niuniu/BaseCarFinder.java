@@ -589,13 +589,7 @@ public class BaseCarFinder {
 		return null;
 	}
 
-	/*
-	 * 从简处理，如果colors.size()=2就是外+内，如果=1，细分一下看看是不是能区分成 后续还可以这么做： 一行里面可能会写 黑黑 棕黑
-	 * 如果拆分成两个词后两个词相同，那么就是外+内 金黑 黑黑 => 黑#COLOR 黑#COLOR 棕黑 => 棕黑#COLOR 金黑 =>
-	 * 金黑#COLOR 那么就可以结合上下文的颜色情况来确定这里的棕黑和金黑是不是也要拆分
-	 * 
-	 */
-	public void generateColors(int mode, int phase) {
+	private void extractColors(int mode, int phase){
 		int idx = 0;
 		int start_index = 0;
 		if(!colorBeforePrice){
@@ -648,6 +642,143 @@ public class BaseCarFinder {
 				backup_index = Math.max(original_message.length(), backup_index);
 			}
 		}
+	}
+	
+	private void reExtractColors(){
+		if(colors.size()==0)
+			return;
+		ArrayList<String>  ans_color = new ArrayList<String>();
+		ArrayList<Integer> ans_index = new ArrayList<Integer>();
+		for(int i=0;i<colors.size();i++){
+			String c = colors.get(i);
+			if(c.length()!=2){
+				ans_color.add(c);
+				ans_index.add(indexes.get(i));
+			}else{
+				int status = validDualColors(c);
+				if (status <= 0) {
+					if (status == 0) {
+						String interpolation = unExpectedOuterColor(c);
+						if (interpolation != null) {
+							status = -1;
+						}
+					}
+					if(status==-1){
+						ans_color.add(c);
+						ans_index.add(indexes.get(i));
+					}
+				}else{
+					// 拆分颜色token
+					// 长度肯定是2
+					ans_color.add(c.substring(0,1));
+					ans_index.add(indexes.get(i));
+					ans_color.add(c.substring(1,2));
+					ans_index.add(indexes.get(i));
+				}
+			}
+		}
+		colors = ans_color;
+		indexes = ans_index;
+	}
+	
+	// GREEDY METHOD
+	// 先验假设：如果有外+内的颜色组合，那么外饰一定在内饰的前面
+	public void newGenerateColors(int mode, int phase){
+		extractColors(mode, phase);
+		reExtractColors();
+		if(colors.size()==0)
+			return;
+		boolean inner_flag = false;//上一个颜色是内饰，则last_inner=true，否则是false
+		String last_outer_color = null;
+		// greedy
+		for(int i=0;i<colors.size();i++){
+			String c = colors.get(i);
+			if(inner_flag || i==0){
+				// String outer_standard = matchStandardColor(c, 0);
+				// result_colors.add(fetchValidColor(outer_standard, c) + "#");
+				last_outer_color = c;
+				inner_flag = false;
+				continue;
+			}else{
+				// 上一个颜色是外饰, 则这个颜色有可能是外饰，有可能是内饰
+				int pre = i-1;
+				int next = i+1;
+				if(c.equals("黄鹤")){
+					String outer_standard = matchStandardColor(last_outer_color, 0);
+					result_colors.add(buildColorString(last_outer_color, c, outer_standard, c));
+					last_outer_color = null;
+					inner_flag = true;
+					continue;
+				}
+				if(last_outer_color!=null && c.equals(last_outer_color)){
+					String outer_standard = matchStandardColor(last_outer_color, 0);
+					String inner_standard = matchStandardColor(c, 1);
+					result_colors.add(buildColorString(last_outer_color, c, outer_standard, inner_standard));
+					last_outer_color = null;
+					inner_flag = true;
+					continue;
+				}
+				if(indexes.get(i)==indexes.get(pre)){//pre和cur相邻且在一个token里
+					if(next>=colors.size() || !isAdjacentColor(indexes.get(i), indexes.get(next))){
+						String outer_standard = matchStandardColor(last_outer_color, 0);
+						String inner_standard = matchStandardColor(c, 1);
+						result_colors.add(buildColorString(last_outer_color, c, outer_standard, inner_standard));
+						last_outer_color = null;
+						inner_flag = true;
+					}else if(isAdjacentColor(indexes.get(i), indexes.get(next))){
+						String outer_standard = matchStandardColor(last_outer_color, 0);
+						result_colors.add(fetchValidColor(outer_standard, last_outer_color) + "#");
+						last_outer_color = c;
+					}
+				}else if(isAdjacentColor(indexes.get(pre), indexes.get(i))){//
+					if(i>=2 && (isAdjacentColor(indexes.get(i-2), indexes.get(i-1)) || indexes.get(i-2)==indexes.get(i-1))){
+						String outer_standard = matchStandardColor(last_outer_color, 0);
+						result_colors.add(fetchValidColor(outer_standard, last_outer_color) + "#");
+						last_outer_color = c;
+					}else if(next>=colors.size() || !isAdjacentColor(indexes.get(i), indexes.get(next))){
+						String outer_standard = matchStandardColor(last_outer_color, 0);
+						String inner_standard = matchStandardColor(c, 1);
+						result_colors.add(buildColorString(last_outer_color, c, outer_standard, inner_standard));
+						last_outer_color = null;
+						inner_flag = true;
+					}else if(next>=indexes.size() || isAdjacentColor(indexes.get(i), indexes.get(next))){
+						String outer_standard = matchStandardColor(last_outer_color, 0);
+						result_colors.add(fetchValidColor(outer_standard, last_outer_color) + "#");
+						last_outer_color = c;
+					}
+				}else{
+					if(isExplicitOuterColor(indexes.get(i))){
+						if(last_outer_color!=null){
+							String outer_standard = matchStandardColor(last_outer_color, 0);
+							result_colors.add(fetchValidColor(outer_standard, last_outer_color) + "#");
+						}
+						last_outer_color = c;
+					}else if(isExplicitInnerColor(indexes.get(i))){
+						if(last_outer_color!=null){
+							String outer_standard = matchStandardColor(last_outer_color, 0);
+							String inner_standard = matchStandardColor(c, 1);
+							result_colors.add(buildColorString(last_outer_color, c, outer_standard, inner_standard));
+							last_outer_color = null;
+						}
+					}else{
+						if(last_outer_color!=null){
+							String outer_standard = matchStandardColor(last_outer_color, 0);
+							result_colors.add(fetchValidColor(outer_standard, last_outer_color) + "#");
+						}
+						last_outer_color = c;
+					}
+				}
+			}
+		}
+		if(last_outer_color!=null){
+			String outer_standard = matchStandardColor(last_outer_color, 0);
+			result_colors.add(fetchValidColor(outer_standard, last_outer_color) + "#");
+		}
+	}
+	
+	// OLDER METHOD
+	public void generateColors(int mode, int phase) {
+		extractColors(mode, phase);
 		if(colors.size()==0)
 			return;
 		int mod = 0;// 默认是外和内分开
@@ -880,7 +1011,7 @@ public class BaseCarFinder {
 			return -1;
 		String c1 = s.substring(0, 1);
 		String c2 = s.substring(1, 2);
-		if (!isValidInnerColor(c2) || c2.equals("色")) {
+		if (c2.equals("色")) {
 			// 后面的颜色并不是
 			return -1;
 		}
