@@ -769,9 +769,11 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		//resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
-		resourceMessageProcessor.setMessages("极光458黑黑 白黑优惠11.3小期");
-		resourceMessageProcessor.setMessages("凯美瑞1958白黑 黑米 黑黑优惠2.3W");
+		resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
+		//resourceMessageProcessor.setMessages("凯美瑞1958白黑 黑米 黑黑优惠2.3W");
+		
+		//TODO BAD CASES
+		//resourceMessageProcessor.setMessages("奥迪A6L.406黑 ");
 		
 		//TODO 颜色抽取，如果有多个颜色，需要优化处理方式，应该是迭代的去做，而不应该是指定模式统一处理
 		//resourceMessageProcessor.setMessages("揽胜2678黑红，黑黄，白黄鹤（撞黑顶现车）");

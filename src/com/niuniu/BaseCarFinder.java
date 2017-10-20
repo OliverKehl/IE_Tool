@@ -686,6 +686,7 @@ public class BaseCarFinder {
 	public void newGenerateColors(int mode, int phase){
 		extractColors(mode, phase);
 		reExtractColors();
+		ArrayList<Integer> color_tag = new ArrayList<Integer>();
 		if(colors.size()==0)
 			return;
 		boolean inner_flag = false;//上一个颜色是内饰，则last_inner=true，否则是false
@@ -708,6 +709,8 @@ public class BaseCarFinder {
 					result_colors.add(buildColorString(last_outer_color, c, outer_standard, c));
 					last_outer_color = null;
 					inner_flag = true;
+					color_tag.add(0);
+					color_tag.add(1);
 					continue;
 				}
 				if(last_outer_color!=null && c.equals(last_outer_color)){
@@ -716,6 +719,8 @@ public class BaseCarFinder {
 					result_colors.add(buildColorString(last_outer_color, c, outer_standard, inner_standard));
 					last_outer_color = null;
 					inner_flag = true;
+					color_tag.add(0);
+					color_tag.add(1);
 					continue;
 				}
 				if(indexes.get(i)==indexes.get(pre)){//pre和cur相邻且在一个token里
@@ -725,32 +730,40 @@ public class BaseCarFinder {
 						result_colors.add(buildColorString(last_outer_color, c, outer_standard, inner_standard));
 						last_outer_color = null;
 						inner_flag = true;
+						color_tag.add(0);
+						color_tag.add(1);
 					}else if(isAdjacentColor(indexes.get(i), indexes.get(next))){
 						String outer_standard = matchStandardColor(last_outer_color, 0);
 						result_colors.add(fetchValidColor(outer_standard, last_outer_color) + "#");
 						last_outer_color = c;
+						color_tag.add(0);
 					}
 				}else if(isAdjacentColor(indexes.get(pre), indexes.get(i))){//
-					if(i>=2 && (isAdjacentColor(indexes.get(i-2), indexes.get(i-1)) || indexes.get(i-2)==indexes.get(i-1))){
+					if(i>=2 && (isAdjacentColor(indexes.get(i-2), indexes.get(i-1)) || indexes.get(i-2)==indexes.get(i-1)) && color_tag.get(i-2)==0){
 						String outer_standard = matchStandardColor(last_outer_color, 0);
 						result_colors.add(fetchValidColor(outer_standard, last_outer_color) + "#");
 						last_outer_color = c;
+						color_tag.add(0);
 					}else if(next>=colors.size() || !isAdjacentColor(indexes.get(i), indexes.get(next))){
 						String outer_standard = matchStandardColor(last_outer_color, 0);
 						String inner_standard = matchStandardColor(c, 1);
 						result_colors.add(buildColorString(last_outer_color, c, outer_standard, inner_standard));
 						last_outer_color = null;
 						inner_flag = true;
+						color_tag.add(0);
+						color_tag.add(1);
 					}else if(next>=indexes.size() || isAdjacentColor(indexes.get(i), indexes.get(next))){
 						String outer_standard = matchStandardColor(last_outer_color, 0);
 						result_colors.add(fetchValidColor(outer_standard, last_outer_color) + "#");
 						last_outer_color = c;
+						color_tag.add(0);
 					}
 				}else{
 					if(isExplicitOuterColor(indexes.get(i))){
 						if(last_outer_color!=null){
 							String outer_standard = matchStandardColor(last_outer_color, 0);
 							result_colors.add(fetchValidColor(outer_standard, last_outer_color) + "#");
+							color_tag.add(0);
 						}
 						last_outer_color = c;
 					}else if(isExplicitInnerColor(indexes.get(i))){
@@ -759,11 +772,14 @@ public class BaseCarFinder {
 							String inner_standard = matchStandardColor(c, 1);
 							result_colors.add(buildColorString(last_outer_color, c, outer_standard, inner_standard));
 							last_outer_color = null;
+							color_tag.add(0);
+							color_tag.add(1);
 						}
 					}else{
 						if(last_outer_color!=null){
 							String outer_standard = matchStandardColor(last_outer_color, 0);
 							result_colors.add(fetchValidColor(outer_standard, last_outer_color) + "#");
+							color_tag.add(0);
 						}
 						last_outer_color = c;
 					}
@@ -773,6 +789,7 @@ public class BaseCarFinder {
 		if(last_outer_color!=null){
 			String outer_standard = matchStandardColor(last_outer_color, 0);
 			result_colors.add(fetchValidColor(outer_standard, last_outer_color) + "#");
+			color_tag.add(0);
 		}
 	}
 	

@@ -148,6 +148,32 @@ public class TestNewColorExtractor {
 			Assert.assertEquals("267.8", cr.getGuiding_price());
 			Assert.assertEquals("[富士白#黄鹤, 法拉隆黑#黄, 法拉隆黑#红色]", cr.getColors());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"极光458黑黑白黑优惠11.3小期");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("45.8", cr.getGuiding_price());
+			Assert.assertEquals("[富士白#黑色, 圣托里尼黑#黑色]", cr.getColors());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"极光458黑黑白优惠11.3小期");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("45.8", cr.getGuiding_price());
+			Assert.assertEquals("[圣托里尼黑#黑色, 富士白#]", cr.getColors());
+		}
 	}
 	
 	@Test
@@ -205,6 +231,32 @@ public class TestNewColorExtractor {
 			Assert.assertEquals("路虎", cr.getBrand_name());
 			Assert.assertEquals("267.8", cr.getGuiding_price());
 			Assert.assertEquals("[富士白#黄鹤, 法拉隆黑#黄, 法拉隆黑#红色]", cr.getColors());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"极光458黑黑 白黑优惠11.3小期");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("45.8", cr.getGuiding_price());
+			Assert.assertEquals("[富士白#黑色, 圣托里尼黑#黑色]", cr.getColors());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"极光458黑/黑 白黑优惠11.3小期");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("45.8", cr.getGuiding_price());
+			Assert.assertEquals("[富士白#黑色, 圣托里尼黑#黑色]", cr.getColors());
 		}
 	}
 	
