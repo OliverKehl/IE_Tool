@@ -1417,7 +1417,13 @@ public class BaseCarFinder {
 								} else if (content.equals("w") || content.equals("万")) {
 									discount_way = 2;
 									discount_content = f;
-								} else {
+								} else if (content.equals("折") && (f > 0 && f < 100)) {
+									discount_way = 1;
+									if (f < 10)
+										discount_content = 100 - f * 10;
+									else
+										discount_content = 100 - f;
+								}else {
 									// 不确定是下xx点还是下xx万，使用行情价判定
 									judgeMarketingPriceWithDiscount(f);
 								}

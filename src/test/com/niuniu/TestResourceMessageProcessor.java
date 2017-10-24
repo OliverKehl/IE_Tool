@@ -287,6 +287,21 @@ public class TestResourceMessageProcessor {
 			Assert.assertTrue(cr.getColors().contains("白"));
 			Assert.assertTrue(cr.getColors().contains("红"));
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"[爱情]传祺 GA5：1993白色优惠5.2折");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("广汽传祺", cr.getBrand_name());
+			Assert.assertEquals("传祺GA5", cr.getCar_model_name());
+			Assert.assertEquals("19.93", cr.getGuiding_price());
+			Assert.assertEquals("1", cr.getDiscount_way());
+			Assert.assertEquals("48.0", cr.getDiscount_content());
+		}
 	}
 	
 	@Test
