@@ -155,11 +155,18 @@ public class BaseCarFinder {
 	 * 从search库里获取多个候选base_car_id
 	 */
 	private void fillBaseCarIds(Map<Integer, Float> result, SolrDocumentList docs) {
+		float threshold = docs.getMaxScore();
+		SolrDocumentList sdl = new SolrDocumentList();
 		for (SolrDocument doc : docs) {// 遍历结果集
 			long base_car_id = (long) doc.get("id");
 			float score = (float) doc.get("score");
-			result.put((int) base_car_id, score);
+			if(score>=threshold){
+				result.put((int) base_car_id, score);
+				sdl.add(doc);
+			}
 		}
+		docs.retainAll(sdl);
+		docs.setNumFound(sdl.size());
 	}
 
 	/*
@@ -518,7 +525,6 @@ public class BaseCarFinder {
 			return false;
 		this.original_message = message;
 		message = Utils.preProcess(message);
-		Map<Integer, Float> base_car_info = new HashMap<Integer, Float>();
 		if (solr == null)
 			return false;
 		String sub_query = parseMessage(solr, message, standard);
@@ -538,9 +544,8 @@ public class BaseCarFinder {
 		if(standard==2){
 			query_results = filterQueryResult(query_results);
 		}
-		fillBaseCarIds(base_car_info, this.query_results);
 		solr.clear();
-		return base_car_info.size() > 0;
+		return query_results!=null && query_results.size()>0;
 	}
 
 	/*
@@ -1339,7 +1344,7 @@ public class BaseCarFinder {
 					}
 				}
 			}
-			if (ele.endsWith("PRICE")) {
+			if (ele.endsWith("PRICE") || ele.endsWith("OTHERS")) {
 				String head_str = ele.substring(0, ele.indexOf("-"));
 				String tail_str = ele.substring(ele.indexOf("-") + 1, ele.indexOf("|"));
 				String content = ele.substring(ele.lastIndexOf("|") + 1, ele.indexOf("#"));

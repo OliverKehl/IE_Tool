@@ -162,6 +162,19 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("宝来", cr.getCar_model_name());
 			Assert.assertEquals("14.18", cr.getGuiding_price());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"出C200大标 3538 白黑 新款 现车 手慢无");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("奔驰", cr.getBrand_name());
+			Assert.assertEquals("35.38", cr.getGuiding_price());
+			Assert.assertTrue(cr.getStyle_name().contains("17款 改款 C200L 运动版"));
+		}
 	}
 	
 	@Test
