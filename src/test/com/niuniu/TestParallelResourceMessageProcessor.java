@@ -183,7 +183,6 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("3382", cr.getVin());
 			Assert.assertEquals("4", cr.getDiscount_way());
 			Assert.assertEquals("133.0", cr.getDiscount_content());
-			Assert.assertEquals("[白色#黑色]", cr.getColors());
 		}
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();

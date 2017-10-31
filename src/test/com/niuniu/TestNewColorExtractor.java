@@ -174,6 +174,20 @@ public class TestNewColorExtractor {
 			Assert.assertEquals("45.8", cr.getGuiding_price());
 			Assert.assertEquals("[圣托里尼黑#黑色, 富士白#]", cr.getColors());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"别克全新一代君威\\n199800 红白金🔻7500");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("别克", cr.getBrand_name());
+			Assert.assertEquals("19.98", cr.getGuiding_price());
+			Assert.assertEquals("0.75", cr.getDiscount_content());
+			Assert.assertEquals("[幻白#, 玛瑙红#, 恒金#]", cr.getColors());
+		}
 	}
 	
 	@Test
@@ -259,5 +273,49 @@ public class TestNewColorExtractor {
 			Assert.assertEquals("[富士白#黑色, 圣托里尼黑#黑色]", cr.getColors());
 		}
 	}
-	
+
+	@Test
+	public void testExplicitResourceColor() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"RX450H白车棕内，黄鹤，黄水晶棕内869现车售全国");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("雷克萨斯", cr.getBrand_name());
+			Assert.assertEquals("86.9", cr.getGuiding_price());
+			Assert.assertEquals("5", cr.getDiscount_way());
+			Assert.assertEquals("[白#棕色, 黄#水晶棕]", cr.getColors());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"RX450H白车棕内，黄水晶棕内869现车售全国");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("雷克萨斯", cr.getBrand_name());
+			Assert.assertEquals("86.9", cr.getGuiding_price());
+			Assert.assertEquals("5", cr.getDiscount_way());
+			Assert.assertEquals("[白#棕色, 黄#水晶棕]", cr.getColors());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"RX450H 869白扯棕内，黄水晶棕内现车售全国");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("雷克萨斯", cr.getBrand_name());
+			Assert.assertEquals("86.9", cr.getGuiding_price());
+			Assert.assertEquals("5", cr.getDiscount_way());
+			Assert.assertEquals("[黄#水晶棕]", cr.getColors());
+		}
+	}
 }
