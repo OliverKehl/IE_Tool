@@ -280,4 +280,28 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals(0, crg.getResult().size());
 		}
 	}
+	
+	/*
+	 * 没有足够的信息被识别为中规国产，而且也明显不是平行进口，不应该去平行进口车型库中匹配
+	 */
+	@Test
+	public void insufficientInfoLine() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"自动运动79800");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(0, crg.getResult().size());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"自动运动798");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(0, crg.getResult().size());
+		}
+	}
 }

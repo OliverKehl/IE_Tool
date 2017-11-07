@@ -1178,10 +1178,30 @@ public class BaseCarFinder {
 		}
 	}
 
-	private void judgeMarketingPriceWithDiscount(float coupon){
+	/*
+	 * params sdc: string_discount_content  
+	 */
+	private void judgeMarketingPriceWithDiscount(float coupon, String sdc){
 		Object guiding_price = query_results.get(0).get("guiding_price_s");
 		if (guiding_price == null) {
 			discount_way = 4;
+			discount_content = coupon;
+			return;
+		}
+		
+		boolean eliminate_1 = false;
+		if(sdc.contains(".")){
+			String sub = sdc.substring(sdc.indexOf(".")+1);
+			while(sub.endsWith("0")){
+				sub = sub.substring(0,sub.length()-1);
+			}
+			if(!sub.isEmpty() && !sub.equals("5")){
+				eliminate_1 = true;
+			}
+		}
+		
+		if(eliminate_1){
+			discount_way = 2;
 			discount_content = coupon;
 			return;
 		}
@@ -1200,13 +1220,28 @@ public class BaseCarFinder {
 		}
 	}
 	
-	private void judgeMarketingPrice(float coupon) {
+	/*
+	 * params sdc: string_discount_content
+	 */
+	private void judgeMarketingPrice(float coupon, String sdc) {
 		Object guiding_price = query_results.get(0).get("guiding_price_s");
 		if (guiding_price == null) {
 			discount_way = 4;
 			discount_content = coupon;
 			return;
 		}
+		
+		boolean eliminate_1 = false;
+		if(sdc.contains(".")){
+			String sub = sdc.substring(sdc.indexOf(".")+1);
+			while(sub.endsWith("0")){
+				sub = sub.substring(0,sub.length()-1);
+			}
+			if(!sub.isEmpty() && !sub.equals("5")){
+				eliminate_1 = true;
+			}
+		}
+		
 		int id = NumberUtils.createInteger(query_results.get(0).get("id").toString());
 		float price = NumberUtils.createFloat(guiding_price.toString());
 		float price1 = Utils.round(price * (100 - coupon) / 100f, 2);
@@ -1215,20 +1250,30 @@ public class BaseCarFinder {
 		float bias2 = calcPriceBias(id, price2);
 		float price3 = coupon;
 		float bias3 = calcPriceBias(id, price3);
-		// 下xx点
-		if (bias1 < bias2 && bias1 < bias3) {
-			discount_way = 1;
-			discount_content = coupon;
-		}
-		// 下xx万
-		if (bias2 < bias1 && bias2 < bias3) {
-			discount_way = 2;
-			discount_content = coupon;
-		}
-		// 直接报价
-		if (bias3 < bias1 && bias3 < bias2) {
-			discount_way = 4;
-			discount_content = coupon;
+		if(eliminate_1){
+			if(bias2<=bias3){
+				discount_way = 2;
+				discount_content = coupon;
+			}else{
+				discount_way = 4;
+				discount_content = coupon;
+			}
+		}else{
+			// 下xx点
+			if (bias1 < bias2 && bias1 < bias3) {
+				discount_way = 1;
+				discount_content = coupon;
+			}
+			// 下xx万
+			if (bias2 < bias1 && bias2 < bias3) {
+				discount_way = 2;
+				discount_content = coupon;
+			}
+			// 直接报价
+			if (bias3 < bias1 && bias3 < bias2) {
+				discount_way = 4;
+				discount_content = coupon;
+			}
 		}
 	}
 	
@@ -1481,15 +1526,17 @@ public class BaseCarFinder {
 									else
 										discount_content = 100 - f;
 								}else {
+									String sdc = element.substring(element.lastIndexOf("|") + 1, element.indexOf("#"));
 									// 不确定是下xx点还是下xx万，使用行情价判定
-									judgeMarketingPriceWithDiscount(f);
+									judgeMarketingPriceWithDiscount(f, sdc);
 								}
 							} else {
+								String sdc = element.substring(element.lastIndexOf("|") + 1, element.indexOf("#"));
 								// 不确定是下xx点还是下xx万，使用行情价判定
 								if(way==0)
-									judgeMarketingPrice(f);
+									judgeMarketingPrice(f,sdc);
 								else
-									judgeMarketingPriceWithDiscount(f);
+									judgeMarketingPriceWithDiscount(f,sdc);
 							}
 						}
 					} else {
@@ -1527,10 +1574,12 @@ public class BaseCarFinder {
 										discount_content = 100 - f;
 								} else {
 									// 不确定是下xx点还是下xx万，使用行情价判定
-									judgeMarketingPrice(f);
+									String sdc = element.substring(element.lastIndexOf("|") + 1, element.indexOf("#"));
+									judgeMarketingPrice(f, sdc);
 								}
 							} else {
-								judgeMarketingPrice(f);
+								String sdc = element.substring(element.lastIndexOf("|") + 1, element.indexOf("#"));
+								judgeMarketingPrice(f, sdc);
 							}
 						}
 					}

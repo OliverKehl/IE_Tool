@@ -573,5 +573,20 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("加版", cr.getStandard_name());
 			Assert.assertEquals(2017, cr.getYear());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"1.A180 236 白／黑 下3.6");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("奔驰", cr.getBrand_name());
+			Assert.assertEquals("a级", cr.getCar_model_name().toLowerCase());
+			Assert.assertEquals("23.6", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("3.6", cr.getDiscount_content());
+		}
 	}
 }

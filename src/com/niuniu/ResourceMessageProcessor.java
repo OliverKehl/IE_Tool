@@ -47,7 +47,7 @@ public class ResourceMessageProcessor {
 	ArrayList<String> res_discount_content;
 	ArrayList<String> res_remark;
 	
-	String year_regex = "(20)?\\d{2}款";
+	String year_regex = "^(20)?\\d{2}(\\D|$)+";
 	Pattern yearPattern = null;
 	
 	boolean disableCache = false;
@@ -380,8 +380,24 @@ public class ResourceMessageProcessor {
 	
 	//
 	private boolean isLatentParallel(BaseCarFinder bcf, String line){
+		// 内容中明显包含 指导价，下xx点等情况，那么该行信息就不可能是一条平行进口车车源
 		if(MessageStandardClassifier.predict(line)==1)
 			return false;
+		
+		// 内容中没有显式的包含 指导价，下xx点等信息
+		// 但是有明显是指导价的token，例如124900等，那么也不可能是平行进口车车源
+		for(String ele:bcf.ele_arr){
+			if(ele.endsWith("PRICE")){
+				String fc = ele.substring(ele.lastIndexOf("|") + 1, ele.indexOf("#"));
+				if(!fc.contains(".") && fc.length()>4 && fc.endsWith("00"))
+					return false;
+				if(!fc.contains(".") && fc.length()>2){//有可能是指导价
+					int value = NumberUtils.toInt(fc);
+					if(fc.length()==3 && value>500 && !fc.endsWith("0"))
+						return false;
+				}
+			}
+		}
 		return true;
 	}
 	
