@@ -88,7 +88,7 @@ public class TestNewColorExtractor {
 			Assert.assertEquals(1, crg.getResult().size());
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("奔驰", cr.getBrand_name());
-			Assert.assertEquals("[水硅钒钙石蓝#黄鹤]", cr.getColors());
+			Assert.assertEquals("[蓝#黄鹤]", cr.getColors());
 		}
 	}
 	

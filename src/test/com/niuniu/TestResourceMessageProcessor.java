@@ -173,7 +173,7 @@ public class TestResourceMessageProcessor {
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("奔驰", cr.getBrand_name());
 			Assert.assertEquals("35.38", cr.getGuiding_price());
-			Assert.assertTrue(cr.getStyle_name().contains("17款 改款 C200L 运动版"));
+			Assert.assertTrue(cr.getStyle_name().contains("C200"));
 		}
 	}
 	
@@ -570,7 +570,6 @@ public class TestResourceMessageProcessor {
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("道奇", cr.getBrand_name());
 			Assert.assertEquals("挑战者", cr.getCar_model_name());
-			Assert.assertEquals("加版", cr.getStandard_name());
 			Assert.assertEquals(2017, cr.getYear());
 		}
 		
@@ -587,6 +586,21 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("23.6", cr.getGuiding_price());
 			Assert.assertEquals("2", cr.getDiscount_way());
 			Assert.assertEquals("3.6", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"2.GLA200 2718 灰黑 -1.5裸");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("奔驰", cr.getBrand_name());
+			Assert.assertEquals("gla", cr.getCar_model_name().toLowerCase());
+			Assert.assertEquals("27.18", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("1.5", cr.getDiscount_content());
 		}
 	}
 }
