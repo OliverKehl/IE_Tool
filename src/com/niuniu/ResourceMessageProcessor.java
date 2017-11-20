@@ -279,9 +279,13 @@ public class ResourceMessageProcessor {
 				standard_query += " " + last_model_name;
 			}
 			
-			//if(baseCarFinder.styles.size()==0 && last_style_name !=null && !last_style_name.isEmpty() && !last_style_name.matches("\\d\\d\\d\\d") && !last_style_name.matches("\\d\\d")){
-				//standard_query += " " + last_style_name;
-			//}
+			//只在年款层面继承STYLE，其他的STYLE一律不管
+			if(baseCarFinder.styles.size()==0 && last_style_name !=null && !last_style_name.isEmpty() && !last_style_name.matches("\\d\\d\\d\\d") && !last_style_name.matches("\\d\\d")){
+				if(last_style_name.equals("老") || last_style_name.equals("老款") || last_style_name.equals("新") || last_style_name.equals("新款"))
+					standard_query += " " + last_style_name;
+				if(last_style_name.replaceAll("\\d\\d款", "").isEmpty())
+					standard_query += " " + last_style_name;
+			}
 		}
 		return standard_query.trim();
 	}
@@ -786,6 +790,12 @@ public class ResourceMessageProcessor {
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
 		resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
+		
+		//TODO
+		//resourceMessageProcessor.setMessages("一汽大众-迈腾 2499开罗金黑×2，优惠25000 自家现车，上汽大众专区");//这个价格识别的bad case实在不好解决。。
+		//resourceMessageProcessor.setMessages("420   42   白黑     13");
+		
+		
 		resourceMessageProcessor.process();
 		//CarResourceGroup crg = resourceMessageProcessor.carResourceGroup;
 		//System.out.println(JSON.toJSON(crg));

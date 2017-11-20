@@ -188,6 +188,20 @@ public class TestNewColorExtractor {
 			Assert.assertEquals("0.75", cr.getDiscount_content());
 			Assert.assertEquals("[幻白#, 玛瑙红#, 恒金#]", cr.getColors());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款塞纳四驱LE 黑/ 灰 48.7万  白/灰 49万 手续齐全 当天票。");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("丰田", cr.getBrand_name());
+			Assert.assertEquals("塞纳", cr.getCar_model_name());
+			Assert.assertEquals("48.7", cr.getDiscount_content());
+			Assert.assertEquals("[黑色#灰色]", cr.getColors());
+		}
 	}
 	
 	@Test

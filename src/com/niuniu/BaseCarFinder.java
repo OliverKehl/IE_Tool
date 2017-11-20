@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 import com.niuniu.cache.CacheManager;
+import com.niuniu.classifier.PriceValidationClassifier;
 import com.niuniu.classifier.TokenTagClassifier;
 import com.niuniu.config.NiuniuBatchConfig;
 
@@ -603,10 +604,11 @@ public class BaseCarFinder {
 			}
 			for (idx = start_index; idx < ele_arr.size() && idx<(start_index + 15); idx++) {
 				String s = ele_arr.get(idx);
+				String content = s.substring(s.lastIndexOf('|') + 1, s.indexOf('#'));
 				if (s.endsWith("#COLOR")) {
 					indexes.add(idx);
 					colors.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
-				} else if (mode==1 && (s.endsWith("STYLE") || s.endsWith("PRICE")) && phase==1) {
+				} else if (mode==1 && (s.endsWith("STYLE") || s.endsWith("PRICE") || content.length()>10) && phase==1) {//手机号
 					idx--;
 					break;
 				}else if(mode==1 && (s.endsWith("STYLE") || s.endsWith("PRICE")) && phase==2){
@@ -1482,6 +1484,9 @@ public class BaseCarFinder {
 	}
 
 	public boolean generateRealPrice() {
+		ArrayList<Integer> status_arr = new ArrayList<>();
+		ArrayList<Integer> way_arr = new ArrayList<>();
+		ArrayList<Float> content_arr = new ArrayList<>();
 		try {
 			for (int i = vital_info_index; i < ele_arr.size(); i++) {
 				String element = ele_arr.get(i);
@@ -1499,13 +1504,28 @@ public class BaseCarFinder {
 					// 找到实际价格
 					if (way != 0) {
 						if (f > 500) {// 例如下25000
+							
 							discount_way = way <= 0 ? 2 : 3;
 							discount_content = f / 10000f;
 							backup_index = Math.max(
 									NumberUtils.createInteger(
 											element.substring(element.indexOf("-") + 1, element.indexOf("|"))),
 									backup_index);
-							return true;
+							if (discount_way != 5 || discount_content != 0) {
+								int status = validatePrice();
+								if(status==1){
+									backup_index = Math.max(NumberUtils.createInteger(
+											element.substring(element.indexOf("-") + 1, element.indexOf("|"))), backup_index);
+									return true;
+								}else{
+									status_arr.add(status);
+									way_arr.add(discount_way);
+									content_arr.add(discount_content);
+								}
+								discount_way = 5;
+								discount_content = 0;
+							}
+							//return true;
 						} else {// 万、点
 							if (way == 1) {
 								discount_way = 3;
@@ -1585,16 +1605,84 @@ public class BaseCarFinder {
 					}
 				}
 				if (discount_way != 5 || discount_content != 0) {
-					backup_index = Math.max(NumberUtils.createInteger(
-							element.substring(element.indexOf("-") + 1, element.indexOf("|"))), backup_index);
-					break;
+					int status = validatePrice();
+					if(status==1){
+						backup_index = Math.max(NumberUtils.createInteger(
+								element.substring(element.indexOf("-") + 1, element.indexOf("|"))), backup_index);
+						return true;
+					}else{
+						status_arr.add(status);
+						way_arr.add(discount_way);
+						content_arr.add(discount_content);
+					}
+					discount_way = 5;
+		            discount_content = 0;
 				}
 			}
-			return true;
+			
+			// 从所有可能的价格里挑一个？？？还是不挑？？
+			// 如果分数低于5001，表明这条资源的置信度不算很高，那么如果价格也没有，就索性不添加？还是说加上价格，让鹰眼把它过滤掉?
+			// 考虑到，鹰眼可能无法过滤掉，那么就滚蛋？还是电议？
+			// 挑偏差最小的
+			
+			float max_score = query_results.getMaxScore();
+			
+			// 没有价格，资源分数也低，那就不发, 否则，电议
+			//
+			if(way_arr.isEmpty())
+	            return max_score>5000?true:false;
+			
+			discount_way = way_arr.get(0);
+			discount_content = content_arr.get(0);
+			int flag = status_arr.get(0);
+			
+			// 选了个合适的价格，是不是最接近不好说，因为这里没有一个数据记录价格的偏差
+			for(int i=1;i<way_arr.size();i++){
+				if(status_arr.get(i)>flag){
+					discount_way = way_arr.get(i);
+					discount_content = content_arr.get(i);
+					flag = status_arr.get(i);
+				}
+			}
+			
+			if(max_score<5010){
+				return false;
+			}else{
+				if(flag==-1){
+					discount_way = 5;
+					discount_content = 0;
+				}
+				return true;
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return false;
+	}
+	
+	public int validatePrice(){
+		String base_car_id = query_results.get(0).get("id").toString();
+        float guiding_price = NumberUtils.toFloat(query_results.get(0).get("guiding_price_s").toString());
+        float real_price = 0f;
+        
+        switch (discount_way) {
+		case 1://下点
+			real_price = Utils.round(guiding_price * (100 - discount_content) / 100f, 2);
+			break;
+		case 2://下万
+			real_price = guiding_price - discount_content;
+			break;
+		case 3://加万
+			real_price = guiding_price + discount_content;
+			break;
+		case 4://直接报价
+			real_price = discount_content;
+			break;
+		default:
+			break;
+		}
+        return PriceValidationClassifier.predict(base_car_id, real_price, guiding_price);
 	}
 
 	public String concatWithSpace(String s) {

@@ -25,6 +25,7 @@ base_car_price_reference
 tags.m
 config.xml
 parallel_base_car_price
+special_base_car_thresholds
 
 
 build/

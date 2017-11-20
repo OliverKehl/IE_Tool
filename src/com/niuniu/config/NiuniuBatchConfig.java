@@ -32,6 +32,8 @@ public class NiuniuBatchConfig {
 	public final String PARALLEL_PRICE_REFERENCE_MODEL = "com/niuniu/config/parallel_base_car_price";
 	
 	public final String STANDARD_PATTERN = "com/niuniu/config/standard.pattern";
+	
+	public final String PRICE_THRESHOLD_MODEL = "com/niuniu/config/special_base_car_thresholds";
 
 	private static final NiuniuBatchConfig NIUNIU_BATCH_CONFIG;
 
@@ -113,6 +115,10 @@ public class NiuniuBatchConfig {
 	public static String getStandardModel() {
 		return NIUNIU_BATCH_CONFIG.props.getProperty("standard_pattern", NIUNIU_BATCH_CONFIG.STANDARD_PATTERN);
 	}
+	
+	public static String getPriceThresholdModel(){
+		return NIUNIU_BATCH_CONFIG.props.getProperty("special_base_car_thresholds", NIUNIU_BATCH_CONFIG.PRICE_THRESHOLD_MODEL);
+	}
 
 
 	static {
@@ -124,8 +130,9 @@ public class NiuniuBatchConfig {
 		String separator = System.getProperty("file.separator");
 		String target = System.getProperty("catalina.base") + separator + "config.xml";
 		log.info(target);
+		InputStream input = null;
 		try{
-			InputStream input = openResource(this.getClass().getClassLoader(), target);
+			input = openResource(this.getClass().getClassLoader(), target);
 			if(input==null){
 				log.error("找不到批量发布的配置文件，使用默认配置文件...");
 				input = openResource(this.getClass().getClassLoader(), DEFAULT_PATH);
@@ -146,6 +153,15 @@ public class NiuniuBatchConfig {
 			}
 		}catch (Exception e) {
 			log.warn("exception caught when initializing.");
+		}finally{
+			try {
+				if(input != null){
+					input.close();
+					input = null;
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

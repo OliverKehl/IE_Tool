@@ -1,6 +1,7 @@
 package com.niuniu.classifier;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -50,6 +51,15 @@ public class ResourceTypeClassifier {
 			log.info("[batch_processor]\t {} \t车源类型正则表达式初始化完成", NiuniuBatchConfig.getResourceTypeModel());
 		}catch(Exception e){
 			e.printStackTrace();
+		}finally{
+			try {
+				if(is != null){
+                    is.close();
+                    is = null;
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

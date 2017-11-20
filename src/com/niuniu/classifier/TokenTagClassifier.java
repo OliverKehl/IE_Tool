@@ -1,6 +1,7 @@
 package com.niuniu.classifier;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -58,6 +59,15 @@ public class TokenTagClassifier {
 			log.info("[batch_processor]\t {} \ttoken打标初始化完成", NiuniuBatchConfig.getTokenTagModel());
 		}catch(Exception e){
 			e.printStackTrace();
+		}finally{
+			try {
+				if(is != null){
+                    is.close();
+                    is = null;
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

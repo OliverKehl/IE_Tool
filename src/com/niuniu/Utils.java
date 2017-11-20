@@ -466,6 +466,7 @@ public class Utils {
 	}
 	
 	public static String removeDuplicateSpace(String str){
+		str = str.replaceAll(" ?/ ?","/");
 		return str.replaceAll(" +", " ");
 	}
 	

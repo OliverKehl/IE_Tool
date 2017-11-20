@@ -1,6 +1,7 @@
 package com.niuniu.classifier;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -54,6 +55,15 @@ public class MessageStandardClassifier {
 			log.info("[batch_processor]\t {} \t规格正则表达式初始化完成", NiuniuBatchConfig.getStandardModel());
 		}catch(Exception e){
 			e.printStackTrace();
+		}finally{
+			try {
+				if(is != null){
+                    is.close();
+                    is = null;
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
