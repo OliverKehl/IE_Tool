@@ -119,6 +119,28 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals("4", cr.getDiscount_way());
 			Assert.assertEquals("133.0", cr.getDiscount_content());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"老英朗\\n1199 白、棕、红 ⬇️31500");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("别克", cr.getBrand_name());
+			Assert.assertEquals("11.99", cr.getGuiding_price());
+			Assert.assertTrue(cr.getYear()<2017);
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"宝来\\n1198手动白金银 下24000\\n1318白金 下24000\\n1418白 下24000");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(3, crg.getResult().size());
+		}
 	}
 	
 	/*
@@ -285,7 +307,7 @@ public class TestResourceMessageProcessorSpecial {
 	 * 没有足够的信息被识别为中规国产，而且也明显不是平行进口，不应该去平行进口车型库中匹配
 	 */
 	@Test
-	public void insufficientInfoLine() {
+	public void testInsufficientInfoLine() {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
@@ -302,6 +324,39 @@ public class TestResourceMessageProcessorSpecial {
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(0, crg.getResult().size());
+		}
+	}
+	
+	@Test
+	public void testMultipleResourcePrice() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"16款锐界 3198棕 2个 下40000");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("福特", cr.getBrand_name());
+			Assert.assertEquals("锐界", cr.getCar_model_name());
+			Assert.assertEquals("31.98", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("4.0", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"120-2898曙光金，埃蓝加2900自动泊车29点");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("宝马", cr.getBrand_name());
+			Assert.assertEquals("1系", cr.getCar_model_name());
+			Assert.assertEquals("28.98", cr.getGuiding_price());
+			Assert.assertEquals("1", cr.getDiscount_way());
+			Assert.assertEquals("29.0", cr.getDiscount_content());
 		}
 	}
 }

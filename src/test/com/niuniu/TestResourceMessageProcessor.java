@@ -315,6 +315,21 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("1", cr.getDiscount_way());
 			Assert.assertEquals("48.0", cr.getDiscount_content());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"118 2048下24.5");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("宝马", cr.getBrand_name());
+			Assert.assertEquals("1系", cr.getCar_model_name());
+			Assert.assertEquals("20.48", cr.getGuiding_price());
+			Assert.assertEquals("1", cr.getDiscount_way());
+			Assert.assertEquals("24.5", cr.getDiscount_content());
+		}
 	}
 	
 	@Test
