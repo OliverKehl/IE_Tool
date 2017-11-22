@@ -579,4 +579,20 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals("17款 八座21轮", cr.getStyle_name());
 		}
 	}
+
+	/*
+	 * 从文本中抽取出来的query不足以支撑一条资源
+	 * 例如：17款7座 支撑不起一条平行进口车车源
+	 */
+	@Test
+	public void testInsufficientInfoLine(){
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"17款7座大灯清洗限量版酷路泽4000 白米 65.4万 配置：七座手续，限量版，蠕行，两气囊，天窗，冰箱，银色行李架，主驾驶电动，大灯清洗，熏黑大灯，电折镜，镀铬套件，拖钩，桃木多功能方向盘，桃木内饰 ，巡航定速，一键式启动，18轮");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(0, crg.getResult().size());
+		}
+	}
 }

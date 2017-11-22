@@ -385,7 +385,7 @@ public class BaseCarFinder {
 					return Math.min(i + 1, tokens.size());
 				}
 				int price_int = NumberUtils.toInt(content,0);
-				if(price_int!=0 && price_int<100000 && (price_int%1000==0 || price_int%10000==0))
+				if(price_int!=0 && price_int<100000 && (price_int%1000==0 || price_int%10000==0) && price_int!=3000 && price_int!=4000)
 					return i;
 				//扫到指导价
 				if(colorBeforePrice && standard!=2){
@@ -1838,6 +1838,8 @@ public class BaseCarFinder {
 	 * 是头上的[新朗逸] 还是正儿八经的征文
 	 */
 	public boolean isHeader() {
+		if(original_message.contains("系列"))
+			return true;
 		if (prices.size() == 0 && original_message.trim().length() < 8)
 			return true;
 		if (prices.size() == 1 && original_message.trim().length() < 8

@@ -594,9 +594,9 @@ public class ResourceMessageProcessor {
 					}
 					
 					/*
-					 * 该行只有指导价，所以需要把上一行的所有信息都带过来
+					 * 该行只有指导价，或者只有指导价+年款，所以需要把上一行的所有信息都带过来
 					 */
-					if(!baseCarFinder.prices.isEmpty() && baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty()){
+					if(!baseCarFinder.prices.isEmpty() && baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty() && (baseCarFinder.styles.isEmpty() || isYearInfo(baseCarFinder.styles.get(0)))){
 						String all_prefix = rebuildQueryPrefix(baseCarFinder,1);
 						if(!all_prefix.isEmpty()){
 							BaseCarFinder baseCarFinder_new = new BaseCarFinder(solr_client, last_brand_name);
@@ -732,7 +732,7 @@ public class ResourceMessageProcessor {
 					writeInvalidInfo(concatWithSpace(s));
 					continue;
 				}
-				if(baseCarFinder.query_results.getMaxScore()<3000){
+				if(baseCarFinder.query_results.getMaxScore()<3001){
 					String prefix = rebuildQueryPrefix(baseCarFinder,0);
 					if(!prefix.isEmpty()){
 						baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
@@ -767,7 +767,7 @@ public class ResourceMessageProcessor {
 						}
 					}
 				}
-				if(baseCarFinder.query_results.getMaxScore()<2500){
+				if(baseCarFinder.query_results.getMaxScore()<3001){
 					// 置信度较低，查找结果的分数低于某个阈值
 					writeInvalidInfo(concatWithSpace(s));
 					continue;
@@ -793,6 +793,8 @@ public class ResourceMessageProcessor {
 		
 		//TODO
 		//resourceMessageProcessor.setMessages("一汽大众-迈腾 2499开罗金黑×2，优惠25000 自家现车，上汽大众专区");//这个价格识别的bad case实在不好解决。。
+		
+		//需要调整底层检索字段的存储方式，从而enable document boost
 		//resourceMessageProcessor.setMessages("420   42   白黑     13");
 		
 		

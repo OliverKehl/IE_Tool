@@ -141,6 +141,19 @@ public class TestResourceMessageProcessorSpecial {
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(3, crg.getResult().size());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"XTS \\n17款 3699白 下10万");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("凯迪拉克", cr.getBrand_name());
+			Assert.assertEquals("36.99", cr.getGuiding_price());
+			Assert.assertTrue(cr.getYear()==2017);
+		}
 	}
 	
 	/*
