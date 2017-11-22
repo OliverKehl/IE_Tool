@@ -471,7 +471,6 @@ public class Utils {
 	}
 	
 	public static void main(String[] args){
-		USolr solr = new USolr("http://121.40.204.159:8080/solr/");
 		String line = "2,B200 2718 灰黑 -1.5裸";
 		//System.out.println(Utils.normalizePrice("宝马320是   -10.5"));
 		System.out.println(Utils.removeHeader(Utils.preProcess(line)));
