@@ -789,11 +789,11 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
+		//resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
 		
 		//TODO
 		//resourceMessageProcessor.setMessages("一汽大众-迈腾 2499开罗金黑×2，优惠25000 自家现车，上汽大众专区");//这个价格识别的bad case实在不好解决。。
-		
+		//resourceMessageProcessor.setMessages("18款雷克萨斯570 黑棕 黑红 163 12月25号到港 \\n↘️ 18款宾利添越4.0 V8柴油💰 280W 黑/棕\\n颜色分离-样式D，天窗-标配，前座椅舒适包（五座），脚感电尾，宾利刺绣徽标，脚垫");
 		//需要调整底层检索字段的存储方式，从而enable document boost
 		//resourceMessageProcessor.setMessages("420   42   白黑     13");
 		

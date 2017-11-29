@@ -202,6 +202,15 @@ public class TestResourceMessageProcessorSpecial {
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(0, crg.getResult().size());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"黑/黑75.5");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(0, crg.getResult().size());
+		}
 	}
 	
 	/*

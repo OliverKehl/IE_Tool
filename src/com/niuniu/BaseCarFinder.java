@@ -298,7 +298,8 @@ public class BaseCarFinder {
 			}
 			
 			if (s.endsWith("#OTHERS") || s.endsWith("#COLOR") || s.endsWith("AREA")) {
-				
+				if(i==0)
+					return i;
 				backup_index = Math.max(NumberUtils.createInteger(s.substring(0, s.indexOf('-'))),
 						backup_index);
 				
