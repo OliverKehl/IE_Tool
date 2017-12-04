@@ -281,6 +281,10 @@ public class BaseCarFinder {
 					backup_index);
 			
 			if(s.endsWith("#STOP")){
+				if(s.contains("报价")){
+					if(standard==2)
+						return i;
+				}
 				if(s.contains("特价")){
 					if(i<tokens.size()-1){
 						String next = tokens.get(i+1);

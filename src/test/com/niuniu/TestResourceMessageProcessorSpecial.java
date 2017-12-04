@@ -305,6 +305,34 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals("4", cr.getDiscount_way());
 			Assert.assertEquals("69.5", cr.getDiscount_content());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages("18款S60L报价2769白 沙 棕");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("沃尔沃", cr.getBrand_name());
+			Assert.assertEquals(2018, cr.getYear());
+			Assert.assertEquals("S60L", cr.getCar_model_name());
+			Assert.assertEquals("27.69", cr.getGuiding_price());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages("①17中东版汽油行政HSE 报价114.2万\\n白/米 批发价优 \\n黑撞顶 滑动全景天窗，自动启停，五门电吸，19轮，LED大灯雾灯，智能卡脚感电尾门，冰箱，备胎，前加热，前后电眼，倒车影像，四区空调 胎压监测。");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals("中东", cr.getStandard_name());
+			Assert.assertEquals("揽胜行政3.0汽油", cr.getCar_model_name());
+			Assert.assertEquals("4", cr.getDiscount_way());
+			Assert.assertEquals("114.2", cr.getDiscount_content());
+		}
 	}
 	
 	/*
