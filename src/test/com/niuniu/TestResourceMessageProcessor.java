@@ -330,6 +330,21 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("1", cr.getDiscount_way());
 			Assert.assertEquals("24.5", cr.getDiscount_content());
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"速派2498 灰（18款）38000");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("斯柯达", cr.getBrand_name());
+			Assert.assertEquals("速派", cr.getCar_model_name());
+			Assert.assertEquals("24.98", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("3.8", cr.getDiscount_content());
+		}
 	}
 	
 	@Test

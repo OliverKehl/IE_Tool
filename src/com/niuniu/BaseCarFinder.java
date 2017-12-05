@@ -1172,14 +1172,10 @@ public class BaseCarFinder {
 		if(bias2==mini){
 			discount_way = 2;
 			discount_content = coupon;
-		}
-		// 下xxx万
-		if (bias3 == mini) {
+		}else if (bias3 == mini) {
 			discount_way = 4;
 			discount_content = coupon;
-		}
-		// 直接报价
-		if (bias4 == mini) {
+		}else{
 			discount_way = 3;
 			discount_content = coupon;
 		}

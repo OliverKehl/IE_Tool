@@ -789,7 +789,7 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		//resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
+		resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
 		
 		//TODO
 		//resourceMessageProcessor.setMessages("一汽大众-迈腾 2499开罗金黑×2，优惠25000 自家现车，上汽大众专区");//这个价格识别的bad case实在不好解决。。
