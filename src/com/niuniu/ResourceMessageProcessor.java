@@ -490,7 +490,7 @@ public class ResourceMessageProcessor {
 			
 			String reserve_s = s;
 			
-			s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.cleanDate(Utils.clean(Utils.normalize(s), solr_client))));
+			s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.cleanDate(Utils.clean(Utils.normalize(Utils.escapeSpecialDot(s)), solr_client))));
 			/*
 			 * 验证该行文本的有效性，如果有多个指导价就放弃一蛤
 			 */

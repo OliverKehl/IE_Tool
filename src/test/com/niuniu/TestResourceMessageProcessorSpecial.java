@@ -197,15 +197,6 @@ public class TestResourceMessageProcessorSpecial {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
-					"x6.838黑棕20.5出");
-			rmp.process();
-			CarResourceGroup crg = rmp.getCarResourceGroup();
-			Assert.assertEquals(0, crg.getResult().size());
-		}
-		
-		{
-			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
-			rmp.setMessages(
 					"黑/黑75.5");
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
@@ -226,7 +217,7 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals(1, crg.getResult().size());
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("路虎", cr.getBrand_name());
-			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals(2018, cr.getYear());
 			Assert.assertEquals("揽胜星脉", cr.getCar_model_name());
 			Assert.assertEquals("86.8", cr.getGuiding_price());
 		}
@@ -407,6 +398,39 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals("28.98", cr.getGuiding_price());
 			Assert.assertEquals("1", cr.getDiscount_way());
 			Assert.assertEquals("29.0", cr.getDiscount_content());
+		}
+	}
+	
+	@Test
+	public void testSpecialDotResource() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"奥迪A4.2928白/黑下12.1000");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("奥迪", cr.getBrand_name());
+			Assert.assertEquals("A4L", cr.getCar_model_name());
+			Assert.assertEquals("29.28", cr.getGuiding_price());
+			Assert.assertEquals("1", cr.getDiscount_way());
+			Assert.assertEquals("12.0", cr.getDiscount_content());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"x6.838黑棕20.5出");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("宝马", cr.getBrand_name());
+			Assert.assertEquals("X6", cr.getCar_model_name());
+			Assert.assertEquals("83.8", cr.getGuiding_price());
+			Assert.assertEquals("1", cr.getDiscount_way());
+			Assert.assertEquals("20.5", cr.getDiscount_content());
 		}
 	}
 }

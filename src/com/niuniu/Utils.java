@@ -35,6 +35,7 @@ public class Utils {
 	private static Pattern dashEscapePattern;
 	private static Pattern headerPricePattern;
 	private static Pattern headerOrderPattern;
+	private static Pattern specialNumberPattern;
 	
 	private static ArrayList<String> sources;
 	private static ArrayList<String> targets;
@@ -100,6 +101,9 @@ public class Utils {
 		
 		eL = "^\\d{1,2}(\\. |,|:|;|\\s|、|\\)|(\\.[a-zA-Z]))";
 		headerOrderPattern = Pattern.compile(eL);
+		
+		eL = "\\d\\.\\d{3}";
+		specialNumberPattern = Pattern.compile(eL);
 		
 		InputStream is = null;
         BufferedReader reader = null; 
@@ -468,6 +472,13 @@ public class Utils {
 	public static String removeDuplicateSpace(String str){
 		str = str.replaceAll(" ?/ ?","/");
 		return str.replaceAll(" +", " ");
+	}
+
+	public static String escapeSpecialDot(String str){
+		Matcher matcher = specialNumberPattern.matcher(str);
+		while(matcher.find())
+			str = str.replace(matcher.group(0), matcher.group(0).replaceAll("\\.", " "));
+		return str;
 	}
 	
 	public static void main(String[] args){
