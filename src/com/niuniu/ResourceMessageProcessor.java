@@ -97,15 +97,16 @@ public class ResourceMessageProcessor {
 	}
 	
 	public void resetParallelResourceBasedOnPrice(CarResource cr){
-		int standard = cr.getStandard();
-		if(standard!=2)
-			return;
+		//int standard = cr.getStandard();
+		//if(standard!=2)
+			//return;
 		SolrDocumentList qrs = cr.getQuery_result();
 		if(qrs==null)
 			return;
 		String target_base_car_id = null;
 		float gap = Float.MAX_VALUE;
 		float score = NumberUtils.toFloat(cr.getQuery_result().get(0).getFieldValue("score").toString());
+		float real_price = NumberUtils.toFloat(cr.getReal_price());
 		int step = 0;
 		SolrDocument target_doc = null;
 		for ( SolrDocument doc: qrs ) {
@@ -115,7 +116,6 @@ public class ResourceMessageProcessor {
 				median_price = Utils.PRICE_GUIDE_50.get(NumberUtils.toInt(base_car_id));
 			if(median_price==0.0 && Utils.PARALLEL_PRICE_GUIDE.containsKey(NumberUtils.toInt(base_car_id)))
 				median_price = Utils.PARALLEL_PRICE_GUIDE.get(NumberUtils.toInt(base_car_id));
-			float real_price = NumberUtils.toFloat(cr.getDiscount_content());
 			if(step==0){
 				if(median_price==0.0){
 					return;
@@ -169,7 +169,6 @@ public class ResourceMessageProcessor {
 			}
 			if(cr.getDiscount_way().equals("4")){
 				cr.setReal_price(cr.getDiscount_content());
-				resetParallelResourceBasedOnPrice(cr);
 			}else{
 				String guiding_price = cr.getGuiding_price();
 				if(guiding_price!=null && !guiding_price.equals("0.0")){
@@ -184,6 +183,7 @@ public class ResourceMessageProcessor {
 					}
 				}
 			}
+			resetParallelResourceBasedOnPrice(cr);
 			cr.setQuery_result(null);
 		}
 		return JSON.toJSON(carResourceGroup).toString();
@@ -789,7 +789,12 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
+		//resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
+		//迈锐宝和迈锐宝XL都有好几个1799的款式，咋办
+		//resourceMessageProcessor.setMessages("迈锐宝 1799 白 灰 金⬇️45000");
+		//resourceMessageProcessor.setMessages("别克资源\\n2299金 白8000");
+		//resourceMessageProcessor.setMessages("1378白xrv一台现车，随时开票");
+		resourceMessageProcessor.setMessages("18速腾1628 现车一台，求秒13479996787黄霞");
 		
 		//TODO
 		//resourceMessageProcessor.setMessages("一汽大众-迈腾 2499开罗金黑×2，优惠25000 自家现车，上汽大众专区");//这个价格识别的bad case实在不好解决。。

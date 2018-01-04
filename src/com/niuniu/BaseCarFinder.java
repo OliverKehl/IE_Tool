@@ -271,6 +271,7 @@ public class BaseCarFinder {
 	private int parse(ArrayList<String> tokens, String message, int standard) {
 		boolean price_status = false;
 		int i=0;
+		//boolean stop_color_area_status = false;
 		for (; i < tokens.size(); i++) {
 			String s = tokens.get(i);
 			int start = NumberUtils.toInt(s.substring(0, s.indexOf('-')));
@@ -296,11 +297,13 @@ public class BaseCarFinder {
 					}else{
 						//tokens.remove(i);
 					}
-				}else
+				}
 					//tokens.remove(i);
 				continue;
 			}
-			
+			//if(stop_color_area_status && !s.endsWith("MODEL") && !s.endsWith("BRAND")){
+				//return i-1;
+			//}
 			if (s.endsWith("#OTHERS") || s.endsWith("#COLOR") || s.endsWith("AREA")) {
 				if(i==0)
 					return i;
@@ -315,9 +318,9 @@ public class BaseCarFinder {
 					//tokens.remove(i);
 					continue;
 				}
-				//if(standard==2 && s.endsWith("#COLOR"))
-					//continue;
+				
 				return i;
+				
 				// stop = NumberUtils.createInteger(s.substring(0,
 				// s.indexOf("-")));
 			} else if (s.endsWith("#BRAND")) {

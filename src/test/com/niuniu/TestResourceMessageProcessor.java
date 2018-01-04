@@ -258,14 +258,14 @@ public class TestResourceMessageProcessor {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
-					"猛禽5488蓝色  红色  银色 加价10万  现车手续齐");
+					"猛禽6218蓝色  红色  银色 加价10万  现车手续齐");
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(1, crg.getResult().size());
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("福特", cr.getBrand_name());
-			Assert.assertEquals("F150", cr.getCar_model_name());
-			Assert.assertEquals("54.88", cr.getGuiding_price());
+			Assert.assertTrue(cr.getCar_model_name().contains("F150"));
+			Assert.assertEquals("62.18", cr.getGuiding_price());
 			Assert.assertEquals("3", cr.getDiscount_way());
 			Assert.assertEquals("10.0", cr.getDiscount_content());
 		}

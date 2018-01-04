@@ -487,7 +487,7 @@ public class TestParallelResourceMessageProcessor {
 			Assert.assertEquals(1, crg.getResult().size());
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("路虎", cr.getBrand_name());
-			Assert.assertEquals("揽胜行政3.0汽油", cr.getCar_model_name());
+			Assert.assertTrue(cr.getCar_model_name().contains("揽胜行政"));
 			Assert.assertEquals("4", cr.getDiscount_way());
 			Assert.assertEquals("139.0", cr.getDiscount_content());
 		}
