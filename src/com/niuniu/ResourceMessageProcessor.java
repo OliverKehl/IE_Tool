@@ -159,11 +159,11 @@ public class ResourceMessageProcessor {
 		}
 	}
 	
-	public String resultToJson(){
+	public void postProcess(){
 		if(carResourceGroup==null)
 			carResourceGroup = new CarResourceGroup();
 		for(CarResource cr : carResourceGroup.result){
-			if(cr.getDiscount_way()==null || cr.getDiscount_way().equals("0")){
+			if(cr.getDiscount_way()==null || cr.getDiscount_way().equals("0") || cr.getDiscount_way().equals("5")){
 				cr.setQuery_result(null);
 				continue;
 			}
@@ -186,6 +186,9 @@ public class ResourceMessageProcessor {
 			resetParallelResourceBasedOnPrice(cr);
 			cr.setQuery_result(null);
 		}
+	}
+	
+	public String resultToJson(){
 		return JSON.toJSON(carResourceGroup).toString();
 	}
 	
@@ -781,6 +784,7 @@ public class ResourceMessageProcessor {
 				fillHeaderRecord(baseCarFinder, -1);
 			}
 		}
+		postProcess();
 		long t2 = System.currentTimeMillis();
 		carResourceGroup.setQTime(Long.toString(t2-t1));
 		log.info("[batch_processor]\t 总耗时： {}", Long.toString(t2-t1));
@@ -789,12 +793,9 @@ public class ResourceMessageProcessor {
 	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
-		//resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
-		//迈锐宝和迈锐宝XL都有好几个1799的款式，咋办
-		//resourceMessageProcessor.setMessages("迈锐宝 1799 白 灰 金⬇️45000");
-		//resourceMessageProcessor.setMessages("别克资源\\n2299金 白8000");
-		//resourceMessageProcessor.setMessages("1378白xrv一台现车，随时开票");
-		resourceMessageProcessor.setMessages("18速腾1628 现车一台，求秒13479996787黄霞");
+		resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
+		//误把1518识别成了前一个车的售价
+		//resourceMessageProcessor.setMessages("北京现车，荣威RX5.143800白，151800白，手续随车，18911718669");
 		
 		//TODO
 		//resourceMessageProcessor.setMessages("一汽大众-迈腾 2499开罗金黑×2，优惠25000 自家现车，上汽大众专区");//这个价格识别的bad case实在不好解决。。

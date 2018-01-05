@@ -333,6 +333,9 @@ public class TestNewColorExtractor {
 		}
 	}
 
+	/*
+	 * 
+	 */
 	@Test
 	public void testNoneColor(){
 		{
@@ -346,6 +349,19 @@ public class TestNewColorExtractor {
 			Assert.assertEquals("大众", cr.getBrand_name());
 			Assert.assertEquals("16.28", cr.getGuiding_price());
 			Assert.assertEquals("[极地白#]", cr.getColors());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"18速腾1628 现车一台，求秒13479996787黄霞");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("大众", cr.getBrand_name());
+			Assert.assertEquals("16.28", cr.getGuiding_price());
+			Assert.assertEquals("[]", cr.getColors());
 		}
 	}
 }

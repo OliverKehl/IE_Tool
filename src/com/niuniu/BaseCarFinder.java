@@ -271,7 +271,7 @@ public class BaseCarFinder {
 	private int parse(ArrayList<String> tokens, String message, int standard) {
 		boolean price_status = false;
 		int i=0;
-		//boolean stop_color_area_status = false;
+		boolean stop_color_area_status = false;
 		for (; i < tokens.size(); i++) {
 			String s = tokens.get(i);
 			int start = NumberUtils.toInt(s.substring(0, s.indexOf('-')));
@@ -281,6 +281,9 @@ public class BaseCarFinder {
 			backup_index = Math.max(start,
 					backup_index);
 			
+			if(stop_color_area_status && !s.endsWith("MODEL") && !s.endsWith("BRAND")){
+				return i;
+			}
 			if(s.endsWith("#STOP")){
 				if(s.contains("报价")){
 					if(standard==2)
@@ -295,15 +298,10 @@ public class BaseCarFinder {
 							return i;
 						}
 					}else{
-						//tokens.remove(i);
 					}
 				}
-					//tokens.remove(i);
 				continue;
 			}
-			//if(stop_color_area_status && !s.endsWith("MODEL") && !s.endsWith("BRAND")){
-				//return i-1;
-			//}
 			if (s.endsWith("#OTHERS") || s.endsWith("#COLOR") || s.endsWith("AREA")) {
 				if(i==0)
 					return i;
@@ -318,11 +316,15 @@ public class BaseCarFinder {
 					//tokens.remove(i);
 					continue;
 				}
-				
-				return i;
-				
-				// stop = NumberUtils.createInteger(s.substring(0,
-				// s.indexOf("-")));
+				if(!s.endsWith("#COLOR")){
+					return i;
+				}
+				if(!stop_color_area_status){
+					stop_color_area_status = true;
+					continue;
+				}else{
+					return i-1;
+				}
 			} else if (s.endsWith("#BRAND")) {
 				brands.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 			} else if (s.endsWith("#MODEL")) {
@@ -370,7 +372,6 @@ public class BaseCarFinder {
 			} else if (s.endsWith("#STYLE_PRICE") || s.endsWith("#FPRICE") || s.endsWith("MODEL_PRICE")
 					|| s.endsWith("MODEL_STYLE_PRICE")) {
 				String content = s.substring(s.lastIndexOf("|") + 1, s.indexOf("#"));
-				//TODO
 				if(i>0 && ele_arr.get(i-1).contains("指导价")){
 					return Math.min(i + 1, tokens.size());
 				}
@@ -500,9 +501,6 @@ public class BaseCarFinder {
 		query_results = Utils.select(sub_query, solr);
 		//if (query_results == null || (sub_query.length()<3 && brands.isEmpty() && models.isEmpty() && styles.isEmpty())) {
 		if (query_results == null) {
-			// 1. 空行
-			// 2. 把颜色放指导价前面了
-			// TODO
 			return false;
 		}
 		fillBaseCarIds(base_car_info, this.query_results);
@@ -544,9 +542,6 @@ public class BaseCarFinder {
 		 
 		query_results = Utils.select(sub_query, solr, standard);
 		if (query_results == null) {
-			// 1. 空行
-			// 2. 把颜色放指导价前面了
-			// TODO
 			return false;
 		}
 		//平行进口车使用的是search_level=low，所以需要进行截断,分数定在2000以内，即1999，为了规避浮点数带来的干扰
@@ -606,10 +601,22 @@ public class BaseCarFinder {
 	private void extractColors(int mode, int phase){
 		int idx = 0;
 		int start_index = 0;
-		if(!colorBeforePrice){
-			if(mode!=-1){
-				start_index = vital_info_index;
+		for(int i=0;i<ele_arr.size() && i<15;i++){
+			String s = ele_arr.get(i);
+			String content = s.substring(s.lastIndexOf('|') + 1, s.indexOf('#'));
+			if(content.length()>10)
+				return;
+			if(ele_arr.get(i).endsWith("#COLOR")){
+				start_index = i;
+				break;
 			}
+		}
+		
+		
+		if(!colorBeforePrice){
+			//if(mode!=-1){
+				//start_index = vital_info_index;
+			//}
 			for (idx = start_index; idx < ele_arr.size() && idx<(start_index + 15); idx++) {
 				String s = ele_arr.get(idx);
 				String content = s.substring(s.lastIndexOf('|') + 1, s.indexOf('#'));
@@ -619,7 +626,10 @@ public class BaseCarFinder {
 				} else if (mode==1 && (s.endsWith("STYLE") || s.endsWith("PRICE") || content.length()>10) && phase==1) {//手机号
 					idx--;
 					break;
-				}else if(mode==1 && (s.endsWith("STYLE") || s.endsWith("PRICE")) && phase==2){
+				}else if (content.length()>10){
+					idx--;
+					break;
+				}else if(mode==1 && (s.endsWith("STYLE") || s.endsWith("PRICE") ) && phase==2){
 					continue;
 				}else if(mode==-1){
 					if(colors.size()!=0){
@@ -870,7 +880,6 @@ public class BaseCarFinder {
 			}
 		} else {
 			mod = calcColorMode();
-			// TODO 这里定好一个基调，要不就是全都是外观，要不就是全都是外观+内饰
 			if (mod == 0) {// 全是外色
 				for (String outer : colors) {
 					String outer_standard = matchStandardColor(outer, 0);
@@ -1088,7 +1097,6 @@ public class BaseCarFinder {
 		return standard_color == null ? color : standard_color;
 	}
 
-	// TODO
 	// 判断单个颜色的token是不是包含外观和内饰
 	private int validDualColors(String s) {
 		if (s.length() != 2)

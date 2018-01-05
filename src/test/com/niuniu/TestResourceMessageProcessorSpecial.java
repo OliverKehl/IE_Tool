@@ -217,7 +217,7 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals(1, crg.getResult().size());
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("路虎", cr.getBrand_name());
-			Assert.assertEquals(2018, cr.getYear());
+			Assert.assertEquals(2017, cr.getYear());
 			Assert.assertEquals("揽胜星脉", cr.getCar_model_name());
 			Assert.assertEquals("86.8", cr.getGuiding_price());
 		}
@@ -431,6 +431,47 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals("83.8", cr.getGuiding_price());
 			Assert.assertEquals("1", cr.getDiscount_way());
 			Assert.assertEquals("20.5", cr.getDiscount_content());
+		}
+	}
+	
+	/*
+	 * 车型在颜色后面，咋办，例如 "1378白xrv一台现车，随时开票"
+	 */
+	@Test
+	public void testModelLaterColorResource() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"1378白xrv一台现车，随时开票");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("本田", cr.getBrand_name());
+			Assert.assertEquals("XRV", cr.getCar_model_name());
+			Assert.assertEquals("13.78", cr.getGuiding_price());
+			Assert.assertEquals("[塔夫绸白#]", cr.getColors());
+		}
+	}
+	
+	/*
+	 * 中规、国产之前没有走价格过滤体系，导致车型识别错误
+	 */
+	@Test
+	public void testMultiBasecarSelectionWithEagleEyeResource() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"别克资源\\n2299金 白8000");
+			rmp.process();
+			rmp.resultToJson();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("别克", cr.getBrand_name());
+			Assert.assertEquals("GL8", cr.getCar_model_name());
+			Assert.assertEquals("22.99", cr.getGuiding_price());
+			Assert.assertEquals("[雪域白#, 金#]", cr.getColors());
 		}
 	}
 }
