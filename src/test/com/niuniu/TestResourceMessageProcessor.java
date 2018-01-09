@@ -10,6 +10,7 @@ import com.niuniu.CarResource;
 import com.niuniu.CarResourceGroup;
 import com.niuniu.ResourceMessageProcessor;
 import com.niuniu.USolr;
+import com.sun.corba.se.impl.encoding.CodeSetConversion.CTBConverter;
 
 import junit.framework.Assert;
 
@@ -382,7 +383,7 @@ public class TestResourceMessageProcessor {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
-					"普瑞维亚 \\n 61红下22000出现车（新款");
+					"普瑞维亚 \\n 61红下22000出现车");
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(1, crg.getResult().size());
@@ -397,7 +398,7 @@ public class TestResourceMessageProcessor {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
-					"普瑞维亚 61红下22000出现车（新款");
+					"普瑞维亚 61红下22000出现车");
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(1, crg.getResult().size());
@@ -427,14 +428,14 @@ public class TestResourceMessageProcessor {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
-					"玛莎拉蒂-总裁 146蓝棕，特价116万");
+					"玛莎拉蒂-总裁 154.88蓝棕，特价116万");
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(1, crg.getResult().size());
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("玛莎拉蒂", cr.getBrand_name());
 			Assert.assertEquals("总裁", cr.getCar_model_name());
-			Assert.assertEquals("146", cr.getGuiding_price());
+			Assert.assertEquals("154.88", cr.getGuiding_price());
 			Assert.assertEquals("4", cr.getDiscount_way());
 			Assert.assertEquals("116.0", cr.getDiscount_content());
 		}
@@ -631,6 +632,153 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("27.18", cr.getGuiding_price());
 			Assert.assertEquals("2", cr.getDiscount_way());
 			Assert.assertEquals("1.5", cr.getDiscount_content());
+		}
+	}
+	
+	@Test
+	public void testResourceLaterYearInfo() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"【发现神行】\\n408白/黑-9.8万(新款)\\n468白/黑-13万(17款)");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(2, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("发现神行", cr.getCar_model_name());
+			Assert.assertEquals("40.8", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("9.8", cr.getDiscount_content());
+			Assert.assertEquals(2018, cr.getYear());
+			
+			cr = crg.getResult().get(1);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("发现神行", cr.getCar_model_name());
+			Assert.assertEquals("46.8", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("13.0", cr.getDiscount_content());
+			Assert.assertEquals(2017, cr.getYear());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"【发现神行】\\n408白/黑-9.8万(17款)\\n468白/黑-13万(18款)");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(2, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("发现神行", cr.getCar_model_name());
+			Assert.assertEquals("40.8", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("9.8", cr.getDiscount_content());
+			Assert.assertEquals(2017, cr.getYear());
+			
+			cr = crg.getResult().get(1);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("发现神行", cr.getCar_model_name());
+			Assert.assertEquals("46.8", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("13.0", cr.getDiscount_content());
+			Assert.assertEquals(2018, cr.getYear());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"【17款发现神行】\\n408白/黑-9.8万\\n468白/黑-13万");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(2, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("发现神行", cr.getCar_model_name());
+			Assert.assertEquals("40.8", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("9.8", cr.getDiscount_content());
+			Assert.assertEquals(2017, cr.getYear());
+			
+			cr = crg.getResult().get(1);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("发现神行", cr.getCar_model_name());
+			Assert.assertEquals("46.8", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("13.0", cr.getDiscount_content());
+			Assert.assertEquals(2017, cr.getYear());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"【新款发现神行】\\n408白/黑-9.8万\\n468白/黑-13万");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(2, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("发现神行", cr.getCar_model_name());
+			Assert.assertEquals("40.8", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("9.8", cr.getDiscount_content());
+			Assert.assertTrue(cr.getYear()>2016);
+			
+			cr = crg.getResult().get(1);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("发现神行", cr.getCar_model_name());
+			Assert.assertEquals("46.8", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("13.0", cr.getDiscount_content());
+			Assert.assertTrue(cr.getYear()>2016);
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"【新款发现神行】\\n408白/黑-9.8万 17款\\n468白/黑-13万 16款");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(2, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("发现神行", cr.getCar_model_name());
+			Assert.assertEquals("40.8", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("9.8", cr.getDiscount_content());
+			Assert.assertEquals(2017, cr.getYear());
+			
+			cr = crg.getResult().get(1);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("发现神行", cr.getCar_model_name());
+			Assert.assertEquals("46.8", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("13.0", cr.getDiscount_content());
+			Assert.assertEquals(2016, cr.getYear());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"【新款发现神行】\\n408白/黑-9.8万 2017款\\n468白/黑-13万 2018款");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(2, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("发现神行", cr.getCar_model_name());
+			Assert.assertEquals("40.8", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("9.8", cr.getDiscount_content());
+			Assert.assertEquals(2017, cr.getYear());
+			
+			cr = crg.getResult().get(1);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+			Assert.assertEquals("发现神行", cr.getCar_model_name());
+			Assert.assertEquals("46.8", cr.getGuiding_price());
+			Assert.assertEquals("2", cr.getDiscount_way());
+			Assert.assertEquals("13.0", cr.getDiscount_content());
+			Assert.assertEquals(2018, cr.getYear());
 		}
 	}
 }

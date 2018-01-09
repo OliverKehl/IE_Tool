@@ -304,7 +304,7 @@ public class SimpleMessageClassifier {
 
 	public static void main(String[] args) {
 		USolr solr = new USolr("http://121.40.204.159:8080/solr/");
-		String message = "17款道奇公羊";
+		String message = "北京现车，荣威RX5.143800白，15.18白，手续随车，18911718669";
 		message = Utils.normalizePrice(Utils.cleanDate(Utils.clean(Utils.normalize(message), solr)));
 		SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(message, solr);
 		int mode = simpleMessageClassifier.predict();

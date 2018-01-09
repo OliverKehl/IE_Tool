@@ -283,7 +283,7 @@ public class ResourceMessageProcessor {
 			}
 			
 			//只在年款层面继承STYLE，其他的STYLE一律不管
-			if(baseCarFinder.styles.size()==0 && last_style_name !=null && !last_style_name.isEmpty() && !last_style_name.matches("\\d\\d\\d\\d") && !last_style_name.matches("\\d\\d")){
+			if(baseCarFinder.years.isEmpty() && baseCarFinder.styles.size()==0 && last_style_name !=null && !last_style_name.isEmpty() && !last_style_name.matches("\\d\\d\\d\\d") && !last_style_name.matches("\\d\\d")){
 				if(last_style_name.equals("老") || last_style_name.equals("老款") || last_style_name.equals("新") || last_style_name.equals("新款"))
 					standard_query += " " + last_style_name;
 				if(last_style_name.replaceAll("\\d\\d款", "").isEmpty())
@@ -795,7 +795,7 @@ public class ResourceMessageProcessor {
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
 		resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
 		//误把1518识别成了前一个车的售价
-		//resourceMessageProcessor.setMessages("北京现车，荣威RX5.143800白，151800白，手续随车，18911718669");
+		resourceMessageProcessor.setMessages("北京现车，荣威RX5. 143800白，151800白，手续随车，18911718669");
 		
 		//TODO
 		//resourceMessageProcessor.setMessages("一汽大众-迈腾 2499开罗金黑×2，优惠25000 自家现车，上汽大众专区");//这个价格识别的bad case实在不好解决。。

@@ -29,6 +29,7 @@ public class BaseCarFinder {
 	public ArrayList<String> prices;
 	public ArrayList<String> brands;
 	public ArrayList<String> styles;
+	public ArrayList<String> years;
 	public ArrayList<String> colors;
 	ArrayList<Integer> indexes;
 	ArrayList<String> ele_arr;
@@ -70,6 +71,7 @@ public class BaseCarFinder {
 		brands = new ArrayList<String>();
 		styles = new ArrayList<String>();
 		colors = new ArrayList<String>();
+		years = new ArrayList<String>();
 		indexes = new ArrayList<Integer>();
 		ele_arr = new ArrayList<String>();
 		base_colors_set = new HashSet<String>();
@@ -99,6 +101,7 @@ public class BaseCarFinder {
 		brands = new ArrayList<String>();
 		styles = new ArrayList<String>();
 		colors = new ArrayList<String>();
+		years = new ArrayList<String>();
 		indexes = new ArrayList<Integer>();
 		ele_arr = new ArrayList<String>();
 		base_colors_set = new HashSet<String>();
@@ -128,6 +131,7 @@ public class BaseCarFinder {
 		brands = new ArrayList<String>();
 		styles = new ArrayList<String>();
 		colors = new ArrayList<String>();
+		years = new ArrayList<String>();
 		indexes = new ArrayList<Integer>();
 		ele_arr = new ArrayList<String>();
 		base_colors_set = new HashSet<String>();
@@ -496,9 +500,10 @@ public class BaseCarFinder {
 		if (solr == null)
 			return false;
 		String sub_query = parseMessage(solr, message, 1);
+		fillYearToken();
 		if (pre_info != null)
 			sub_query = pre_info + " " + sub_query;
-		query_results = Utils.select(sub_query, solr);
+		query_results = Utils.select(sub_query, solr, years);
 		//if (query_results == null || (sub_query.length()<3 && brands.isEmpty() && models.isEmpty() && styles.isEmpty())) {
 		if (query_results == null) {
 			return false;
@@ -535,12 +540,13 @@ public class BaseCarFinder {
 		if (solr == null)
 			return false;
 		String sub_query = parseMessage(solr, message, standard);
+		fillYearToken();
 		if(sub_query.length()<2)
 			return false;
 		if (pre_info != null)
 			sub_query = pre_info + " " + sub_query;
 		 
-		query_results = Utils.select(sub_query, solr, standard);
+		query_results = Utils.select(sub_query, solr, years, standard);
 		if (query_results == null) {
 			return false;
 		}
@@ -1328,6 +1334,25 @@ public class BaseCarFinder {
 				return true;
 		}
 		return false;
+	}
+	
+	private void fillYearToken(){
+		if(years==null || years.isEmpty()){
+			for(int idx=0;idx<ele_arr.size();idx++){
+				String content = ele_arr.get(idx);
+				content = content.substring(content.lastIndexOf("|") + 1, content.indexOf("#"));
+				if(content.equals("新款") || content.equals("老款")){
+					years.add(content);
+					break;
+				}
+				content = content.replaceAll("^(20)?\\d{2}款", "");
+				if(content.isEmpty()){
+					String s = ele_arr.get(idx);
+					years.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
+					break;
+				}
+			}
+		}
 	}
 
 	/*

@@ -249,7 +249,7 @@ public class Utils {
 		return "";
 	}
 	
-	public static SolrDocumentList select(String query, USolr solr){
+	public static SolrDocumentList select(String query, USolr solr, ArrayList<String> years){
 		if(solr==null || query==null || query.isEmpty())
 			return null;
 		SolrDocumentList query_results = null;
@@ -259,9 +259,15 @@ public class Utils {
 		solr.setStart(0);
 		solr.setRows(100);
 		solr.setDefType("basecarparser");
+		if(years!=null && years.size()==1){
+			String year_info = years.get(0);
+			if(year_info.equals("新款") || year_info.equals("老款")){
+				query = query + " " + year_info;
+			}else{
+				solr.addFilter("base_car_year_info:" + years.get(0));//国产、中规
+			}
+		}
 		solr.setQuery(query);
-		//TODO
-		//需要把后续的所有tag是STYLE的内容加入到搜索条件中
 		solr.addSortField("score", false);// 按年份降序排列
 		solr.addSortField("year", false);// 按年份降序排列
 		solr.addSortField("popularity", false);// 按资源热度降序排列
@@ -274,7 +280,7 @@ public class Utils {
 		return query_results;
 	}
 	
-	public static SolrDocumentList select(String query, USolr solr, int standard){
+	public static SolrDocumentList select(String query, USolr solr, ArrayList<String> years, int standard){
 		if(solr==null || query==null || query.isEmpty())
 			return null;
 		SolrDocumentList query_results = null;
@@ -284,8 +290,16 @@ public class Utils {
 		solr.setStart(0);
 		solr.setRows(100);
 		solr.setDefType("basecarparser");
-		solr.setQuery(query);
 		solr.addFilter("standard:" + Integer.toString(standard));//国产、中规
+		if(years!=null && years.size()==1){
+			String year_info = years.get(0);
+			if(year_info.equals("新款") || year_info.equals("老款")){
+				query = query + " " + year_info;
+			}else{
+				solr.addFilter("base_car_year_info:" + years.get(0));//国产、中规
+			}
+		}
+		solr.setQuery(query);
 		if(standard>1){
 			solr.setSearchLevel("low");
 		}
