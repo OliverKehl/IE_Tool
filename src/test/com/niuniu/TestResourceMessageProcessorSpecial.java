@@ -154,6 +154,31 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals("36.99", cr.getGuiding_price());
 			Assert.assertTrue(cr.getYear()==2017);
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"急出别克商务自家订金车型：\\n2299琥珀金8500");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("别克", cr.getBrand_name());
+			Assert.assertEquals("22.99", cr.getGuiding_price());
+			Assert.assertTrue(cr.getYear()==2017);
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"出几台特价潍柴英致车\\n468 白、棕、黑、银↓8500");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("潍柴英致", cr.getBrand_name());
+			Assert.assertEquals("4.68", cr.getGuiding_price());
+		}
 	}
 	
 	/*

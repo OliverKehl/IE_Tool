@@ -303,7 +303,7 @@ public class ResourceMessageProcessor {
 				log.info("[batch_processor]\t {} 是无效数据",s);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			log.error(e.getMessage());
 		}
 	}
 	
@@ -341,18 +341,6 @@ public class ResourceMessageProcessor {
 				parallel++;
 		}
 		return parallel>=Math.min(3, (queryResult.size()-1)/2 + 1)?2:1;
-	}
-	
-	private boolean isInvalidInfo(BaseCarFinder baseCarFinder){
-		/*
-		if(baseCarFinder.query_results.size()>=40){
-			if(baseCarFinder.models.isEmpty() && baseCarFinder.prices.isEmpty())
-				return true;
-			if(baseCarFinder.prices.isEmpty() && baseCarFinder.styles.isEmpty())
-				return true;
-		}
-		*/
-		return false;
 	}
 	
 	// 在搜索结果数量较少，例如只有3998这个指导价的情况下，需要判定搜索结果里的品牌个数，如果有多个，则需要向上回溯，找到正确的品牌
@@ -470,6 +458,12 @@ public class ResourceMessageProcessor {
 		writeInvalidInfo(concatWithSpace(s));
 	}
 	
+	private boolean validFinalResult(BaseCarFinder bcf){
+		if(bcf.query_results.size()>=5)
+			return false;
+		return true;
+	}
+	
 	public boolean process(){
 		long t1 = System.currentTimeMillis();
 		for(String s : message_arr){
@@ -543,13 +537,6 @@ public class ResourceMessageProcessor {
 				status = false;
 			}
 			
-			if(status){
-				if(isInvalidInfo(baseCarFinder)){
-					fillHeaderRecord(baseCarFinder);
-					status = false;
-				}
-			}
-			
 			if(!status){
 				
 				//有可能是平行进口车被误识别成中规国产车，导致有可能把车架号代入到搜索阶段
@@ -591,6 +578,7 @@ public class ResourceMessageProcessor {
 					mode=-1;
 				}else{
 					if(baseCarFinder.query_results.size()>=20 && baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty() && baseCarFinder.prices.isEmpty()){
+						fillHeaderRecord(baseCarFinder);
 						status = false;
 						writeInvalidInfo(concatWithSpace(s));
 						continue;
@@ -651,14 +639,14 @@ public class ResourceMessageProcessor {
 							}
 						}
 							
-						if(baseCarFinder.query_results.size()>=5 && baseCarFinder.isInvalidMessage()){
+						if(!validFinalResult(baseCarFinder) && baseCarFinder.isInvalidMessage()){
 							if(!(baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty())){
 								fillHeaderRecord(baseCarFinder);
 							}
 							writeInvalidInfo(concatWithSpace(s + "\t 返回结果较多"));
 							continue;
 						}else{
-							if(baseCarFinder.query_results.size()>=5 || (baseCarFinder.query_results.size()<=4 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
+							if(!validFinalResult(baseCarFinder) || (baseCarFinder.query_results.size()<=4 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
 								if(!(baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty())){
 									fillHeaderRecord(baseCarFinder);
 								}
@@ -703,85 +691,7 @@ public class ResourceMessageProcessor {
 				}
 			}
 			if(mode==-1){
-				//如果是平行进口车
-				baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
-				boolean tmp_status = baseCarFinder.generateBaseCarId(s, null, 2);
-				ArrayList<String> style_not_year = new ArrayList<String>();
-				for(String ts:baseCarFinder.styles){
-					if(!isYearInfo(ts)){
-						style_not_year.add(ts);
-					}
-				}
-				if(tmp_status && baseCarFinder.query_results.size()>=3 && baseCarFinder.models.isEmpty() && style_not_year.isEmpty()){
-					status = false;
-					writeInvalidInfo(concatWithSpace(s));
-					continue;
-				}
-				if(!tmp_status){
-					if(last_standard_name==-1){
-						CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
-						s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
-						s = reExtractVinFromConfiguration(tmpCR, s);
-						if(tmpCR.getResource_type()==null){
-							String resource_type = ResourceTypeClassifier.predict(s);
-							if(resource_type!=null)
-								tmpCR.setResource_type(resource_type);
-						}
-						if(tmpCR.getDiscount_way().equals("5")){
-							reExtractPriceFromConfiguration(tmpCR, s);
-						}
-						tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
-					}
-					writeInvalidInfo(concatWithSpace(s));
-					continue;
-				}
-				if(baseCarFinder.query_results.getMaxScore()<3001){
-					String prefix = rebuildQueryPrefix(baseCarFinder,0);
-					if(!prefix.isEmpty()){
-						baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
-						status = baseCarFinder.generateBaseCarId(s, prefix, 2);
-						if(baseCarFinder.query_results.size()==0){
-							postProcessInvalidLine(s, reserve_s);
-							continue;
-						}
-						BaseCarFinder temp_baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
-						boolean temp_status = temp_baseCarFinder.generateBaseCarId(prefix, null, 2);
-						if(temp_status && baseCarFinder.query_results.getMaxScore().compareTo(temp_baseCarFinder.query_results.getMaxScore())==0){
-							postProcessInvalidLine(s, reserve_s);
-							continue;
-						}
-						
-						if(baseCarFinder.query_results.size()>5){
-							String all_prefix = rebuildQueryPrefix(baseCarFinder,1);
-							if(!all_prefix.equals(prefix)){
-								baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
-								status = baseCarFinder.generateBaseCarId(s, all_prefix, 2);
-								if(baseCarFinder.query_results.size()==0){
-									postProcessInvalidLine(s, reserve_s);
-									continue;
-								}
-								temp_baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
-								temp_status = temp_baseCarFinder.generateBaseCarId(prefix, null, 2);
-								if(temp_status && baseCarFinder.query_results.getMaxScore()==temp_baseCarFinder.query_results.getMaxScore()){
-									postProcessInvalidLine(s, reserve_s);
-									continue;
-								}
-							}
-						}
-					}
-				}
-				if(baseCarFinder.query_results.getMaxScore()<3001){
-					// 置信度较低，查找结果的分数低于某个阈值
-					writeInvalidInfo(concatWithSpace(s));
-					continue;
-				}
-				baseCarFinder.newGenerateColors(mode, 1);
-				String VIN = baseCarFinder.extractVIN();
-				baseCarFinder.generarteParellelPrice();
-				String resource_type = ResourceTypeClassifier.predict(s);
-				baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, VIN, resource_type, disableCache);
-				baseCarFinder.printParsingResult(writer);
-				fillHeaderRecord(baseCarFinder, -1);
+				processParallelStandard(s, reserve_s);
 			}
 		}
 		postProcess();
@@ -791,17 +701,105 @@ public class ResourceMessageProcessor {
 		return true;
 	}
 	
+	private boolean processParallelStandard(String s, String reserve_s){
+		//如果是平行进口车
+		BaseCarFinder baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
+		boolean tmp_status = baseCarFinder.generateBaseCarId(s, null, 2);
+		ArrayList<String> style_not_year = new ArrayList<String>();
+		for(String ts:baseCarFinder.styles){
+			if(!isYearInfo(ts)){
+				style_not_year.add(ts);
+			}
+		}
+		if(tmp_status && baseCarFinder.query_results.size()>=3 && baseCarFinder.models.isEmpty() && style_not_year.isEmpty()){
+			writeInvalidInfo(concatWithSpace(s));
+			return false;
+		}
+		if(!tmp_status){
+			if(last_standard_name==-1){
+				CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
+				s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
+				s = reExtractVinFromConfiguration(tmpCR, s);
+				if(tmpCR.getResource_type()==null){
+					String resource_type = ResourceTypeClassifier.predict(s);
+					if(resource_type!=null)
+						tmpCR.setResource_type(resource_type);
+				}
+				if(tmpCR.getDiscount_way().equals("5")){
+					reExtractPriceFromConfiguration(tmpCR, s);
+				}
+				tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
+			}
+			writeInvalidInfo(concatWithSpace(s));
+			return false;
+		}
+		if(baseCarFinder.query_results.getMaxScore()<3001){
+			String prefix = rebuildQueryPrefix(baseCarFinder,0);
+			if(!prefix.isEmpty()){
+				baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
+				baseCarFinder.generateBaseCarId(s, prefix, 2);
+				if(baseCarFinder.query_results.size()==0){
+					postProcessInvalidLine(s, reserve_s);
+					return false;
+				}
+				BaseCarFinder temp_baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
+				boolean temp_status = temp_baseCarFinder.generateBaseCarId(prefix, null, 2);
+				if(temp_status && baseCarFinder.query_results.getMaxScore().compareTo(temp_baseCarFinder.query_results.getMaxScore())==0){
+					postProcessInvalidLine(s, reserve_s);
+					return false;
+				}
+				
+				if(baseCarFinder.query_results.size()>5){
+					String all_prefix = rebuildQueryPrefix(baseCarFinder,1);
+					if(!all_prefix.equals(prefix)){
+						baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
+						baseCarFinder.generateBaseCarId(s, all_prefix, 2);
+						if(baseCarFinder.query_results.size()==0){
+							postProcessInvalidLine(s, reserve_s);
+							return false;
+						}
+						temp_baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
+						temp_status = temp_baseCarFinder.generateBaseCarId(prefix, null, 2);
+						if(temp_status && baseCarFinder.query_results.getMaxScore()==temp_baseCarFinder.query_results.getMaxScore()){
+							postProcessInvalidLine(s, reserve_s);
+							return false;
+						}
+					}
+				}
+			}
+		}
+		if(baseCarFinder.query_results.getMaxScore()<3001){
+			// 置信度较低，查找结果的分数低于某个阈值
+			writeInvalidInfo(concatWithSpace(s));
+			return false;
+		}
+		baseCarFinder.newGenerateColors(-1, 1);
+		String VIN = baseCarFinder.extractVIN();
+		baseCarFinder.generarteParellelPrice();
+		String resource_type = ResourceTypeClassifier.predict(s);
+		baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, -1, VIN, resource_type, disableCache);
+		baseCarFinder.printParsingResult(writer);
+		fillHeaderRecord(baseCarFinder, -1);
+		return true;
+	}
+	
 	public static void main(String[] args){
 		ResourceMessageProcessor resourceMessageProcessor = new ResourceMessageProcessor();
 		resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
 		//误把1518识别成了前一个车的售价
 		resourceMessageProcessor.setMessages("北京现车，荣威RX5. 143800白，151800白，手续随车，18911718669");
+		//688万识别不出来
+		//resourceMessageProcessor.setMessages("红旗L5 6.0L 帜尊型 688万");
+		//resourceMessageProcessor.setMessages("凌派1248白 黑 15000店保");
+		
 		
 		//TODO
 		//resourceMessageProcessor.setMessages("一汽大众-迈腾 2499开罗金黑×2，优惠25000 自家现车，上汽大众专区");//这个价格识别的bad case实在不好解决。。
 		//resourceMessageProcessor.setMessages("18款雷克萨斯570 黑棕 黑红 163 12月25号到港 \\n↘️ 18款宾利添越4.0 V8柴油💰 280W 黑/棕\\n颜色分离-样式D，天窗-标配，前座椅舒适包（五座），脚感电尾，宾利刺绣徽标，脚垫");
 		//需要调整底层检索字段的存储方式，从而enable document boost
 		//resourceMessageProcessor.setMessages("420   42   白黑     13");
+		//这个情况暂时没法解决，，正常应该是60.7w或者下XX，一般只有指导价才会写成607000的格式
+		//resourceMessageProcessor.setMessages("捷豹18款F-TYPE798白黑送2.68配置607000出");
 		
 		
 		resourceMessageProcessor.process();

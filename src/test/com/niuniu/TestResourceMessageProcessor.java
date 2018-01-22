@@ -10,7 +10,6 @@ import com.niuniu.CarResource;
 import com.niuniu.CarResourceGroup;
 import com.niuniu.ResourceMessageProcessor;
 import com.niuniu.USolr;
-import com.sun.corba.se.impl.encoding.CodeSetConversion.CTBConverter;
 
 import junit.framework.Assert;
 
