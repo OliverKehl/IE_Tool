@@ -253,6 +253,27 @@ public class Utils {
 		if(solr==null || query==null || query.isEmpty())
 			return null;
 		SolrDocumentList query_results = null;
+		if(years==null || years.isEmpty()){
+			solr.clear();
+			solr.selectIndex(NiuniuBatchConfig.getSolrCore());
+			solr.setFields("*", "score");
+			solr.setStart(0);
+			solr.setRows(100);
+			solr.setDefType("basecarparser");
+			solr.setQuery(query);
+			solr.addFilter("year:2017 OR year:2018");
+			solr.addSortField("score", false);// 按年份降序排列
+			solr.addSortField("year", false);// 按年份降序排列
+			solr.addSortField("popularity", false);// 按资源热度降序排列
+			try {
+				solr.ExecuteQuery();
+				query_results = solr.getQueryResult();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if(!query_results.isEmpty())
+				return query_results;
+		}
 		solr.clear();
 		solr.selectIndex(NiuniuBatchConfig.getSolrCore());
 		solr.setFields("*", "score");
@@ -284,6 +305,31 @@ public class Utils {
 		if(solr==null || query==null || query.isEmpty())
 			return null;
 		SolrDocumentList query_results = null;
+		if(years==null || years.isEmpty()){
+			solr.clear();
+			solr.selectIndex(NiuniuBatchConfig.getSolrCore());
+			solr.setFields("*", "score");
+			solr.setStart(0);
+			solr.setRows(100);
+			solr.setDefType("basecarparser");
+			solr.addFilter("standard:" + Integer.toString(standard));//国产、中规
+			solr.setQuery(query);
+			solr.addFilter("year:2017 OR year:2018");
+			if(standard>1){
+				solr.setSearchLevel("low");
+			}
+			solr.addSortField("score", false);// 按年份降序排列
+			solr.addSortField("year", false);// 按年份降序排列
+			solr.addSortField("popularity", false);// 按资源热度降序排列
+			try {
+				solr.ExecuteQuery();
+				query_results = solr.getQueryResult();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if(!query_results.isEmpty())
+				return query_results;
+		}
 		solr.clear();
 		solr.selectIndex(NiuniuBatchConfig.getSolrCore());
 		solr.setFields("*", "score");

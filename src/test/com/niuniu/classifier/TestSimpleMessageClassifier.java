@@ -37,7 +37,7 @@ public class TestSimpleMessageClassifier {
 	
 	@Test
 	public void testBasic(){
-		USolr solr = new USolr("http://115.29.240.213:8983/solr/");
+		USolr solr = new USolr("http://101.37.169.138:8983/solr/");
 		
 		{
 			String message = "17款美规奔驰GLS450";
@@ -66,7 +66,7 @@ public class TestSimpleMessageClassifier {
 	
 	@Test
 	public void testIllegalInput(){
-		USolr solr = new USolr("http://115.29.240.213:8983/solr/");
+		USolr solr = new USolr("http://101.37.169.138:8983/solr/");
 		
 		{
 			String message = "老款朗逸1249 1269 下25000";
@@ -79,7 +79,7 @@ public class TestSimpleMessageClassifier {
 	
 	@Test
 	public void testImplicitParallel(){
-		USolr solr = new USolr("http://115.29.240.213:8983/solr/");
+		USolr solr = new USolr("http://101.37.169.138:8983/solr/");
 		
 		{
 			String message = "17款GLS450 黑/黑 #6738 P01全景 方向盘加热 哈曼 二排电动 照明脚踏 后娱预留 停车辅助 驾驶员辅助 雷测 现车手续齐 111";

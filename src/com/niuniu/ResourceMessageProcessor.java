@@ -135,7 +135,7 @@ public class ResourceMessageProcessor {
 			if(tmp_score<score)
 				break;
 			float t_gap = Utils.round(Math.abs(real_price - median_price), 3);
-			if(t_gap>=gap)
+			if(t_gap>=(gap-0.2))
 				continue;
 			gap = t_gap;
 			target_base_car_id = base_car_id;
@@ -577,17 +577,34 @@ public class ResourceMessageProcessor {
 				if(reJudgeStandard(baseCarFinder.query_results)==2){
 					mode=-1;
 				}else{
-					if(baseCarFinder.query_results.size()>=20 && baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty() && baseCarFinder.prices.isEmpty()){
+					//TODO
+					//这里逻辑有硬伤，加了新的年款限制以后，基本不会有满足如下情况的可能性，除了单品牌内容，待处理
+					
+					if(baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty() && baseCarFinder.prices.isEmpty()){
 						fillHeaderRecord(baseCarFinder);
 						status = false;
 						writeInvalidInfo(concatWithSpace(s));
 						continue;
 					}
 					
+					
 					/*
 					 * 该行只有指导价，或者只有指导价+年款，所以需要把上一行的所有信息都带过来
 					 */
-					if(!baseCarFinder.prices.isEmpty() && baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty() && (baseCarFinder.styles.isEmpty() || isYearInfo(baseCarFinder.styles.get(0)))){
+					if( 
+							(!baseCarFinder.prices.isEmpty() 
+									&& baseCarFinder.brands.isEmpty() 
+									&& baseCarFinder.models.isEmpty() 
+									&& (baseCarFinder.styles.isEmpty() || isYearInfo(baseCarFinder.styles.get(0)))
+							)
+							|| 
+							(!baseCarFinder.styles.isEmpty() 
+									&& baseCarFinder.brands.isEmpty() 
+									&& baseCarFinder.models.isEmpty() 
+									&& (baseCarFinder.prices.isEmpty() || isYearInfo(baseCarFinder.styles.get(0)))
+									&& NumberUtils.toInt(baseCarFinder.styles.get(0),-1)!=-1
+							)
+						){
 						String all_prefix = rebuildQueryPrefix(baseCarFinder,1);
 						if(!all_prefix.isEmpty()){
 							BaseCarFinder baseCarFinder_new = new BaseCarFinder(solr_client, last_brand_name);

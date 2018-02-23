@@ -242,7 +242,7 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals(1, crg.getResult().size());
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("路虎", cr.getBrand_name());
-			Assert.assertEquals(2017, cr.getYear());
+			Assert.assertEquals(2018, cr.getYear());
 			Assert.assertEquals("揽胜星脉", cr.getCar_model_name());
 			Assert.assertEquals("86.8", cr.getGuiding_price());
 		}
@@ -413,7 +413,7 @@ public class TestResourceMessageProcessorSpecial {
 		{
 			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
 			rmp.setMessages(
-					"120-2898曙光金，埃蓝加2900自动泊车29点");
+					"17款120-2898曙光金，埃蓝加2900自动泊车下29点");
 			rmp.process();
 			CarResourceGroup crg = rmp.getCarResourceGroup();
 			Assert.assertEquals(1, crg.getResult().size());
