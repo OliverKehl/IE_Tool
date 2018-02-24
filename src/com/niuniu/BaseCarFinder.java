@@ -65,7 +65,7 @@ public class BaseCarFinder {
 	// 指导价
 	// 考虑色全的情况
 
-	public BaseCarFinder() {
+	private void init(){
 		models = new ArrayList<String>();
 		prices = new ArrayList<String>();
 		brands = new ArrayList<String>();
@@ -79,7 +79,6 @@ public class BaseCarFinder {
 			base_colors_set.add(s);
 		}
 		result_colors = new HashSet<String>();
-		solr = new USolr("http://121.40.204.159:8080/solr/");
 
 		suffix_quants_set = new HashSet<String>();
 		prefix_behave_set = new HashSet<String>();
@@ -93,67 +92,22 @@ public class BaseCarFinder {
 		specialDigitalToken = new HashSet<String>();
 		for(int i=0;i<specialDigits.length;i++)
 			specialDigitalToken.add(specialDigits[i]);
+	}
+	
+	public BaseCarFinder() {
+		init();
+		solr = new USolr("http://121.40.204.159:8080/solr/");
 	}
 
 	public BaseCarFinder(USolr solr) {
-		models = new ArrayList<String>();
-		prices = new ArrayList<String>();
-		brands = new ArrayList<String>();
-		styles = new ArrayList<String>();
-		colors = new ArrayList<String>();
-		years = new ArrayList<String>();
-		indexes = new ArrayList<Integer>();
-		ele_arr = new ArrayList<String>();
-		base_colors_set = new HashSet<String>();
-		for (String s : base_colors) {
-			base_colors_set.add(s);
-		}
-		result_colors = new HashSet<String>();
+		init();
 		this.solr = solr;
-
-		suffix_quants_set = new HashSet<String>();
-		prefix_behave_set = new HashSet<String>();
-
-		for (String s : suffix_quants)
-			suffix_quants_set.add(s);
-
-		for (String s : prefix_behave)
-			prefix_behave_set.add(s);
-		
-		specialDigitalToken = new HashSet<String>();
-		for(int i=0;i<specialDigits.length;i++)
-			specialDigitalToken.add(specialDigits[i]);
 	}
 
 	public BaseCarFinder(USolr solr, String pre_brand_name) {
-		models = new ArrayList<String>();
-		prices = new ArrayList<String>();
-		brands = new ArrayList<String>();
-		styles = new ArrayList<String>();
-		colors = new ArrayList<String>();
-		years = new ArrayList<String>();
-		indexes = new ArrayList<Integer>();
-		ele_arr = new ArrayList<String>();
-		base_colors_set = new HashSet<String>();
-		for (String s : base_colors) {
-			base_colors_set.add(s);
-		}
-		result_colors = new HashSet<String>();
+		init();
 		this.solr = solr;
 		this.pre_brand_name = pre_brand_name;
-
-		suffix_quants_set = new HashSet<String>();
-		prefix_behave_set = new HashSet<String>();
-
-		for (String s : suffix_quants)
-			suffix_quants_set.add(s);
-
-		for (String s : prefix_behave)
-			prefix_behave_set.add(s);
-		
-		specialDigitalToken = new HashSet<String>();
-		for(int i=0;i<specialDigits.length;i++)
-			specialDigitalToken.add(specialDigits[i]);
 	}
 
 	/*
@@ -182,7 +136,6 @@ public class BaseCarFinder {
 		float max_score = 0;
 		while (entries.hasNext()) {
 			Entry<Integer, Float> entry = (Entry<Integer, Float>) entries.next();
-			// int key = entry.getKey();
 			float value = entry.getValue();
 			if ((1.2 * value) < max_score) {
 				break;
@@ -233,7 +186,6 @@ public class BaseCarFinder {
 		return real_tag;
 	}
 	
-
 	private boolean priceSuffix(int cur){
 		if((cur+1)>=ele_arr.size())
 			return false;
@@ -366,10 +318,8 @@ public class BaseCarFinder {
 						continue;
 					}
 				}else{
-					/* 
-					 * 在不确定一个term是model还是style时，把它优先归为model
-					 * 因为这里的归类只是作为辅助功能，并不会对搜索的精度造成影响  
-					 */
+					// 在不确定一个term是model还是style时，把它优先归为model
+					// 因为这里的归类只是作为辅助功能，并不会对搜索的精度造成影响  
 					models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
 		            continue;
 				}
@@ -435,6 +385,11 @@ public class BaseCarFinder {
 					}
 					float f_hehe = NumberUtils.toFloat(hehe);
 					int i_hehe = (int)f_hehe;
+					/*
+					 * 2700
+					 * 4008
+					 * 308
+					 */
 					if(i_hehe<10 || (i_hehe%100==0 && i_hehe>300 && i_hehe<10000) || (i_hehe%10==0 &&i_hehe>300 && i_hehe!=380 && i_hehe<10000)){
 						if(f_hehe==i_hehe){
 							models.add(s.substring(s.lastIndexOf("|") + 1, s.indexOf("#")));
@@ -1661,11 +1616,9 @@ public class BaseCarFinder {
 			// 如果分数低于5001，表明这条资源的置信度不算很高，那么如果价格也没有，就索性不添加？还是说加上价格，让鹰眼把它过滤掉?
 			// 考虑到，鹰眼可能无法过滤掉，那么就滚蛋？还是电议？
 			// 挑偏差最小的
-			
 			float max_score = query_results.getMaxScore();
 			
 			// 没有价格，资源分数也低，那就不发, 否则，电议
-			//
 			if(way_arr.isEmpty())
 	            return max_score>5000?true:false;
 			
@@ -1761,6 +1714,9 @@ public class BaseCarFinder {
 		}
 	}
 
+	/*
+	 * 生成redis中的key
+	 */
 	private String generateKey(String user_id, String mes) {
 		return user_id + "_" + mes;
 	}
@@ -1806,6 +1762,9 @@ public class BaseCarFinder {
 		}
 	}
 
+	/*
+	 * 后处理备注信息
+	 */
 	private String postProcessRemark(String remark) {
 		if (remark == null)
 			return "";
@@ -1822,11 +1781,6 @@ public class BaseCarFinder {
 			if (remark.length() == 1) {
 				return "";
 			} else {
-				/*
-				if (remark.charAt(1) == ' ') {
-					return remark.substring(2);
-				}
-				*/
 				remark = remark.substring(1).trim();
 			}
 		}

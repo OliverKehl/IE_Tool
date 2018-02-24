@@ -60,13 +60,11 @@ public class ResourceMessageProcessor {
 	
 	public ResourceMessageProcessor(){
 		init();
-		//solr_client = new USolr("http://121.40.204.159:8080/solr/");
 		solr_client = new USolr(NiuniuBatchConfig.getSolrHost());
 	}
 	
 	public ResourceMessageProcessor(String host){
 		init();
-		//solr_client = new USolr("http://121.40.204.159:8080/solr/");
 		solr_client = new USolr(host);
 	}
 	
@@ -78,7 +76,6 @@ public class ResourceMessageProcessor {
 	public ResourceMessageProcessor(BufferedWriter writer){
 		init();
 		this.writer = writer;
-		//solr_client = new USolr("http://121.40.204.159:8080/solr/");
 		solr_client = new USolr(NiuniuBatchConfig.getSolrHost());
 	}
 	
@@ -97,9 +94,6 @@ public class ResourceMessageProcessor {
 	}
 	
 	public void resetParallelResourceBasedOnPrice(CarResource cr){
-		//int standard = cr.getStandard();
-		//if(standard!=2)
-			//return;
 		SolrDocumentList qrs = cr.getQuery_result();
 		if(qrs==null)
 			return;
@@ -225,34 +219,40 @@ public class ResourceMessageProcessor {
 	}
 	
 	private void fillHeaderRecord(BaseCarFinder baseCarFinder){
+		
 		if(baseCarFinder.brands.size()>0)
 			this.last_brand_name = baseCarFinder.brands.get(0);
 		else
 			this.last_brand_name = baseCarFinder.cur_brand;
+		
 		if(baseCarFinder.models.size()>0)
 			this.last_model_name = baseCarFinder.models.get(0);
 		else
 			this.last_model_name = baseCarFinder.cur_model;
+		
 		if(baseCarFinder.styles.size()>0)
 			this.last_style_name = baseCarFinder.styles.get(0);
 		else
 			this.last_style_name = "";
+		
 		this.last_standard_name = 1;
 	}
 	
 	private void fillHeaderRecord(BaseCarFinder baseCarFinder, int standard){
+		
 		if(baseCarFinder.brands.size()>0)
 			this.last_brand_name = baseCarFinder.brands.get(0);
 		else
 			this.last_brand_name = baseCarFinder.cur_brand;
+		
 		if(baseCarFinder.models.size()>0)
 			this.last_model_name = baseCarFinder.models.get(0);
 		else
 			this.last_model_name = baseCarFinder.cur_model;
+		
 		if(baseCarFinder.styles.size()>0)
 			this.last_style_name = baseCarFinder.styles.get(0);
-		//else
-			//this.last_style_name = "";
+		
 		this.last_standard_name = standard;
 	}
 	
@@ -268,9 +268,6 @@ public class ResourceMessageProcessor {
 			if(baseCarFinder.models.size()==0 && last_model_name !=null && !last_model_name.isEmpty()){
 				return last_model_name;
 			}
-			//if(baseCarFinder.styles.size()==0 && last_style_name !=null && !last_style_name.isEmpty() && !last_style_name.matches("\\d\\d\\d\\d") && !last_style_name.matches("\\d\\d")){
-				//return last_style_name;
-			//}
 		}else{
 			if(baseCarFinder.brands.size()==0 && last_brand_name !=null && !last_brand_name.isEmpty()){
 				standard_query += " " + last_brand_name;
@@ -358,7 +355,7 @@ public class ResourceMessageProcessor {
 		return brands_counter.size()>1;
 	}
 	
-	// 在搜索结果数量较少，例如只有3998这个指导价的情况下，需要判定搜索结果里的品牌个数，如果有多个，则需要向上回溯，找到正确的品牌
+	// 在搜索结果数量较少，例如只有3998这个指导价的情况下，需要判定搜索结果里的品牌个数，如果有多个，则需要向上回溯，找到正确的车型
 	private boolean hasMultiModels(SolrDocumentList queryResult){
 		Set<String> models_counter = new HashSet<String>();
 		if(queryResult.size()==0)
@@ -488,12 +485,12 @@ public class ResourceMessageProcessor {
 			String reserve_s = s;
 			
 			s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.cleanDate(Utils.clean(Utils.normalize(Utils.escapeSpecialDot(s)), solr_client))));
-			/*
-			 * 验证该行文本的有效性，如果有多个指导价就放弃一蛤
-			 */
+			
+			//验证该行文本的有效性，如果有多个指导价就放弃一蛤
 			SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(s, solr_client);
 			int mode = simpleMessageClassifier.predict();
-			if(mode==0 && !s.isEmpty()){//有可能是隐式的平行进口车,可以再抢救一下
+			if(mode==0 && !s.isEmpty()){
+				//有可能是隐式的平行进口车,可以再抢救一下
 				BaseCarFinder BCF = new BaseCarFinder(solr_client, last_brand_name);
 				boolean flag = BCF.generateBaseCarId(s, null, 2);
 				if(flag && BCF.query_results.getMaxScore()>5000)
@@ -519,9 +516,6 @@ public class ResourceMessageProcessor {
 					tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
 				}
 				continue;
-				// 该行文本包含多个指导价
-				// 后续考虑把该行文本的可靠信息，例如品牌，车型等，加入到Header中
-				// TODO 
 			}
 			
 			BaseCarFinder baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
@@ -564,6 +558,7 @@ public class ResourceMessageProcessor {
 					continue;
 				}
 			}
+			
 			//头部信息，例如 【宝马】 老朗逸等
 			if(baseCarFinder.isHeader()){
 				fillHeaderRecord(baseCarFinder);
@@ -577,9 +572,7 @@ public class ResourceMessageProcessor {
 				if(reJudgeStandard(baseCarFinder.query_results)==2){
 					mode=-1;
 				}else{
-					//TODO
 					//这里逻辑有硬伤，加了新的年款限制以后，基本不会有满足如下情况的可能性，除了单品牌内容，待处理
-					
 					if(baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty() && baseCarFinder.prices.isEmpty()){
 						fillHeaderRecord(baseCarFinder);
 						status = false;
@@ -587,10 +580,7 @@ public class ResourceMessageProcessor {
 						continue;
 					}
 					
-					
-					/*
-					 * 该行只有指导价，或者只有指导价+年款，所以需要把上一行的所有信息都带过来
-					 */
+					//该行只有指导价，或者只有指导价+年款，所以需要把上一行的所有信息都带过来
 					if( 
 							(!baseCarFinder.prices.isEmpty() 
 									&& baseCarFinder.brands.isEmpty() 
@@ -601,7 +591,7 @@ public class ResourceMessageProcessor {
 							(!baseCarFinder.styles.isEmpty() 
 									&& baseCarFinder.brands.isEmpty() 
 									&& baseCarFinder.models.isEmpty() 
-									&& (baseCarFinder.prices.isEmpty() || isYearInfo(baseCarFinder.styles.get(0)))
+									&& (baseCarFinder.prices.isEmpty())
 									&& NumberUtils.toInt(baseCarFinder.styles.get(0),-1)!=-1
 							)
 						){
@@ -614,18 +604,10 @@ public class ResourceMessageProcessor {
 							}else{
 								fucking_status = status;
 							}
-						}else{
-							/*
-							status = false;
-							writeInvalidInfo(concatWithSpace(s));
-							continue;
-							*/
 						}
 					}
 					if(!status){
-						/*
-						 * 可能有歧义，例如 730 928 既有宝骏又有宝马
-						 */
+						//可能有歧义，例如 730 928 既有宝骏又有宝马
 						if(last_brand_name!=null){
 							BaseCarFinder baseCarFinder2 = new BaseCarFinder(solr_client, last_brand_name);
 							boolean status2 = baseCarFinder2.generateBaseCarId(s, last_brand_name,mode);
@@ -693,10 +675,8 @@ public class ResourceMessageProcessor {
 						continue;
 					}
 					
-					//baseCarFinder.generateColors(mode,1);
 					baseCarFinder.newGenerateColors(mode, 1);
 					baseCarFinder.generateRealPrice();
-					//TODO 
 					//这里如果颜色是空，就重新跑颜色的生成模块
 					if(baseCarFinder.result_colors.isEmpty()){
 						baseCarFinder.newGenerateColors(mode,2);
