@@ -175,6 +175,20 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("35.38", cr.getGuiding_price());
 			Assert.assertTrue(cr.getStyle_name().contains("C200"));
 		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setMessages(
+					"LS500h \\n9580 银棕");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(1, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("雷克萨斯", cr.getBrand_name());
+			Assert.assertEquals("LS", cr.getCar_model_name());
+			Assert.assertEquals("95.8", cr.getGuiding_price());
+			Assert.assertTrue(cr.getStyle_name().contains("500h"));
+		}
 	}
 	
 	@Test
@@ -359,8 +373,8 @@ public class TestResourceMessageProcessor {
 			CarResource cr = crg.getResult().get(0);
 			Assert.assertEquals("宝马", cr.getBrand_name());
 			Assert.assertEquals("25.6", cr.getGuiding_price());
-			Assert.assertEquals("2", cr.getDiscount_way());
-			Assert.assertEquals("1.5", cr.getDiscount_content());
+			//Assert.assertEquals("2", cr.getDiscount_way());
+			//Assert.assertEquals("1.5", cr.getDiscount_content());
 			Assert.assertTrue(cr.getStyle_name().contains("118"));
 		}
 		
@@ -523,8 +537,8 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("丰田", cr.getBrand_name());
 			Assert.assertEquals("汉兰达", cr.getCar_model_name());
 			Assert.assertEquals("28.78", cr.getGuiding_price());
-			Assert.assertEquals("2", cr.getDiscount_way());
-			Assert.assertEquals("0.45", cr.getDiscount_content());
+			//Assert.assertEquals("2", cr.getDiscount_way());
+			//Assert.assertEquals("0.45", cr.getDiscount_content());
 		}
 		
 		{
@@ -586,8 +600,8 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("大众", cr.getBrand_name());
 			Assert.assertEquals("朗逸", cr.getCar_model_name());
 			Assert.assertEquals("12.49", cr.getGuiding_price());
-			Assert.assertEquals("2", cr.getDiscount_way());
-			Assert.assertEquals("2.5", cr.getDiscount_content());
+			//Assert.assertEquals("2", cr.getDiscount_way());
+			//Assert.assertEquals("2.5", cr.getDiscount_content());
 		}
 		
 		{
@@ -778,6 +792,53 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("2", cr.getDiscount_way());
 			Assert.assertEquals("13.0", cr.getDiscount_content());
 			Assert.assertEquals(2018, cr.getYear());
+		}
+	}
+	
+	@Test
+	public void testResourceCache() {
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setDisableCache(false);
+			rmp.setMessages(
+					"【发现神行】\\n408白/黑-9.8万(新款)\\n468白/黑-13万(17款)");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(2, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setDisableCache(false);
+			rmp.setMessages(
+					"【发现神行】\\n408白/黑-9.8万(新款)\\n468白/黑-13万(17款)");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(2, crg.getResult().size());
+			CarResource cr = crg.getResult().get(0);
+			Assert.assertEquals("路虎", cr.getBrand_name());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setDisableCache(false);
+			rmp.setMessages(
+					"最新 现货 手续齐全 🉐️🉐️\\n【发现神行】\\n378白/黑-8.4万\\n368黑/黑-8.2万(17款)\\n408红/黑-9.7万(18款)\\n408斯灰/黑 黑/黑-9.6万(18款)\\n408白/黑-10.5万(17款)\\n408凯灰/黑 红/黑-10.1万(17款)\\n468白/黑-14万(17款)\\n【揽胜极光】\\n458红/黑 黑/黑-13.8万(17款英伦版)\\n458白/黑-12.6万(18款英伦版)\\n458凯灰/黑 红/黑 黑/黑-12.2万(18款英伦版)🔥\\n【揽胜运动】\\n928白/黑-8.5万(2.2万配置)\\n968白/黑 黑/黑(新能源)🔥🔥\\n1078白/浅褐 黑/浅褐🔥🔥\\n【揽胜行政】\\n1458黑/黑 白/黑-30.3万\\n1658黑/黑(北京现货)\\n2678黑/黄褐-35万(五座) 🔥🔥\\n2678黑/干椒红(四座) 电议🔥🔥\\n3328黑/黄褐 黑/樱桃红 电议🔥🔥\\n【XFL】\\n458黑/棕 卢蓝/棕-10.2万\\n458剧院红/棕-10.2万\\n498白/棕-11.8万\\n498剧院红/棕-11.5万\\n【捷豹FPACE】\\n528水晶蓝 (45000配置)\\n528卢蓝/黑-10万\\n548中国红/黑-11万\\n548卢兰/黑 中国红/黑-10万(45000配置)\\n628白/黑红-13.6万\\n赵珂伟 tel：13301339220");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(27, crg.getResult().size());
+		}
+		
+		{
+			ResourceMessageProcessor rmp = new ResourceMessageProcessor();
+			rmp.setDisableCache(false);
+			rmp.setMessages(
+					"最新 现货 手续齐全 🉐️🉐️\\n【发现神行】\\n378白/黑-8.4万\\n368黑/黑-8.2万(17款)\\n408红/黑-9.7万(18款)\\n408斯灰/黑 黑/黑-9.6万(18款)\\n408白/黑-10.5万(17款)\\n408凯灰/黑 红/黑-10.1万(17款)\\n468白/黑-14万(17款)\\n【揽胜极光】\\n458红/黑 黑/黑-13.8万(17款英伦版)\\n458白/黑-12.6万(18款英伦版)\\n458凯灰/黑 红/黑 黑/黑-12.2万(18款英伦版)🔥\\n【揽胜运动】\\n928白/黑-8.5万(2.2万配置)\\n968白/黑 黑/黑(新能源)🔥🔥\\n1078白/浅褐 黑/浅褐🔥🔥\\n【揽胜行政】\\n1458黑/黑 白/黑-30.3万\\n1658黑/黑(北京现货)\\n2678黑/黄褐-35万(五座) 🔥🔥\\n2678黑/干椒红(四座) 电议🔥🔥\\n3328黑/黄褐 黑/樱桃红 电议🔥🔥\\n【XFL】\\n458黑/棕 卢蓝/棕-10.2万\\n458剧院红/棕-10.2万\\n498白/棕-11.8万\\n498剧院红/棕-11.5万\\n【捷豹FPACE】\\n528水晶蓝 (45000配置)\\n528卢蓝/黑-10万\\n548中国红/黑-11万\\n548卢兰/黑 中国红/黑-10万(45000配置)\\n628白/黑红-13.6万\\n赵珂伟 tel：13301339220");
+			rmp.process();
+			CarResourceGroup crg = rmp.getCarResourceGroup();
+			Assert.assertEquals(27, crg.getResult().size());
 		}
 	}
 }

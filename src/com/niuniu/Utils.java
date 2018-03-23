@@ -11,7 +11,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,9 +38,14 @@ public class Utils {
 	private static Pattern headerPricePattern;
 	private static Pattern headerOrderPattern;
 	private static Pattern specialNumberPattern;
+	private static Pattern yearPattern;
+	private static Pattern quantityPattern;
 	
 	private static ArrayList<String> sources;
 	private static ArrayList<String> targets;
+
+	private static Set<String> suffix_quants_set;
+	private static Set<String> prefix_behave_set;
 	
 	// 全角半角转换
 	private static String replace(String line) {
@@ -66,7 +73,6 @@ public class Utils {
 	}
 	
 	/*
-	 * 繁体=>简体
 	 * 全角=>半角
 	 */
 	public static String normalize(String query) {
@@ -74,19 +80,7 @@ public class Utils {
 
 		String regex = " +";
 		query = query.replaceAll(regex, " ").trim();
-		char[] a = query.toCharArray();
-		char[] b = new char[500];
-		int i = 0;
-		for (char c : a) {
-			if (!needToConvert(c)) {
-				b[i++] = c;
-			} else {
-				//b[i++] = '\\';
-				b[i++] = c;
-			}
-		}
-		String c = new String(b, 0, i);
-		return c;
+		return query;
 	}
 	
 	static{
@@ -104,6 +98,24 @@ public class Utils {
 		
 		eL = "\\d\\.\\d{3}";
 		specialNumberPattern = Pattern.compile(eL);
+		
+		eL = "\\d(x|X)\\d";
+		quantityPattern = Pattern.compile(eL);
+		
+		eL = "^(20)?\\d{2}(\\D|$)+";
+		yearPattern = Pattern.compile(eL);
+		
+		String[] suffix_quants = { "台", "轮", "度", "速", "天", "分钟", "小时", "秒", "辆", "年", "月", "寸", "月底", "号", "项", "匹", "缸", "气囊"};
+		String[] prefix_behave = { "送" };
+		suffix_quants_set = new HashSet<String>();
+		prefix_behave_set = new HashSet<String>();
+
+		for (String s : suffix_quants)
+			suffix_quants_set.add(s);
+
+		for (String s : prefix_behave)
+			prefix_behave_set.add(s);
+		
 		
 		InputStream is = null;
         BufferedReader reader = null; 
@@ -253,27 +265,6 @@ public class Utils {
 		if(solr==null || query==null || query.isEmpty())
 			return null;
 		SolrDocumentList query_results = null;
-		if(years==null || years.isEmpty()){
-			solr.clear();
-			solr.selectIndex(NiuniuBatchConfig.getSolrCore());
-			solr.setFields("*", "score");
-			solr.setStart(0);
-			solr.setRows(100);
-			solr.setDefType("basecarparser");
-			solr.setQuery(query);
-			solr.addFilter("year:2017 OR year:2018");
-			solr.addSortField("score", false);// 按年份降序排列
-			solr.addSortField("year", false);// 按年份降序排列
-			solr.addSortField("popularity", false);// 按资源热度降序排列
-			try {
-				solr.ExecuteQuery();
-				query_results = solr.getQueryResult();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			if(!query_results.isEmpty())
-				return query_results;
-		}
 		solr.clear();
 		solr.selectIndex(NiuniuBatchConfig.getSolrCore());
 		solr.setFields("*", "score");
@@ -305,31 +296,6 @@ public class Utils {
 		if(solr==null || query==null || query.isEmpty())
 			return null;
 		SolrDocumentList query_results = null;
-		if(years==null || years.isEmpty()){
-			solr.clear();
-			solr.selectIndex(NiuniuBatchConfig.getSolrCore());
-			solr.setFields("*", "score");
-			solr.setStart(0);
-			solr.setRows(100);
-			solr.setDefType("basecarparser");
-			solr.addFilter("standard:" + Integer.toString(standard));//国产、中规
-			solr.setQuery(query);
-			solr.addFilter("year:2017 OR year:2018");
-			if(standard>1){
-				solr.setSearchLevel("low");
-			}
-			solr.addSortField("score", false);// 按年份降序排列
-			solr.addSortField("year", false);// 按年份降序排列
-			solr.addSortField("popularity", false);// 按资源热度降序排列
-			try {
-				solr.ExecuteQuery();
-				query_results = solr.getQueryResult();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			if(!query_results.isEmpty())
-				return query_results;
-		}
 		solr.clear();
 		solr.selectIndex(NiuniuBatchConfig.getSolrCore());
 		solr.setFields("*", "score");
@@ -541,10 +507,53 @@ public class Utils {
 		return str;
 	}
 	
+	public static String escapeSpecialMultiplySign(String str){
+		Matcher matcher = quantityPattern.matcher(str);
+		while(matcher.find()){
+			str = str.replace(matcher.group(0), matcher.group(0).replaceAll("(x|X)", " "));
+		}
+		return str;
+	}
+	
+	public static boolean isYearToken(String str){
+		Matcher matcher = yearPattern.matcher(str);
+		return matcher.matches();
+	}
+	
+	public static boolean isQuantOrBehaveToken(ArrayList<String> elements, int cur, String original_message) {
+		if (cur > 0) {
+			String content = elements.get(cur - 1);
+			content = content.substring(content.lastIndexOf("|") + 1, content.indexOf("#"));
+			if (prefix_behave_set.contains(content))
+				return true;
+		}
+
+		if (cur + 1 < elements.size()) {
+			String content = elements.get(cur + 1);
+			content = content.substring(content.lastIndexOf("|") + 1, content.indexOf("#"));
+			if (suffix_quants_set.contains(content))
+				return true;
+		}
+		String element = elements.get(cur);
+		String head_str = element.substring(0,element.indexOf("-"));
+		int head = NumberUtils.toInt(head_str);
+		
+		if(head>0 && cur>0){
+			char c = original_message.charAt(head-1);
+			String element2 = elements.get(cur-1);
+			if(element2.endsWith("COLOR") && (c=='*' || c=='x' || c=='X'))
+				return true;
+		}
+		return false;
+	}
+	
 	public static void main(String[] args){
 		String line = "2,B200 2718 灰黑 -1.5裸";
 		//System.out.println(Utils.normalizePrice("宝马320是   -10.5"));
-		System.out.println(Utils.removeHeader(Utils.preProcess(line)));
+		//System.out.println(Utils.removeHeader(Utils.preProcess(line)));
+		System.out.println(Utils.escapeSpecialMultiplySign("飞度 888X6台 下4000"));
+		System.out.println(Utils.escapeSpecialMultiplySign("飞度 888x6台 下4000"));
+		System.out.println(Utils.normalize("中華民國陸虎１２３"));
 	}
 	
 }

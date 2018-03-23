@@ -21,6 +21,15 @@ public class CarResource {
 	private String guiding_price;
 	private String real_price;
 	private SolrDocumentList query_result;
+	private int level;
+
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
+	}
 
 	public SolrDocumentList getQuery_result() {
 		return query_result;
@@ -120,7 +129,7 @@ public class CarResource {
 					   String car_model_name, int standard,
 					   String vin, int year, String style_name, String standard_name, 
 					   String resource_type, String guiding_price, 
-					   SolrDocumentList query_result) {
+					   SolrDocumentList query_result, int level) {
 		this.id = id;
 		this.colors = colors;
 		this.discount_way = discount_way;
@@ -143,6 +152,7 @@ public class CarResource {
 		this.guiding_price = guiding_price;
 		this.real_price = null;
 		this.query_result = query_result;
+		this.level = level;
 	}
 
 	public String getId() {
@@ -186,7 +196,7 @@ public class CarResource {
 	}
 
 	public static void main(String[] args) {
-		CarResource cr = new CarResource("1234", "['珍珠白#黑色', '炫晶黑#黑色']", "2", "3.5", "欢迎来电","宝马","X1", 1, "12345", 2017, "终极版", "加版", "现车", "12.5", null);
+		CarResource cr = new CarResource("1234", "['珍珠白#黑色', '炫晶黑#黑色']", "2", "3.5", "欢迎来电","宝马","X1", 1, "12345", 2017, "终极版", "加版", "现车", "12.5", null, 2);
 		cr.setResource_type("期货");
 		String res = JSON.toJSON(cr).toString();
 		System.out.println(res);

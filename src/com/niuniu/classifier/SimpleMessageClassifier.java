@@ -9,8 +9,10 @@ import java.util.Set;
 
 import org.apache.commons.lang.math.NumberUtils;
 
+import com.niuniu.CarResource;
 import com.niuniu.USolr;
 import com.niuniu.Utils;
+import com.niuniu.extractor.ResourceVinExtractor;
 
 public class SimpleMessageClassifier {
 	USolr solr;
@@ -282,8 +284,9 @@ public class SimpleMessageClassifier {
 		}
 		
 		StringBuilder sb = new StringBuilder(message);
-		String vin = ParallelResourceVinClassifier.predict(sb);
-		if(vin!=null)
+		CarResource cr = new CarResource();
+		ResourceVinExtractor.reExtract(sb, cr);
+		if(cr.getVin()!=null)
 			return -1;
 		
 		if (real_prices.size() > 1 || fake_prices.size() > 2)

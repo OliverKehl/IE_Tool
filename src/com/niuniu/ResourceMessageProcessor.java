@@ -4,8 +4,6 @@ import java.io.BufferedWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.solr.common.SolrDocument;
@@ -16,13 +14,17 @@ import org.slf4j.LoggerFactory;
 import com.alibaba.fastjson.JSON;
 import com.niuniu.cache.CacheManager;
 import com.niuniu.classifier.MessageStandardClassifier;
-import com.niuniu.classifier.ParallelResourcePriceClassifier;
-import com.niuniu.classifier.ParallelResourceVinClassifier;
-import com.niuniu.classifier.ResourceTypeClassifier;
 import com.niuniu.classifier.SimpleMessageClassifier;
 import com.niuniu.config.NiuniuBatchConfig;
+import com.niuniu.extractor.ParallelResourcePriceExtractor;
+import com.niuniu.extractor.ResourceColorExtractor;
+import com.niuniu.extractor.ResourcePriceExtractor;
+import com.niuniu.extractor.ResourceRemarkExtractor;
+import com.niuniu.extractor.ResourceTypeExtractor;
+import com.niuniu.extractor.ResourceVinExtractor;
 
 public class ResourceMessageProcessor {
+	
 	public CarResourceGroup getCarResourceGroup() {
 		return carResourceGroup;
 	}
@@ -46,9 +48,6 @@ public class ResourceMessageProcessor {
 	ArrayList<String> res_discount_way;
 	ArrayList<String> res_discount_content;
 	ArrayList<String> res_remark;
-	
-	String year_regex = "^(20)?\\d{2}(\\D|$)+";
-	Pattern yearPattern = null;
 	
 	boolean disableCache = false;
 	
@@ -90,10 +89,12 @@ public class ResourceMessageProcessor {
 		res_discount_way = new ArrayList<String>();
 		res_discount_content = new ArrayList<String>();
 		res_remark = new ArrayList<String>();
-		yearPattern = Pattern.compile(this.year_regex);
 	}
 	
 	public void resetParallelResourceBasedOnPrice(CarResource cr){
+		int standard = cr.getStandard();
+		if(standard!=2)
+			return;
 		SolrDocumentList qrs = cr.getQuery_result();
 		if(qrs==null)
 			return;
@@ -149,7 +150,127 @@ public class ResourceMessageProcessor {
 			cr.setStyle_name(style_name);
 			cr.setYear(year);
 			cr.setStandard_name(standard_name);
-			cr.setQuery_result(null);
+			//cr.setQuery_result(null);
+		}
+	}
+	
+	/*
+	 * 资源列表中，不太可能有ABA这种格式的车型存在，例如3条资源分别为途安、尚酷、途安，则这里一定有问题
+	 */
+	public void filterInvalidCarModel(){
+		int n = carResourceGroup.getResult().size();
+		int kk=0;
+		while(kk<n){
+			CarResource cr = carResourceGroup.getResult().get(kk);
+			SolrDocumentList sdl = cr.getQuery_result();
+			float max_score = NumberUtils.toFloat(sdl.get(0).get("score").toString());
+			//if(carResourceGroup.getResult().get(kk).getQuery_result().getMaxScore()<5000){
+			if(max_score<5000){
+				carResourceGroup.getResult().remove(kk);
+				n--;
+			}
+			else
+				kk++;
+		}
+		if(n==0)
+			return;
+		CarResource pre = carResourceGroup.getResult().get(0);
+		int k=1;
+		while(k<n){
+			CarResource cur = carResourceGroup.getResult().get(k);
+			CarResource next = null;
+			if((k+1)<n)
+				next = carResourceGroup.getResult().get(k+1);
+			else
+				break;
+			if(!pre.getCar_model_name().equals(cur.getCar_model_name()) && pre.getCar_model_name().equals(next.getCar_model_name())){
+				// 重新评估这一行内容，如果只有指导价，就有问题
+				if(cur.getLevel()<1){
+					carResourceGroup.getResult().remove(k);
+					n--;
+					continue;
+				}
+			}
+			if(!pre.getBrand_name().equals(cur.getBrand_name()) && pre.getBrand_name().equals(next.getBrand_name())){
+				if(cur.getLevel()<1){
+					carResourceGroup.getResult().remove(k);
+					n--;
+					continue;
+				}
+			}
+			k++;
+			pre = cur;
+		}
+	}
+	
+	/*
+	 * 结果列表中，在两个相同品牌之间的其他品牌资源置信度较低，
+	 * 例如大众、大众、捷豹、大众
+	 * 或者 丰田、丰田、奔驰、奥迪、丰田、丰田
+	 */
+	public void filterInvalidBrand(){
+		ArrayList<String> brands = new ArrayList<String>();
+		ArrayList<Integer> counter = new ArrayList<Integer>();
+		for(CarResource cr:carResourceGroup.result){
+			if(brands.size()==0){
+				brands.add(cr.getBrand_name());
+				counter.add(1);
+				continue;
+			}else{
+				String br = cr.getBrand_name();
+				if(br.equals(brands.get(brands.size()-1))){
+					counter.set(counter.size()-1, counter.get(counter.size()-1) + 1);
+				}else{
+					brands.add(cr.getBrand_name());
+					counter.add(1);
+				}
+			}
+		}
+		
+		int n = brands.size();
+		if(n==0)
+			return;
+		int k = 0;
+		int sum = counter.get(0);
+		ArrayList<Integer> leftToRemove = new ArrayList<Integer>();
+		ArrayList<Integer> rightToRemove = new ArrayList<Integer>();
+		while(k<n){
+			int j = k+1;
+			for(;j<n;j++){
+				if(counter.get(j)>1 || brands.get(j)==brands.get(k))
+					break;
+			}
+			if(j==n)
+				break;
+			for(int i=k+1;i<j;i++){
+				leftToRemove.add(sum);
+				sum += counter.get(i);
+				rightToRemove.add(sum);
+			}
+			k = j;
+			/*
+			if((k+1)<n){
+				int next = k+1;
+				if(!brands.get(pre).equals(brands.get(k)) && brands.get(pre).equals(brands.get(next))){
+					leftToRemove.add(sum);
+					rightToRemove.add(sum + counter.get(k));
+				}
+				sum += counter.get(k);
+				pre = k;
+				k++;
+				
+			}else{
+				break;
+			}
+			*/
+		}
+		for(int i=leftToRemove.size()-1;i>=0;i--){
+			for(int j = rightToRemove.get(i)-1;j>=leftToRemove.get(i);j--){
+				if(carResourceGroup.getResult().get(j).getQuery_result().getMaxScore()<5000)
+					carResourceGroup.getResult().remove(j);
+				else
+					break;
+			}
 		}
 	}
 	
@@ -158,11 +279,11 @@ public class ResourceMessageProcessor {
 			carResourceGroup = new CarResourceGroup();
 		for(CarResource cr : carResourceGroup.result){
 			if(cr.getDiscount_way()==null || cr.getDiscount_way().equals("0") || cr.getDiscount_way().equals("5")){
-				cr.setQuery_result(null);
 				continue;
 			}
 			if(cr.getDiscount_way().equals("4")){
 				cr.setReal_price(cr.getDiscount_content());
+				resetParallelResourceBasedOnPrice(cr);
 			}else{
 				String guiding_price = cr.getGuiding_price();
 				if(guiding_price!=null && !guiding_price.equals("0.0")){
@@ -177,7 +298,10 @@ public class ResourceMessageProcessor {
 					}
 				}
 			}
-			resetParallelResourceBasedOnPrice(cr);
+		}
+		filterInvalidCarModel();
+		//filterInvalidBrand();
+		for(CarResource cr : carResourceGroup.result){
 			cr.setQuery_result(null);
 		}
 	}
@@ -239,7 +363,8 @@ public class ResourceMessageProcessor {
 	}
 	
 	private void fillHeaderRecord(BaseCarFinder baseCarFinder, int standard){
-		
+		if(baseCarFinder.level<1)
+			return;
 		if(baseCarFinder.brands.size()>0)
 			this.last_brand_name = baseCarFinder.brands.get(0);
 		else
@@ -370,7 +495,6 @@ public class ResourceMessageProcessor {
 		return models_counter.size()>1;
 	}
 	
-	//
 	private boolean isLatentParallel(BaseCarFinder bcf, String line){
 		// 内容中明显包含 指导价，下xx点等情况，那么该行信息就不可能是一条平行进口车车源
 		if(MessageStandardClassifier.predict(line)==1)
@@ -394,47 +518,15 @@ public class ResourceMessageProcessor {
 	}
 	
 	private void reExtractPriceFromConfiguration(CarResource cr, String info){
-		String price = ParallelResourcePriceClassifier.predict(info);
-		//从price中提取数字部分
-		float p = 0.0f;
-		if( price != null){
-			if(price.matches("\\d{1,3}(\\.\\d)?(w|W|万)$")){
-				price = price.substring(0,  price.length()-1);
-			}
-		}else{
-			ArrayList<String> tokens = Utils.tokenize(info, solr_client, "filter_word");
-			int i = tokens.size() - 1;
-			while(i>=0){
-				if(tokens.get(i).endsWith("STOP"))
-					i--;
-				else
-					break;
-			}
-			if(i>=0){
-				String content = tokens.get(i);
-				price = content.substring(content.lastIndexOf("|") + 1, content.lastIndexOf("#"));
-			}
-		}
-		p = NumberUtils.toFloat(price);
-		if(p>0 && p<500 && p!=380 && p!=825){
-			cr.setDiscount_way("4");
-			cr.setDiscount_content(Float.toString(p));
-		}
+		ParallelResourcePriceExtractor.reExtract(cr, info);
 	}
 	
 	private String reExtractVinFromConfiguration(CarResource cr, String info){
 		StringBuilder sb = new StringBuilder(info);
 		if(cr.getVin()==null || cr.getVin().isEmpty()){
-			String vin = ParallelResourceVinClassifier.predict(sb);
-			if(vin!=null)
-				cr.setVin(vin);
+			ResourceVinExtractor.reExtract(sb, cr);
 		}
 		return new String(sb);
-	}
-	
-	private boolean isYearInfo(String str) {
-		Matcher matcher = yearPattern.matcher(str);
-		return matcher.matches();
 	}
 	
 	private void postProcessInvalidLine(String s, String reserve_s){
@@ -443,9 +535,7 @@ public class ResourceMessageProcessor {
 			s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
 			s = reExtractVinFromConfiguration(tmpCR, s);
 			if(tmpCR.getResource_type()==null){
-				String resource_type = ResourceTypeClassifier.predict(s);
-				if(resource_type!=null)
-					tmpCR.setResource_type(resource_type);
+				ResourceTypeExtractor.reExtract(tmpCR, s);
 			}
 			if(tmpCR.getDiscount_way().equals("5")){
 				reExtractPriceFromConfiguration(tmpCR, s);
@@ -455,17 +545,90 @@ public class ResourceMessageProcessor {
 		writeInvalidInfo(concatWithSpace(s));
 	}
 	
-	private boolean validFinalResult(BaseCarFinder bcf){
-		if(bcf.query_results.size()>=5)
+	private boolean validFinalResult(BaseCarFinder bcf, int upper){
+		//TODO
+		/*
+		SolrDocumentList sdl = bcf.query_results;
+		HashMap<String, Integer> counter = new HashMap<String, Integer>();
+		int maxCount = 1;
+		int maxYear = 0;
+		for(SolrDocument doc:sdl){
+			String year = doc.get("year").toString();
+			maxYear = Math.max(maxYear, NumberUtils.toInt(year));
+			String car_model = doc.get("car_model_name").toString();
+			String key = car_model+"_"+year;
+			if(counter.containsKey(key)){
+				counter.put(key, counter.get(key) + 1);
+				maxCount = Math.max(maxCount, counter.get(key));
+			}else{
+				counter.put(key, 1);
+			}
+		}
+		*/
+		if(bcf.query_results.size()>=upper){
 			return false;
+		}
 		return true;
+	}
+	
+	private String generateKey(String user_id, String mes) {
+		return user_id + "_" + mes;
+	}
+	
+	public void addToResponseWithCache( BaseCarFinder baseCarFinder, String user_id, String reserve_s, 
+										CarResourceGroup carResourceGroup, 
+										int mode, String VIN, String resource_type,
+										boolean disableCache) {
+		SolrDocument resDoc = baseCarFinder.query_results.get(0);
+		if (resDoc == null) {
+			return;
+		}
+		String brand_name = resDoc.get("brand_name").toString();
+		baseCarFinder.cur_brand = brand_name;
+		String car_model_name = resDoc.get("car_model_name").toString();
+		baseCarFinder.cur_model = car_model_name;
+		String base_car_id = resDoc.get("id").toString();
+		int year = NumberUtils.toInt(resDoc.get("year").toString());
+		String style_name = resDoc.get("base_car_style").toString();
+		String standard_name = resDoc.get("standard_name").toString();
+		String guiding_price = resDoc.get("guiding_price_s").toString();
+		
+		try {
+			CarResource cr = new CarResource(
+					base_car_id, baseCarFinder.result_colors.toString(), Integer.toString(baseCarFinder.discount_way),
+					Float.toString(baseCarFinder.discount_content), baseCarFinder.getResult_remark(),
+					brand_name, car_model_name, mode, VIN, year, style_name, standard_name, resource_type, guiding_price, baseCarFinder.query_results, baseCarFinder.level);
+			if (carResourceGroup == null)
+				carResourceGroup = new CarResourceGroup();
+			carResourceGroup.getResult().add(cr);
+			if (!disableCache && NiuniuBatchConfig.getEnableCache())
+				CacheManager.set(generateKey(user_id, reserve_s), JSON.toJSONString(cr).toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void updateParallelCarResource(String s, String reserve_s){
+		CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
+		if(s.isEmpty())
+			s = reserve_s;
+		else
+			s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
+		s = reExtractVinFromConfiguration(tmpCR, s);
+		if(tmpCR.getResource_type()==null){
+			ResourceTypeExtractor.reExtract(tmpCR, s);
+		}
+		if(tmpCR.getDiscount_way().equals("5")){
+			reExtractPriceFromConfiguration(tmpCR, s);
+		}
+		tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
 	}
 	
 	public boolean process(){
 		long t1 = System.currentTimeMillis();
 		for(String s : message_arr){
 			
-			if(s.trim().isEmpty() || s.length()<2){
+			if(s.trim().isEmpty() || s.length()<2 || s.length()>500){
 				continue;
 			}
 			
@@ -483,10 +646,10 @@ public class ResourceMessageProcessor {
 			}
 			
 			String reserve_s = s;
-			
 			s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.cleanDate(Utils.clean(Utils.normalize(Utils.escapeSpecialDot(s)), solr_client))));
 			
 			//验证该行文本的有效性，如果有多个指导价就放弃一蛤
+			// TODO 待增强
 			SimpleMessageClassifier simpleMessageClassifier = new SimpleMessageClassifier(s, solr_client);
 			int mode = simpleMessageClassifier.predict();
 			if(mode==0 && !s.isEmpty()){
@@ -497,23 +660,9 @@ public class ResourceMessageProcessor {
 					mode = -1;
 			}
 			if(mode==0){
-				//是上一个平行进口车的配置、备注信息
+				//该行无效信息是上一个平行进口车的配置、备注信息
 				if(last_standard_name==-1){
-					CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
-					if(s.isEmpty())
-						s = reserve_s;
-					else
-						s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
-					s = reExtractVinFromConfiguration(tmpCR, s);
-					if(tmpCR.getResource_type()==null){
-						String resource_type = ResourceTypeClassifier.predict(s);
-						if(resource_type!=null)
-							tmpCR.setResource_type(resource_type);
-					}
-					if(tmpCR.getDiscount_way().equals("5")){
-						reExtractPriceFromConfiguration(tmpCR, s);
-					}
-					tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
+					updateParallelCarResource(s, reserve_s);
 				}
 				continue;
 			}
@@ -522,8 +671,7 @@ public class ResourceMessageProcessor {
 			boolean status = false;
 			if(mode==-1){
 				status = baseCarFinder.generateBaseCarId(s, null, 2);
-			}
-			else{
+			}else{
 				status = baseCarFinder.generateBaseCarId(s, null);
 			}
 			
@@ -532,7 +680,6 @@ public class ResourceMessageProcessor {
 			}
 			
 			if(!status){
-				
 				//有可能是平行进口车被误识别成中规国产车，导致有可能把车架号代入到搜索阶段
 				if(mode==1 && isLatentParallel(baseCarFinder, s)){
 					baseCarFinder = new BaseCarFinder(solr_client, last_brand_name);
@@ -541,18 +688,7 @@ public class ResourceMessageProcessor {
 				}
 				if(!status){
 					if(last_standard_name==-1){
-						CarResource tmpCR = carResourceGroup.result.get(carResourceGroup.getResult().size()-1);
-						s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
-						s = reExtractVinFromConfiguration(tmpCR, s);
-						if(tmpCR.getResource_type()==null){
-							String resource_type = ResourceTypeClassifier.predict(s);
-							if(resource_type!=null)
-								tmpCR.setResource_type(resource_type);
-						}
-						if(tmpCR.getDiscount_way().equals("5")){
-							reExtractPriceFromConfiguration(tmpCR, s);
-						}
-						tmpCR.setRemark(tmpCR.getRemark() + "\n" + s);
+						updateParallelCarResource(s, reserve_s);
 					}
 					writeInvalidInfo(concatWithSpace(s));
 					continue;
@@ -572,7 +708,6 @@ public class ResourceMessageProcessor {
 				if(reJudgeStandard(baseCarFinder.query_results)==2){
 					mode=-1;
 				}else{
-					//这里逻辑有硬伤，加了新的年款限制以后，基本不会有满足如下情况的可能性，除了单品牌内容，待处理
 					if(baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty() && baseCarFinder.prices.isEmpty()){
 						fillHeaderRecord(baseCarFinder);
 						status = false;
@@ -585,7 +720,7 @@ public class ResourceMessageProcessor {
 							(!baseCarFinder.prices.isEmpty() 
 									&& baseCarFinder.brands.isEmpty() 
 									&& baseCarFinder.models.isEmpty() 
-									&& (baseCarFinder.styles.isEmpty() || isYearInfo(baseCarFinder.styles.get(0)))
+									&& (baseCarFinder.styles.isEmpty() || Utils.isYearToken(baseCarFinder.styles.get(0)))
 							)
 							|| 
 							(!baseCarFinder.styles.isEmpty() 
@@ -601,11 +736,13 @@ public class ResourceMessageProcessor {
 							status = baseCarFinder_new.generateBaseCarId(s, all_prefix, mode);
 							if(status){
 								baseCarFinder = baseCarFinder_new;
+								baseCarFinder.level = 1;
 							}else{
 								fucking_status = status;
 							}
 						}
 					}
+					
 					if(!status){
 						//可能有歧义，例如 730 928 既有宝骏又有宝马
 						if(last_brand_name!=null){
@@ -613,6 +750,7 @@ public class ResourceMessageProcessor {
 							boolean status2 = baseCarFinder2.generateBaseCarId(s, last_brand_name,mode);
 							if(status2){
 								baseCarFinder = baseCarFinder2;
+								baseCarFinder.level = 0;
 							}
 						}
 					}
@@ -625,6 +763,7 @@ public class ResourceMessageProcessor {
 							status = baseCarFinder_new.generateBaseCarId(s, prefix, mode);
 							if(status){
 								baseCarFinder = baseCarFinder_new;
+								baseCarFinder.level = 1;
 							}
 							if(status && hasMultiModels(baseCarFinder.query_results)){
 								String simple_prefix = rebuildQueryPrefix(baseCarFinder,0);
@@ -633,19 +772,21 @@ public class ResourceMessageProcessor {
 									status = baseCarFinder_new.generateBaseCarId(s, simple_prefix, mode);
 									if(status){
 										baseCarFinder = baseCarFinder_new;
+										baseCarFinder.level = 0;
 									}
 								}
 							}
 						}
-							
-						if(!validFinalResult(baseCarFinder) && baseCarFinder.isInvalidMessage()){
+						
+						//TODO 为啥是5呢！！
+						if(!validFinalResult(baseCarFinder, 5) && baseCarFinder.isInvalidMessage()){
 							if(!(baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty())){
 								fillHeaderRecord(baseCarFinder);
 							}
 							writeInvalidInfo(concatWithSpace(s + "\t 返回结果较多"));
 							continue;
 						}else{
-							if(!validFinalResult(baseCarFinder) || (baseCarFinder.query_results.size()<=4 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
+							if(!validFinalResult(baseCarFinder, 5) || (baseCarFinder.query_results.size()<=4 && baseCarFinder.query_results.getMaxScore()<3000 && hasMultiBrands(baseCarFinder.query_results))){
 								if(!(baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty())){
 									fillHeaderRecord(baseCarFinder);
 								}
@@ -659,6 +800,8 @@ public class ResourceMessageProcessor {
 						writeInvalidInfo(concatWithSpace(s));
 						continue;
 					}
+					
+					// TODO
 					if(!fucking_status && baseCarFinder.query_results.getMaxScore()<3000 && baseCarFinder.brands.isEmpty() && baseCarFinder.models.isEmpty() && baseCarFinder.styles.isEmpty()){
 						BaseCarFinder baseCarFinder_new = new BaseCarFinder(solr_client, last_brand_name);
 						String simple_prefix = rebuildQueryPrefix(baseCarFinder,0);
@@ -675,14 +818,26 @@ public class ResourceMessageProcessor {
 						continue;
 					}
 					
-					baseCarFinder.newGenerateColors(mode, 1);
-					baseCarFinder.generateRealPrice();
-					//这里如果颜色是空，就重新跑颜色的生成模块
-					if(baseCarFinder.result_colors.isEmpty()){
-						baseCarFinder.newGenerateColors(mode,2);
+					if(baseCarFinder.query_results.getMaxScore()<5000){
+						writeInvalidInfo(concatWithSpace(s));
+						continue;
 					}
 					
-					baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, mode, null, "现车", disableCache);
+					baseCarFinder.parseColors(mode, 1);
+					// 确定款式，生成价格
+					ResourcePriceExtractor rpe = new ResourcePriceExtractor(baseCarFinder);
+					rpe.extract();
+					// 抽取颜色
+					ResourceColorExtractor rce = new ResourceColorExtractor(baseCarFinder);
+					rce.extract(1);
+					if(baseCarFinder.result_colors.isEmpty()){
+						rce.extract(2);
+					}
+					// 抽取备注
+					ResourceRemarkExtractor.extract(baseCarFinder);
+					// 添加到结果集中
+					addToResponseWithCache(baseCarFinder, user_id, reserve_s, carResourceGroup, mode, null, "现车", disableCache);
+					
 					baseCarFinder.printParsingResult(writer);
 					fillHeaderRecord(baseCarFinder, mode);
 				}
@@ -704,7 +859,7 @@ public class ResourceMessageProcessor {
 		boolean tmp_status = baseCarFinder.generateBaseCarId(s, null, 2);
 		ArrayList<String> style_not_year = new ArrayList<String>();
 		for(String ts:baseCarFinder.styles){
-			if(!isYearInfo(ts)){
+			if(!Utils.isYearToken(ts)){
 				style_not_year.add(ts);
 			}
 		}
@@ -718,9 +873,7 @@ public class ResourceMessageProcessor {
 				s = Utils.removeDuplicateSpace(Utils.normalizePrice(Utils.clean(Utils.normalize(reserve_s), solr_client)));
 				s = reExtractVinFromConfiguration(tmpCR, s);
 				if(tmpCR.getResource_type()==null){
-					String resource_type = ResourceTypeClassifier.predict(s);
-					if(resource_type!=null)
-						tmpCR.setResource_type(resource_type);
+					ResourceTypeExtractor.reExtract(tmpCR, s);
 				}
 				if(tmpCR.getDiscount_way().equals("5")){
 					reExtractPriceFromConfiguration(tmpCR, s);
@@ -770,11 +923,15 @@ public class ResourceMessageProcessor {
 			writeInvalidInfo(concatWithSpace(s));
 			return false;
 		}
-		baseCarFinder.newGenerateColors(-1, 1);
-		String VIN = baseCarFinder.extractVIN();
-		baseCarFinder.generarteParellelPrice();
-		String resource_type = ResourceTypeClassifier.predict(s);
-		baseCarFinder.addToResponseWithCache(user_id, reserve_s, res_base_car_ids, res_colors, res_discount_way, res_discount_content, res_remark, this.carResourceGroup, -1, VIN, resource_type, disableCache);
+		baseCarFinder.parseColors(-1, 1);
+		
+		ResourceColorExtractor rce = new ResourceColorExtractor(baseCarFinder);
+		rce.extract(1);// 颜色
+		ResourceVinExtractor.extract(baseCarFinder);// 车架号
+		ParallelResourcePriceExtractor.extract(baseCarFinder);// 价格
+		ResourceTypeExtractor.extract(baseCarFinder, s);// 期货现车
+		ResourceRemarkExtractor.extract(baseCarFinder);// 备注
+		addToResponseWithCache(baseCarFinder, user_id, reserve_s, carResourceGroup, -1, baseCarFinder.vin, baseCarFinder.getResource_type(), disableCache);
 		baseCarFinder.printParsingResult(writer);
 		fillHeaderRecord(baseCarFinder, -1);
 		return true;
@@ -785,9 +942,32 @@ public class ResourceMessageProcessor {
 		resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白 金 红🔻7500");
 		//误把1518识别成了前一个车的售价
 		resourceMessageProcessor.setMessages("北京现车，荣威RX5. 143800白，151800白，手续随车，18911718669");
+		resourceMessageProcessor.setMessages("X1 439 矿白摩卡900防眩后视镜");
+		resourceMessageProcessor.setMessages("途安L\\n1998白黑⬇️50000");
+		resourceMessageProcessor.setMessages("缤智1368 白 下2500交强");
+		
+		//车型ABBA格式的测试用例
+		//TODO ABCA
+		resourceMessageProcessor.setMessages("途安\\n1689 白色 蓝色 优惠15500\\n1798 蓝色 优惠15000\\n1988 白色 优惠15000\\n1988 黑色 优惠16000\\n1558 白色 蓝色 优惠10500");
+		//resourceMessageProcessor.setMessages("高尔夫\\n1449白，优惠19000");
+		
+		// TODO BAD CASE 
+		resourceMessageProcessor.setMessages("MG6 11.78万 圣峰白/黑色 下0.2万");
+		// 这个case有点问题，暂时没法修，因为浩纳是style信息，不太好往下带，待解决
+		// resourceMessageProcessor.setMessages("浩纳 \\n969黑⬇️21500\\n1079自动 白 橙⬇️22200");
+		
+		//不附带默认年款导致车源识别失败，这里要怎么做？根据行情价硬做？ 
+		//resourceMessageProcessor.setMessages("凌派1248白 黑 15000店保");
+		//resourceMessageProcessor.setMessages("别克全新一代君威\\n199800 白金🔻27500");
+		//resourceMessageProcessor.setMessages("科鲁兹1249 下30000");
+		//resourceMessageProcessor.setMessages("极光458黑黑白黑优惠11.3小期");
+		//resourceMessageProcessor.setMessages("别克2298 下8000");
+		
+		
+		//resourceMessageProcessor.setMessages("17款加版坦途1794 黑棕 \\n配置：天窗 并道辅助 真皮座椅加热 通风 USB蓝牙 大屏 JBL音响 倒影 雷达 巡航 防侧滑 多功能方向盘 后视镜加热 LED日行灯 大灯高度调节 桃木内饰 字标扶手箱 后货箱内衬 20寸轮毂 主副驾驶电动调节 后挡风玻璃自动升降 自动恒温空调 电动折叠后视镜\\n现车手续齐\\n电话：15822736077\\n");
 		//688万识别不出来
 		//resourceMessageProcessor.setMessages("红旗L5 6.0L 帜尊型 688万");
-		//resourceMessageProcessor.setMessages("凌派1248白 黑 15000店保");
+		
 		
 		
 		//TODO

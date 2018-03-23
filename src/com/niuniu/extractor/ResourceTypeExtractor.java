@@ -1,4 +1,4 @@
-package com.niuniu.classifier;
+package com.niuniu.extractor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,23 +11,22 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.niuniu.BaseCarFinder;
+import com.niuniu.CarResource;
 import com.niuniu.Utils;
 import com.niuniu.config.NiuniuBatchConfig;
 
-/*
- * 区分某个平行进口车是期货还是现车
- */
-public class ResourceTypeClassifier {
-	public final static Logger log = LoggerFactory.getLogger(ResourceTypeClassifier.class);
+public class ResourceTypeExtractor {
+	public final static Logger log = LoggerFactory.getLogger(ResourceTypeExtractor.class);
 	private ArrayList<Pattern> patterns;
 	
-	private static final ResourceTypeClassifier singleton;
+	private static final ResourceTypeExtractor singleton;
 	
 	static{
-		singleton = new ResourceTypeClassifier();
+		singleton = new ResourceTypeExtractor();
 	}
 	
-	private ResourceTypeClassifier(){
+	private ResourceTypeExtractor(){
 		InputStream is = null;
         BufferedReader reader = null; 
         patterns = new ArrayList<Pattern>();
@@ -63,23 +62,39 @@ public class ResourceTypeClassifier {
 		}
 	}
 	
-	public static String predict(String clue){
+	public static void extract(BaseCarFinder baseCarFinder, String clue){
 		if(clue.contains("现车")){
-			return "现车";
+			baseCarFinder.setResource_type("现车");
 		}
 		
 		for(Pattern p: singleton.patterns){
 			Matcher m = p.matcher(clue);
 			if(m.find()){
-				return "期货";
+				baseCarFinder.setResource_type("期货");
 			}
 		}
-		return null;
+	}
+	
+	public static void reExtract(CarResource cr, String clue){
+		if(clue.contains("现车")){
+			cr.setResource_type("现车");
+		}
+		
+		for(Pattern p: singleton.patterns){
+			Matcher m = p.matcher(clue);
+			if(m.find()){
+				cr.setResource_type("期货");
+			}
+		}
 	}
 	
 	public static void main(String[] args){
-		System.out.println(ResourceTypeClassifier.predict("5.20到港"));
-		System.out.println(ResourceTypeClassifier.predict("5月底合同"));
-		System.out.println(ResourceTypeClassifier.predict("期货"));
+		CarResource cr = new CarResource();
+		ResourceTypeExtractor.reExtract(cr, "5.20到港");
+		System.out.println(cr.getResource_type());
+		ResourceTypeExtractor.reExtract(cr, "5月底合同");
+		System.out.println(cr.getResource_type());
+		ResourceTypeExtractor.reExtract(cr, "期货");
+		System.out.println(cr.getResource_type());
 	}
 }

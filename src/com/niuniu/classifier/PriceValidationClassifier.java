@@ -168,7 +168,7 @@ public class PriceValidationClassifier {
 			float medium = priceTrend.price50;
 			float high = priceTrend.price75;
 			float threshold = Math.min(Math.abs(priceThreshold.price_lower), Math.abs(priceThreshold.price_upper));
-			threshold /= 5.0f;
+			threshold /= 4.0f;
 			float diff = Math.min(calcPriceBias(real_price, low, true), Math.min(calcPriceBias(real_price, medium, true), calcPriceBias(real_price, high, true)));
 			diff *= 100;
 			if( diff < threshold){
@@ -183,10 +183,8 @@ public class PriceValidationClassifier {
 		}
 		float tmp = calcPriceBias(real_price, base_price, false);
 		tmp *= 100;
-		if(tmp>=priceThreshold.base_price_lower/3 && tmp<=priceThreshold.base_price_upper/3)
+		if(tmp>=priceThreshold.base_price_lower && tmp<=priceThreshold.base_price_upper)
 			return 1;
-		else if(tmp>=priceThreshold.base_price_lower && tmp<=priceThreshold.base_price_upper)
-			return 0;
 		else
 			return -1;
 	}

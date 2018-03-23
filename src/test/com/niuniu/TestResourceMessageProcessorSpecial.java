@@ -496,7 +496,7 @@ public class TestResourceMessageProcessorSpecial {
 			Assert.assertEquals("别克", cr.getBrand_name());
 			Assert.assertEquals("GL8", cr.getCar_model_name());
 			Assert.assertEquals("22.99", cr.getGuiding_price());
-			Assert.assertEquals("[雪域白#, 金#]", cr.getColors());
+			Assert.assertEquals("[雪域白#, 琥珀金#]", cr.getColors());
 		}
 	}
 }
