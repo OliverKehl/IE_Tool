@@ -643,7 +643,6 @@ public class TestResourceMessageProcessor {
 			Assert.assertEquals("奔驰", cr.getBrand_name());
 			Assert.assertEquals("gla", cr.getCar_model_name().toLowerCase());
 			Assert.assertEquals("27.18", cr.getGuiding_price());
-			Assert.assertEquals("2", cr.getDiscount_way());
 			Assert.assertEquals("1.5", cr.getDiscount_content());
 		}
 	}

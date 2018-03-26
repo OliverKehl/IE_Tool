@@ -99,7 +99,7 @@ public class Utils {
 		eL = "\\d\\.\\d{3}";
 		specialNumberPattern = Pattern.compile(eL);
 		
-		eL = "\\d(x|X)\\d";
+		eL = "(\\d(x|X)\\d+)|((x|X)\\d+台)";
 		quantityPattern = Pattern.compile(eL);
 		
 		eL = "^(20)?\\d{2}(\\D|$)+";
@@ -553,7 +553,7 @@ public class Utils {
 		//System.out.println(Utils.removeHeader(Utils.preProcess(line)));
 		System.out.println(Utils.escapeSpecialMultiplySign("飞度 888X6台 下4000"));
 		System.out.println(Utils.escapeSpecialMultiplySign("飞度 888x6台 下4000"));
-		System.out.println(Utils.normalize("中華民國陸虎１２３"));
+		System.out.println(Utils.escapeSpecialMultiplySign("速腾1538白裸车优惠30000X15台"));
 	}
 	
 }
